@@ -108,7 +108,8 @@ class EvolutionSearcher(object):
 
         # print('arch', cand, 'bops', bops)
 
-        print("rank:", torch.distributed.get_rank(), cand, info['bops'])
+        rank = torch.distributed.get_rank() if torch.distributed.is_initialized() else 0
+        print("rank:", rank, cand, info['bops'])
         eval_acc = validate(self.test_loader, self.model, criterion, self.epoch, None,
                            self.args, train_loader=self.train_loader, eval_predefined_arch=[cand], train_mode=False)
         # eval_acc = [0]
@@ -244,7 +245,9 @@ class EvolutionSearcher(object):
         self.get_random(self.population_num)
 
         while self.epoch < self.max_epochs:
-            self.val_loader.sampler.set_epoch(self.epoch)
+            # Only set epoch if sampler has set_epoch method (DistributedSampler)
+            if hasattr(self.val_loader.sampler, 'set_epoch'):
+                self.val_loader.sampler.set_epoch(self.epoch)
             print('epoch = {}'.format(self.epoch))
 
             self.memory.append([])

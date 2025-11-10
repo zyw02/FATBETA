@@ -66,6 +66,70 @@ def update_monitors(monitors, meters, target_bits, epoch, batch_idx, steps_per_e
         if mode == 'finetuning':
             continue
 
+def compute_entropy(probs):
+    """
+    计算概率分布的信息熵: H(p) = -Σ p_i * log(p_i)
+    
+    Args:
+        probs: 概率分布，shape [batch_size, num_classes]
+    
+    Returns:
+        entropy: 每个样本的熵，shape [batch_size]
+    """
+    # 避免log(0)，添加小的epsilon
+    eps = 1e-8
+    log_probs = torch.log(probs + eps)
+    entropy = -torch.sum(probs * log_probs, dim=1)
+    return entropy
+
+
+def compute_entropy_loss(probs_normal, probs_faulted, mode='difference'):
+    """
+    计算基于信息熵的损失项，用于约束故障下的模型行为。
+    
+    支持三种模式：
+    1. 'difference': 最小化正常和故障输出的熵差异
+       L_entropy = |H(p_normal) - H(p_faulted)|
+    2. 'constraint': 约束故障下的熵不要太大（避免过度不确定）
+       L_entropy = max(0, H(p_faulted) - H(p_normal))
+    3. 'balance': 平衡正常和故障下的熵，同时约束故障熵
+       L_entropy = |H(p_normal) - H(p_faulted)| + λ * max(0, H(p_faulted) - H_target)
+    
+    Args:
+        probs_normal: 正常输出的概率分布，shape [batch_size, num_classes]
+        probs_faulted: 故障输出的概率分布，shape [batch_size, num_classes]
+        mode: 熵损失模式，'difference', 'constraint', 或 'balance'
+    
+    Returns:
+        entropy_loss: 熵损失标量
+    """
+    entropy_normal = compute_entropy(probs_normal)  # [batch_size]
+    entropy_faulted = compute_entropy(probs_faulted)  # [batch_size]
+    
+    if mode == 'difference':
+        # 最小化熵差异：希望故障下的熵与正常时接近
+        entropy_diff = torch.abs(entropy_normal - entropy_faulted)
+        entropy_loss = entropy_diff.mean()
+    
+    elif mode == 'constraint':
+        # 约束故障熵：希望故障下的熵不要比正常时大太多
+        entropy_excess = torch.clamp(entropy_faulted - entropy_normal, min=0.0)
+        entropy_loss = entropy_excess.mean()
+    
+    elif mode == 'balance':
+        # 平衡模式：同时最小化熵差异和约束故障熵
+        entropy_diff = torch.abs(entropy_normal - entropy_faulted)
+        # 目标熵：正常熵的1.2倍（允许适度增加，但不允许过度不确定）
+        entropy_target = entropy_normal * 1.2
+        entropy_excess = torch.clamp(entropy_faulted - entropy_target, min=0.0)
+        entropy_loss = entropy_diff.mean() + 0.5 * entropy_excess.mean()
+    
+    else:
+        raise ValueError(f"Unknown entropy mode: {mode}. Must be 'difference', 'constraint', or 'balance'")
+    
+    return entropy_loss
+
+
 def loss_forward(outputs, teacher_outputs, targets, criterion):
     loss = criterion(outputs, targets)
 
@@ -112,7 +176,7 @@ def get_meters(mode, target_bits, nr_random_sample, sample_current_max, sample_c
     
     return meters, num_fixed_sample
 
-def train(train_loader, model, criterion, optimizer, epoch, monitors, configs, model_ema=None, nr_random_sample=2, mode='training', soft_criterion=None, teacher_model=None, optimizer_q=None, annealing_schedule=None, freezing_annealing_schedule=None, IDM_weight=0.01, scaler=None):
+def train(train_loader, model, criterion, optimizer, epoch, monitors, configs, model_ema=None, nr_random_sample=2, mode='training', soft_criterion=None, teacher_model=None, optimizer_q=None, annealing_schedule=None, freezing_annealing_schedule=None, IDM_weight=0.01, scaler=None, fault_injector=None):
     assert mode in ['finetuning', 'training']
 
     target_bits = configs.target_bits
@@ -126,32 +190,161 @@ def train(train_loader, model, criterion, optimizer, epoch, monitors, configs, m
     
     sample_current_max = True
     
-    print("Bit-width candidates:", target_bits)
+    print(f"[DEBUG] train() called for epoch {epoch}, mode={mode}")
+    print("[TRAIN] Bit-width candidates:", target_bits)
     
     meters, num_fixed_sample = get_meters(mode, target_bits, nr_random_sample, sample_current_max, sample_current_min)
 
-    total_sample = len(train_loader.sampler)
+    # Handle single GPU mode where sampler might be None
+    if train_loader.sampler is not None:
+        total_sample = len(train_loader.sampler)
+    else:
+        total_sample = len(train_loader.dataset)
     batch_size = configs.dataloader.batch_size
     steps_per_epoch = math.ceil(total_sample / batch_size)
+    
+    print(f"[DEBUG] Total samples: {total_sample}, Batch size: {batch_size}, Steps per epoch: {steps_per_epoch}")
 
     information_distortion_mitigation = getattr(configs, 'information_distortion_mitigation', False)
     if information_distortion_mitigation:
         assert sample_current_max
 
+    # 故障感知训练（TRADES风格）配置
+    use_fault_aware_training = False
+    fault_aware_training_config = None
+    current_ber = None
+    if fault_injector is not None:
+        fault_aware_training_config = getattr(configs, 'fault_aware_training', None)
+        if fault_aware_training_config is not None:
+            use_fault_aware_training = getattr(fault_aware_training_config, 'enabled', False)
+            if use_fault_aware_training:
+                trades_config = getattr(fault_aware_training_config, 'trades', {})
+                use_kl = getattr(trades_config, 'use_kl', False)
+                alpha = getattr(trades_config, 'alpha', 0.6)
+                beta = getattr(trades_config, 'beta', 1.0)
+                
+                # 渐进式BER调度
+                schedule_config = getattr(fault_aware_training_config, 'schedule', None)
+                start_epoch = 0  # 初始化start_epoch
+                if schedule_config is not None and getattr(schedule_config, 'enabled', False):
+                    schedule_type = getattr(schedule_config, 'type', 'constant')
+                    if schedule_type == 'progressive':
+                        # 获取渐进式调度配置
+                        progressive_config = getattr(schedule_config, 'progressive', {})
+                        start_epoch_ratio = getattr(progressive_config, 'start_epoch_ratio', 0.0)  # 延迟启用FAT的epoch比例
+                        # 支持多个阶段，从phase1到phase7（去掉1e-4，在1e-2和1e-1之间添加递进的BER）
+                        phase1_epochs = getattr(progressive_config, 'phase1_epochs', 0.3)
+                        phase2_epochs = getattr(progressive_config, 'phase2_epochs', 0.6)
+                        phase3_epochs = getattr(progressive_config, 'phase3_epochs', 0.8)
+                        phase4_epochs = getattr(progressive_config, 'phase4_epochs', 0.85)
+                        phase5_epochs = getattr(progressive_config, 'phase5_epochs', 0.9)
+                        phase6_epochs = getattr(progressive_config, 'phase6_epochs', 0.95)
+                        phase7_epochs = getattr(progressive_config, 'phase7_epochs', 1.0)
+                        
+                        # 计算FAT启用的起始epoch
+                        total_epochs = configs.epochs
+                        start_epoch = int(total_epochs * start_epoch_ratio)
+                        fat_epochs = total_epochs - start_epoch
+                        
+                        # 如果当前epoch在FAT启用之前，禁用FAT
+                        if epoch < start_epoch:
+                            use_fault_aware_training = False
+                            current_ber = 0.0
+                        else:
+                            # 计算相对于整个训练进度的比例（不是FAT范围内的相对进度）
+                            # phaseX_epochs配置的是整个训练进度的比例（如0.75表示75%）
+                            progress = epoch / total_epochs if total_epochs > 0 else 0.0
+                            
+                            # 根据进度确定BER值（去掉1e-4，在1e-2和1e-1之间添加递进的故障率）
+                            # 注意：如果phase6_epochs=1.0，则phase7被禁用，最高只到BER=5e-2
+                            if progress < phase1_epochs:
+                                current_ber = 1e-3  # 小故障，开始适应
+                            elif progress < phase2_epochs:
+                                current_ber = 1e-2  # 目标故障率
+                            elif progress < phase3_epochs:
+                                current_ber = 2e-2  # 逐步增加
+                            elif progress < phase4_epochs:
+                                current_ber = 3e-2  # 继续增加
+                            elif progress < phase5_epochs:
+                                current_ber = 4e-2  # 接近高故障率
+                            elif progress < phase6_epochs:
+                                current_ber = 5e-2  # 继续增加
+                            elif phase6_epochs < 1.0 and progress < phase7_epochs:
+                                # 只有当phase6_epochs < 1.0时，才使用phase7（BER=1e-1）
+                                current_ber = 1e-1  # 极高故障率
+                            else:
+                                # 如果phase6_epochs=1.0，则最高只到BER=5e-2
+                                current_ber = 5e-2 if phase6_epochs >= 1.0 else 1e-1
+                            
+                            # 更新fault_injector的BER值
+                            fault_injector.ber = float(current_ber)
+                    else:
+                        # 固定BER策略
+                        # 支持start_epoch参数（直接指定epoch数）或start_epoch_ratio（比例）
+                        total_epochs = configs.epochs
+                        start_epoch_direct = getattr(schedule_config, 'start_epoch', None)
+                        if start_epoch_direct is not None:
+                            # 直接指定epoch数
+                            start_epoch = int(start_epoch_direct)
+                        else:
+                            # 使用比例（向后兼容）
+                            start_epoch_ratio = getattr(schedule_config, 'start_epoch_ratio', 0.0)
+                            start_epoch = int(total_epochs * start_epoch_ratio)
+                        
+                        # 如果当前epoch在FAT启用之前，禁用FAT
+                        if epoch < start_epoch:
+                            use_fault_aware_training = False
+                            current_ber = 0.0
+                        else:
+                            # 使用固定BER
+                            current_ber = getattr(fault_aware_training_config, 'ber', 1e-2)
+                            # 确保current_ber是浮点数（YAML可能解析为字符串）
+                            current_ber = float(current_ber)
+                            fault_injector.ber = current_ber
+                else:
+                    # 没有启用调度，使用固定BER
+                    current_ber = getattr(fault_aware_training_config, 'ber', 1e-2)
+                    # 确保current_ber是浮点数（YAML可能解析为字符串）
+                    current_ber = float(current_ber)
+                    fault_injector.ber = current_ber
+                
+                if use_fault_aware_training:
+                    use_entropy = getattr(trades_config, 'use_entropy', False)
+                    entropy_weight = getattr(trades_config, 'entropy_weight', 0.1)
+                    entropy_mode = getattr(trades_config, 'entropy_mode', 'difference')
+                    logger_info(logger, '=' * 80)
+                    logger_info(logger, f'🔥 FAULT-AWARE TRAINING (FAT) - ACTIVE in train() function')
+                    logger_info(logger, f'   Epoch {epoch}/{configs.epochs} (Progress: {epoch/configs.epochs*100:.1f}%), TRADES Loss: {"KL Div" if use_kl else "Simple"}')
+                    logger_info(logger, f'   Current BER: {current_ber:.2e} (Progressive Schedule: {"Enabled" if schedule_config and getattr(schedule_config, "enabled", False) else "Disabled"})')
+                    if not use_kl:
+                        logger_info(logger, f'   Loss = {alpha} * loss_normal + {beta} * loss_faulted')
+                    else:
+                        logger_info(logger, f'   Loss = loss_normal + {beta} * KL(p_normal, p_faulted)')
+                    if use_entropy:
+                        logger_info(logger, f'   Entropy Regularization: Enabled (mode={entropy_mode}, weight={entropy_weight})')
+                    logger_info(logger, '=' * 80)
+                else:
+                    logger_info(logger, f'⚠️  FAT is DISABLED for epoch {epoch} (will start at epoch {start_epoch if "start_epoch" in locals() else "N/A"})')
+
     logger_info(logger, 'Training: %d samples (%d per mini-batch)', total_sample, batch_size)
+    print(f'[DEBUG] Train loader length: {len(train_loader)}, Sampler: {train_loader.sampler}')
     
     num_updates = epoch * len(train_loader)
     seed = num_updates
     set_global_seed(seed + 1)
+    print(f'[DEBUG] Setting global seed to {seed + 1}')
+    
+    print(f'[DEBUG] Setting model to train mode...')
     model.train()
     if model_ema:
         model_ema.ema.train()
+    print(f'[DEBUG] Model set to train mode')
 
     T = 2 if epoch <= int(configs.epochs * 0.72) else 15
 
     if configs.enable_dynamic_bit_training and \
          epoch > 5 and (epoch + 1) % T == 0:
-
+        print(f'[DEBUG] Processing dynamic bit training freeze logic...')
         freezing_ratio = freezing_annealing_schedule((epoch - 5) // 2)
         freezing_metric = profile_layerwise_quantization_metric(model=model)
         freeze_layers(metric=freezing_metric, model=model, ratio=freezing_ratio, 
@@ -164,8 +357,11 @@ def train(train_loader, model, criterion, optimizer, epoch, monitors, configs, m
         print("Training with KD...")
     
     total_subnets = num_fixed_sample + nr_random_sample
+    print(f'[DEBUG] Starting training loop, total_subnets={total_subnets}, train_loader batches={len(train_loader)}')
     
     for batch_idx, (inputs, targets) in enumerate(train_loader):
+        if batch_idx == 0:
+            print(f'[DEBUG] Processing first batch, inputs shape: {inputs.shape}, targets shape: {targets.shape}')
         inputs = inputs.cuda(non_blocking=True)
         targets = targets.cuda(non_blocking=True)
         
@@ -217,10 +413,100 @@ def train(train_loader, model, criterion, optimizer, epoch, monitors, configs, m
                 distorted_features = []
                 hooks = set_forward_hook_for_quantized_layers(model, distorted_features, is_max=False)
 
-            outputs = model(inputs)
-
-            loss, QE_loss, dist_loss = compute_overall_loss(outputs, teacher_outputs, targets, criterion, model, quantization_error_minimization=epoch>40, 
-                                                                QE_loss_weight=QE_loss_weight, disable_smallest_regularization=True, configs=configs)
+            # === TRADES风格的故障感知训练 ===
+            if use_fault_aware_training and fault_injector is not None:
+                # 获取TRADES配置参数
+                trades_config = getattr(fault_aware_training_config, 'trades', {})
+                use_kl = getattr(trades_config, 'use_kl', False)
+                alpha = getattr(trades_config, 'alpha', 0.6)
+                beta = getattr(trades_config, 'beta', 1.0)
+                
+                # 第一次forward: 正常情况（无故障）
+                fault_injector.disable()
+                if batch_idx == 0 and iter_idx == 0:
+                    logger_info(logger, f'[FAT] Batch {batch_idx}, Iter {iter_idx}: First forward (NORMAL, no fault)')
+                outputs_normal = model(inputs)
+                loss_normal, QE_loss_normal, dist_loss_normal = compute_overall_loss(
+                    outputs_normal, teacher_outputs, targets, criterion, model, 
+                    quantization_error_minimization=epoch>40, 
+                    QE_loss_weight=QE_loss_weight, 
+                    disable_smallest_regularization=True, 
+                    configs=configs
+                )
+                
+                # 第二次forward: 故障注入
+                fault_injector.enable()
+                # Reset forward seed to ensure all layers in this forward use the same base_seed
+                fault_injector.reset_forward_seed()
+                if batch_idx == 0 and iter_idx == 0:
+                    logger_info(logger, f'[FAT] Batch {batch_idx}, Iter {iter_idx}: Second forward (FAULTED, BER={current_ber:.2e})')
+                outputs_faulted = model(inputs)
+                loss_faulted, QE_loss_faulted, dist_loss_faulted = compute_overall_loss(
+                    outputs_faulted, teacher_outputs, targets, criterion, model, 
+                    quantization_error_minimization=epoch>40, 
+                    QE_loss_weight=QE_loss_weight, 
+                    disable_smallest_regularization=True, 
+                    configs=configs
+                )
+                
+                # TRADES损失计算（支持信息熵正则化）
+                use_entropy = getattr(trades_config, 'use_entropy', False)
+                entropy_weight = getattr(trades_config, 'entropy_weight', 0.1)
+                entropy_mode = getattr(trades_config, 'entropy_mode', 'difference')  # 'difference', 'constraint', 'balance'
+                
+                if use_kl:
+                    # 使用KL散度: L = L(x_normal, y) + β * KL(p(x_normal), p(x_faulted))
+                    probs_normal = F.softmax(outputs_normal, dim=1)
+                    log_probs_faulted = F.log_softmax(outputs_faulted, dim=1)
+                    kl_div = F.kl_div(log_probs_faulted, probs_normal, reduction='batchmean')
+                    loss = loss_normal + beta * kl_div
+                    
+                    # 信息熵正则化（如果启用）
+                    if use_entropy:
+                        entropy_loss = compute_entropy_loss(probs_normal, F.softmax(outputs_faulted, dim=1), mode=entropy_mode)
+                        loss = loss + entropy_weight * entropy_loss
+                    
+                    # 使用normal的QE和dist loss
+                    QE_loss = QE_loss_normal
+                    dist_loss = dist_loss_normal
+                else:
+                    # 使用简单组合: L = α * L(x_normal, y) + β * L(x_faulted, y)
+                    loss = alpha * loss_normal + beta * loss_faulted
+                    
+                    # 信息熵正则化（如果启用）
+                    if use_entropy:
+                        probs_normal = F.softmax(outputs_normal, dim=1)
+                        probs_faulted = F.softmax(outputs_faulted, dim=1)
+                        entropy_loss = compute_entropy_loss(probs_normal, probs_faulted, mode=entropy_mode)
+                        loss = loss + entropy_weight * entropy_loss
+                    
+                    # 组合QE和dist loss
+                    QE_loss = alpha * QE_loss_normal + beta * QE_loss_faulted
+                    dist_loss = alpha * dist_loss_normal + beta * dist_loss_faulted
+                
+                # 使用normal输出计算准确率（用于显示）
+                outputs = outputs_normal
+                if batch_idx == 0 and iter_idx == 0:
+                    entropy_info = ""
+                    if use_entropy:
+                        probs_n = F.softmax(outputs_normal, dim=1)
+                        probs_f = F.softmax(outputs_faulted, dim=1)
+                        entropy_n = compute_entropy(probs_n).mean().item()
+                        entropy_f = compute_entropy(probs_f).mean().item()
+                        entropy_info = f", entropy_normal={entropy_n:.4f}, entropy_faulted={entropy_f:.4f}"
+                    logger_info(logger, f'[FAT] Batch {batch_idx}, Iter {iter_idx}: TRADES loss computed, normal_loss={loss_normal.item():.4f}, faulted_loss={loss_faulted.item():.4f}{entropy_info}')
+            else:
+                # 原有训练流程（无故障感知训练）
+                if batch_idx == 0 and iter_idx == 0:
+                    logger_info(logger, f'[FAT] Batch {batch_idx}, Iter {iter_idx}: FAT is DISABLED, using standard training')
+                outputs = model(inputs)
+                loss, QE_loss, dist_loss = compute_overall_loss(
+                    outputs, teacher_outputs, targets, criterion, model, 
+                    quantization_error_minimization=epoch>40, 
+                    QE_loss_weight=QE_loss_weight, 
+                    disable_smallest_regularization=True, 
+                    configs=configs
+                )
 
             IDM_loss = 0
             if information_distortion_mitigation:
@@ -294,7 +580,7 @@ def validate(data_loader, model, criterion, epoch, monitors, configs, nr_random_
         model.train()
 
     if eval_predefined_arch == None:
-        from .policy import MIN_POLICY
+        from policy import MIN_POLICY
         eval_predefined_arch = [
             MIN_POLICY
         ]
@@ -322,7 +608,8 @@ def validate(data_loader, model, criterion, epoch, monitors, configs, nr_random_
             if configs.post_training_batchnorm_calibration:
                 assert train_loader is not None
 
-                calibrate_batchnorm_state(model, loader=train_loader, reset=True, distributed_training=True, num_batch=7000//torch.distributed.get_world_size()//configs.dataloader.batch_size)
+                world_size = torch.distributed.get_world_size() if torch.distributed.is_initialized() else 1
+                calibrate_batchnorm_state(model, loader=train_loader, reset=True, distributed_training=(world_size > 1), num_batch=7000//world_size//configs.dataloader.batch_size)
             
             _eval(data_loader, meters[idx])
             bops, size = model_profiling(model=model, return_layers=False)

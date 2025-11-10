@@ -1,0 +1,82 @@
+# Experiment name - Single GPU version for 11GB 2080Ti with CIFAR10
+name: resnet18_cifar10_single_gpu_search
+
+# Name of output directory. Checkpoints and logs will be saved at `pwd`/output_dir
+output_dir: search
+training_device: gpu
+
+target_bits: [6, 5, 4, 3, 2]
+
+# Dataset loader
+dataloader: 
+  dataset: cifar10
+  num_classes: 10
+  path: ./data/cifar10
+  # Batch size for CIFAR10 search on 11GB GPU
+  batch_size: 128
+  workers: 4
+  deterministic: true
+
+resume:
+  path: ./training/resnet18_cifar10_single_gpu/resnet18_cifar10_single_gpu_checkpoint.pth.tar
+  lean: false
+
+log:
+  num_best_scores: 3
+  print_freq: 20
+
+#============================ Model ============================================
+
+arch: resnet18
+pre_trained: false  # Use trained checkpoint from training phase
+
+#============================ Quantization =====================================
+
+# (default for all layers)
+quan:
+  act: 
+    mode: lsq
+    bit: 2
+    per_channel: false
+    symmetric: false
+    all_positive: true
+
+  weight: 
+    mode: lsq
+    bit: 2
+    per_channel: false
+    symmetric: false
+    all_positive: false
+  
+  excepts:
+    excepts_bits_width: 8
+    # Specify quantized bit width for some layers, like this:
+    conv1:
+      act:
+        bit: 
+        all_positive: false
+      weight:
+        bit:
+    bn1:
+      act:
+        bit:
+      weight:
+        bit:
+    fc:
+      act:
+        bit:
+      weight:
+        bit:
+
+#============================ Training / Evaluation ============================
+
+search: true
+eval: false
+
+# BitOPs limits for CIFAR10 (32x32 input, much smaller than ImageNet 224x224)
+# Adjusted for CIFAR10: roughly (32/224)^2 ≈ 0.02x of ImageNet BitOPs
+bops_limits: 6.0
+min_bops_limits: 0.67
+start_bit_width: 5
+
+

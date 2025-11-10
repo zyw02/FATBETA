@@ -1,0 +1,80 @@
+# Experiment name - Evaluation for ResNet18 CIFAR10 with searched bit width config
+name: resnet18_cifar10_single_gpu_eval
+
+# Name of output directory. Checkpoints and logs will be saved at `pwd`/output_dir
+output_dir: eval
+training_device: gpu
+
+target_bits: [6, 5, 4, 3, 2]
+post_training_batchnorm_calibration: true
+information_distortion_mitigation: false
+
+# Dataset loader
+dataloader:
+  dataset: cifar10
+  num_classes: 10
+  path: ./data/cifar10
+  batch_size: 128
+  workers: 4
+  deterministic: true
+
+resume:
+  path: ./training/resnet18_cifar10_single_gpu/resnet18_cifar10_single_gpu_checkpoint.pth.tar
+  lean: false
+
+log:
+  num_best_scores: 3
+  print_freq: 20
+
+#============================ Model ============================================
+
+arch: resnet18
+pre_trained: false
+
+#============================ Quantization =====================================
+
+# (default for all layers)
+quan:
+  act: 
+    mode: lsq
+    bit: 2
+    per_channel: false
+    symmetric: false
+    all_positive: true
+
+  weight: 
+    mode: lsq
+    bit: 2
+    per_channel: false
+    symmetric: false
+    all_positive: false
+  
+  excepts:
+    excepts_bits_width: 8
+    conv1:
+      act:
+        bit: 
+        all_positive: false
+      weight:
+        bit:
+    bn1:
+      act:
+        bit:
+      weight:
+        bit:
+    fc:
+      act:
+        bit:
+      weight:
+        bit:
+
+#============================ Evaluation ============================
+
+eval: true
+
+# Path to bit width configuration file saved from search
+# This should point to the JSON file generated during search
+bit_width_config_path: ./search/resnet18_cifar10_single_gpu_search_bit_width_config.json
+
+
+

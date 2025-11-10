@@ -1,0 +1,26 @@
+2025-11-03 23:51:16,190 - INFO  - Log file for this run: /root/autodl-tmp/retraining-free-quantization/search/alexnet_cifar10_single_gpu_search/alexnet_cifar10_single_gpu_search.log
+2025-11-03 23:51:16,195 - INFO  - TensorBoard data directory: /root/autodl-tmp/retraining-free-quantization/search/alexnet_cifar10_single_gpu_search/tb_runs
+2025-11-03 23:51:16,770 - INFO  - Created `alexnet` model for `cifar10` dataset (num_classes=10)
+          Use pre-trained model = False
+2025-11-03 23:51:16,771 - INFO  - Inserted quantizers into the original model
+2025-11-03 23:51:17,496 - INFO  - [DEBUG] Initializing dataloaders...
+2025-11-03 23:51:19,069 - INFO  - [DEBUG] Dataloaders initialized: train=390, val=390, test=79
+2025-11-03 23:51:19,071 - INFO  - [DEBUG] Testing model forward with input size 32x32...
+2025-11-03 23:51:19,251 - INFO  - [DEBUG] Model forward test completed
+2025-11-03 23:51:19,251 - INFO  - [DEBUG] Creating ModelEma...
+2025-11-03 23:51:19,259 - INFO  - [DEBUG] ModelEma created
+2025-11-03 23:51:19,571 - INFO  - Loaded checkpoint alexnet model (next epoch 200) from ./training/alexnet_cifar10_single_gpu/alexnet_cifar10_single_gpu_checkpoint.pth.tar
+2025-11-03 23:51:19,925 - INFO  - [DEBUG] Printing model structure (this may print quantizer info)...
+2025-11-03 23:51:19,926 - INFO  - [DEBUG] Model structure printed
+2025-11-03 23:51:19,926 - INFO  - [DEBUG] Switching bit width for model to [6, 5, 4, 3, 2]...
+2025-11-03 23:51:19,926 - INFO  - [DEBUG] Model bit width switched
+2025-11-03 23:51:19,926 - INFO  - [DEBUG] Switching bit width for EMA model to [6, 5, 4, 3, 2]...
+2025-11-03 23:51:19,926 - INFO  - [DEBUG] EMA model bit width switched
+2025-11-03 23:51:19,927 - INFO  - [DEBUG] Creating annealing schedule (train_loader length: 390)...
+2025-11-03 23:51:19,927 - INFO  - [DEBUG] Annealing schedule created
+2025-11-03 23:51:19,927 - INFO  - [DEBUG] Stepping lr_scheduler...
+2025-11-03 23:51:19,927 - INFO  - [DEBUG] lr_scheduler stepped
+2025-11-03 23:51:30,185 - INFO  - Validation: 10000 samples (128 per mini-batch)
+2025-11-03 23:51:32,005 - INFO  - Arch 0, BitOPs 4.34 G, Size 26.77 MB, Top-1 Acc. 88.91
+2025-11-03 23:51:32,006 - INFO  - Saved bit width configuration to: /root/autodl-tmp/retraining-free-quantization/search/alexnet_cifar10_single_gpu_search_bit_width_config.json
+2025-11-03 23:51:32,006 - INFO  - To use this configuration for evaluation, set 'bit_width_config_path' in eval config or pass it via command line

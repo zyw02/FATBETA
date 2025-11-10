@@ -1,0 +1,30 @@
+{
+  "arch": "alexnet",
+  "bops_limits": 4.4,
+  "target_bits": [
+    6,
+    5,
+    4,
+    3,
+    2
+  ],
+  "configurations": [
+    {
+      "bops_limit": 4.4,
+      "weight_bits": [
+        2,
+        2,
+        2,
+        4,
+        5
+      ],
+      "act_bits": [
+        5,
+        5,
+        5,
+        5,
+        5
+      ]
+    }
+  ]
+}

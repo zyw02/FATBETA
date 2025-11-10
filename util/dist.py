@@ -11,6 +11,9 @@ def init_dist_nccl_backend(configs):
     configs.device = 'cuda:0'
     configs.world_size = 1
     configs.rank = 0
+    # Set local_rank for single GPU mode
+    if not hasattr(configs, 'local_rank') or configs.local_rank is None:
+        configs.local_rank = 0
 
     if configs.distributed:
         configs.device = 'cuda:%d' % configs.local_rank
@@ -31,7 +34,10 @@ def setup_print(is_master):
     __builtin__.print = print
 
 def is_master():
-    return distributed.is_initialized() and distributed.get_rank() == 0
+    # In single GPU mode (not distributed), always return True
+    if not distributed.is_initialized():
+        return True
+    return distributed.get_rank() == 0
 
 def master_only(fn):
     def wrapper(*args,**kwargs):

@@ -126,8 +126,59 @@ class QuanLinear(torch.nn.Linear):
         self.quan_a_fn.init_from(None, bits_list)
 
         self.fixed_bits = fixed_bits
+        self.split_aw_cands = split_aw_cands
+        self.bits_list = bits_list
+        
+        # Add bit candidates similar to QuanConv2d for compatibility with greedy_search
+        if not split_aw_cands:
+            self.register_buffer('current_bit_cands', torch.tensor(bits_list, dtype=torch.int))
+        else:
+            self.register_buffer('current_bit_cands_w', torch.tensor(bits_list, dtype=torch.int))
+            self.register_buffer('current_bit_cands_a', torch.tensor(bits_list, dtype=torch.int))
+        
         if m.bias is not None:
             self.bias = torch.nn.Parameter(m.bias.detach())
+    
+    @property
+    def weight_bit_cands(self):
+        if self.split_aw_cands:
+            return self.current_bit_cands_w
+        else:
+            return self.current_bit_cands
+    
+    @property
+    def act_bit_cands(self):
+        if self.split_aw_cands:
+            return self.current_bit_cands_a
+        else:
+            return self.current_bit_cands
+    
+    def set_bit_cands(self, bit_cands, bit_cands_a=None):
+        if isinstance(bit_cands, (list, tuple)):
+            bit_cands = torch.tensor(bit_cands).to(self.weight.device, dtype=torch.int)
+            if bit_cands_a is not None:
+                bit_cands_a = torch.tensor(bit_cands_a).to(self.weight.device, dtype=torch.int)
+        
+        if not self.split_aw_cands:
+            self.current_bit_cands = bit_cands
+        else:
+            self.current_bit_cands_w = bit_cands
+            if bit_cands_a is not None:
+                self.current_bit_cands_a = bit_cands_a
+    
+    def reset_bits_cands(self):
+        self.set_bit_cands(self.bits_list, self.bits_list)
+        return self.weight_bit_cands
+    
+    def set_sampled_bit(self, bit_pair):
+        self.bits = bit_pair
+    
+    @property
+    def is_sample_min(self):
+        if self.bits is None:
+            return False
+        wbits = self.bits[0]
+        return min(self.weight_bit_cands) == wbits
         
 
     def forward(self, x):

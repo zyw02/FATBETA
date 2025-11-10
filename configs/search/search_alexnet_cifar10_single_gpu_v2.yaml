@@ -1,0 +1,118 @@
+# Experiment name - Single GPU version for 11GB 2080Ti with CIFAR10
+# V2: classifier.1 uses dynamic bits [2,3,4,5,6] instead of fixed 8-bit
+
+# name: alexnet_cifar10_single_gpu_v2_search
+name: alexnet_cifar10_FAT_a92b25search
+
+# Name of output directory. Checkpoints and logs will be saved at `pwd`/output_dir
+output_dir: search
+training_device: gpu
+
+target_bits: [6, 5, 4, 3, 2]
+
+# Dataset loader
+dataloader: 
+  dataset: cifar10
+  num_classes: 10
+  path: ./data/cifar10
+  # Batch size for CIFAR10 search on 11GB GPU
+  batch_size: 128
+  workers: 4
+  deterministic: true
+
+resume:
+  # path: ./training/alexnet_cifar10_single_gpu_v2/alexnet_cifar10_single_gpu_v2_checkpoint.pth.tar
+  # path: ./training/alexnet_cifar10_FAT_progressive/alexnet_cifar10_FAT_progressive_checkpoint.pth.tar
+  path: ./training/alexnet_cifar10_FAT_a92b25/alexnet_cifar10_FAT_a92b25_checkpoint.pth.tar
+  lean: false
+
+log:
+  num_best_scores: 3
+  print_freq: 20
+
+#============================ Model ============================================
+
+arch: alexnet
+pre_trained: false  # Use trained checkpoint from training phase
+
+#============================ Quantization =====================================
+
+# (default for all layers)
+quan:
+  act: 
+    mode: lsq
+    bit: 2
+    per_channel: false
+    symmetric: false
+    all_positive: true
+
+  weight: 
+    mode: lsq
+    bit: 2
+    per_channel: false
+    symmetric: false
+    all_positive: false
+  
+  excepts:
+    excepts_bits_width: 8
+    # Specify quantized bit width for some layers (first and last layers)
+    # For AlexNet: features.0 (first conv) and classifier.6 (last linear)
+    # NOTE: classifier.1 is removed from excepts using "__delete__" so it can be quantized with dynamic bits [2,3,4,5,6]
+    # Remove classifier.1 from template.yaml (it's only for MobileNetV2)
+    classifier.1: __delete__
+    features.0.0: __delete__  # Remove MobileNetV2 specific keys from template
+    features.0.1: __delete__
+    features.0:  # First conv layer
+      act:
+        bit: 
+        all_positive: false
+      weight:
+        bit:
+    classifier.6:  # Last linear layer (index 6 in classifier Sequential)
+      act:
+        bit:
+        all_positive: false
+      weight:
+        bit:
+
+#============================ Training / Evaluation ============================
+
+search: true
+eval: false
+
+# BitOPs limits for CIFAR10 (32x32 input, much smaller than ImageNet 224x224)
+# Adjusted for CIFAR10: roughly (32/224)^2 ≈ 0.02x of ImageNet BitOPs
+# AlexNet has more parameters than ResNet18, so BitOPs will be higher
+# 
+# ⚠️ 重要：为了故障感知搜索能发挥作用，需要放宽BitOPs限制
+# - 如果bops_limits太严格（如1.32），所有层都被迫降到2-bit，无法选择不同的bit分配
+# - 建议增加到1.8-2.5，这样搜索可以选择不同的bit分配（如某些层3-bit，某些层2-bit）
+# - 故障感知搜索可以在这个范围内选择容错性更好的bit分配
+bops_limits: 1.32  # 从1.32增加到2.0，给故障感知搜索更多选择空间
+min_bops_limits: 0.8
+start_bit_width: 5
+
+#============================ Fault-Aware Search (Scheme 3) ================
+# 故障感知搜索配置（方案3：故障感知的贪婪搜索）
+# 用于在搜索时同时考虑BitOPs和容错能力
+# 注意：启用后搜索时间会增加约2倍（需要两次forward评估）
+fault_aware_search:
+  enabled: true  # 设置为true启用故障感知搜索
+  # 故障注入评估配置
+  fault_injection:
+    ber: 2e-2     # 评估时使用的BER（建议与FAT训练的BER匹配或稍大）
+  # 多目标优化权重
+  weights:
+    alpha: 0.5    # 正常准确率权重
+    beta: 0.3     # 容错性权重（故障下的准确率）
+    # gamma: 0.2  # BitOPs惩罚权重（在优化目标中自动处理）
+  # 容错性目标配置（用于weight搜索结束条件）
+  fault_tolerance_target: null  # 绝对容错性目标值（如0.8表示80%），null表示使用相对目标
+  fault_tolerance_ratio: 0.9    # 相对容错性目标：初始容错性的百分比（0.9表示90%）
+                                 # 只有当fault_tolerance_target为null时使用
+  # 初始bit-width配置（用于故障感知搜索）
+  initial_weight_bit_width: null  # 故障感知搜索的初始weight bit-width（如4或5）
+                                  # null表示自动调整：从bops_map_to_bits结果向上调整
+                                  # 例如：如果bops_map_to_bits返回2-bit，自动从4-bit开始搜索
+                                  # 这样可以在更大的搜索空间中探索容错性更好的配置
+

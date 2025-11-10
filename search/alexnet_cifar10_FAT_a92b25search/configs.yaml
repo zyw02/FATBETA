@@ -1,0 +1,93 @@
+arch: alexnet
+bops_limits: 1.32
+cooldown_epochs: 5
+dataloader:
+  batch_size: 128
+  dataset: cifar10
+  deterministic: true
+  num_classes: 10
+  path: ./data/cifar10
+  workers: 4
+decay_epochs: 30
+decay_rate: 0.1
+device: cuda:0
+distributed: false
+dropout: 0.0
+ema_decay: 0.9997
+enable_dynamic_bit_training: false
+epochs: 160
+eval: false
+fault_aware_search:
+  enabled: true
+  fault_injection:
+    ber: 2e-2
+  fault_tolerance_ratio: 0.9
+  fault_tolerance_target: null
+  initial_weight_bit_width: null
+  weights:
+    alpha: 0.5
+    beta: 0.3
+information_distortion_mitigation: false
+kd: false
+local_rank: 0
+log:
+  num_best_scores: 3
+  print_freq: 20
+lr: 0.02
+min_bops_limits: 0.8
+min_lr: 0
+momentum: 0.9
+name: alexnet_cifar10_FAT_a92b25search
+num_random_path: 3
+opt: sgd
+output_dir: search
+post_training_batchnorm_calibration: true
+pre_trained: false
+quan:
+  act:
+    all_positive: true
+    bit: 2
+    mode: lsq
+    per_channel: false
+    symmetric: false
+  excepts:
+    classifier.6:
+      act:
+        all_positive: false
+        bit: null
+      weight:
+        bit: null
+    excepts_bits_width: 8
+    features.0:
+      act:
+        all_positive: false
+        bit: null
+      weight:
+        bit: null
+  weight:
+    all_positive: false
+    bit: 2
+    mode: lsq
+    per_channel: false
+    symmetric: false
+rank: 0
+resume:
+  lean: false
+  path: ./training/alexnet_cifar10_FAT_a92b25/alexnet_cifar10_FAT_a92b25_checkpoint.pth.tar
+scale_gradient: true
+sched: cosine
+search: true
+smoothing: 0.1
+split_aw_cands: false
+start_bit_width: 5
+target_bits:
+- 6
+- 5
+- 4
+- 3
+- 2
+training_device: gpu
+warmup_epochs: 5
+warmup_lr: 1.0e-05
+weight_decay: 2.5e-05
+world_size: 1

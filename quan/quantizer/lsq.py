@@ -153,7 +153,7 @@ class LsqQuan(Quantizer):
             self.init_state[idx].fill_(1)
             s_init = x.detach().abs().mean() * 2 / (thd_pos ** 0.5)
 
-            if dist.get_world_size() > 1:
+            if dist.is_initialized() and dist.get_world_size() > 1:
                 dist.all_reduce(s_init)
                 s_init /= dist.get_world_size()
             

@@ -1,0 +1,79 @@
+2025-11-06 22:56:39,332 - INFO  - Log file for this run: /root/autodl-tmp/retraining-free-quantization/training/alexnet_cifar10_FAT_a92b25/alexnet_cifar10_FAT_a92b25.log
+2025-11-06 22:56:39,337 - INFO  - TensorBoard data directory: /root/autodl-tmp/retraining-free-quantization/training/alexnet_cifar10_FAT_a92b25/tb_runs
+2025-11-06 22:56:39,947 - INFO  - Created `alexnet` model for `cifar10` dataset (num_classes=10)
+          Use pre-trained model = False
+2025-11-06 22:56:39,947 - INFO  - Inserted quantizers into the original model
+2025-11-06 22:56:40,638 - INFO  - [DEBUG] Initializing dataloaders...
+2025-11-06 22:56:42,274 - INFO  - [DEBUG] Dataloaders initialized: train=390, val=390, test=79
+2025-11-06 22:56:42,275 - INFO  - [DEBUG] Testing model forward with input size 32x32...
+2025-11-06 22:56:42,446 - INFO  - [DEBUG] Model forward test completed
+2025-11-06 22:56:42,446 - INFO  - [DEBUG] Creating ModelEma...
+2025-11-06 22:56:42,457 - INFO  - [DEBUG] ModelEma created
+2025-11-06 22:56:42,457 - INFO  - [DEBUG] Printing model structure (this may print quantizer info)...
+2025-11-06 22:56:42,458 - INFO  - [DEBUG] Model structure printed
+2025-11-06 22:56:42,458 - INFO  - [DEBUG] Switching bit width for model to [6, 5, 4, 3, 2]...
+2025-11-06 22:56:42,458 - INFO  - [DEBUG] Model bit width switched
+2025-11-06 22:56:42,458 - INFO  - [DEBUG] Switching bit width for EMA model to [6, 5, 4, 3, 2]...
+2025-11-06 22:56:42,458 - INFO  - [DEBUG] EMA model bit width switched
+2025-11-06 22:56:42,459 - INFO  - ================================================================================
+2025-11-06 22:56:42,459 - INFO  - 🚀 FAULT-AWARE TRAINING (FAT) - ENABLED
+2025-11-06 22:56:42,459 - INFO  - ================================================================================
+2025-11-06 22:56:42,459 - INFO  -   ✅ FaultInjector initialized
+2025-11-06 22:56:42,459 - INFO  -   ✅ BER (Bit-Error-Rate): 0.01
+2025-11-06 22:56:42,459 - INFO  -   ✅ TRADES Loss Method: Simple Combination
+2025-11-06 22:56:42,459 - INFO  -   ✅ TRADES Weights: alpha=0.92, beta=0.25
+2025-11-06 22:56:42,459 - INFO  -   ✅ Training mode: Enabled (Inference mode: Disabled)
+2025-11-06 22:56:42,459 - INFO  -   ✅ Seed List: [42, 100, 200, 300, 400, 500, 600, 700, 800, 900] (训练时每次forward随机选择，验证时从中采样)
+2025-11-06 22:56:42,459 - INFO  - ================================================================================
+2025-11-06 22:56:42,460 - INFO  - [DEBUG] Creating annealing schedule (train_loader length: 390)...
+2025-11-06 22:56:42,460 - INFO  - [DEBUG] Annealing schedule created
+2025-11-06 22:56:42,460 - INFO  - [DEBUG] Stepping lr_scheduler...
+2025-11-06 22:56:42,460 - INFO  - [DEBUG] lr_scheduler stepped
+2025-11-06 22:56:42,460 - INFO  - [DEBUG] Creating freezing annealing schedule...
+2025-11-06 22:56:42,460 - INFO  - Start dynamic bit-width training...
+2025-11-06 22:56:42,460 - INFO  - [DEBUG] Freezing annealing schedule created
+2025-11-06 22:56:42,460 - INFO  - Optimizer: SGD (
+           Parameter Group 0
+               dampening: 0
+               differentiable: False
+               foreach: None
+               fused: None
+               initial_lr: 0.01
+               lr: 0.01
+               maximize: False
+               momentum: 0.9
+               nesterov: True
+               weight_decay: 0.0001
+           
+           Parameter Group 1
+               dampening: 0
+               differentiable: False
+               foreach: None
+               fused: None
+               initial_lr: 0.01
+               lr: 0.01
+               maximize: False
+               momentum: 0.9
+               nesterov: True
+               weight_decay: 0
+           )
+2025-11-06 22:56:42,460 - INFO  - Total epoch: 200, Start epoch 0
+2025-11-06 22:56:42,460 - INFO  - >>>>>>>> Epoch   0
+2025-11-06 22:56:42,460 - INFO  - ⚠️  FAT is DISABLED for epoch 0 (will start at epoch 100)
+2025-11-06 22:56:42,460 - INFO  - Training: 50000 samples (128 per mini-batch)
+2025-11-06 22:56:42,945 - INFO  - [FAT] Batch 0, Iter 0: FAT is DISABLED, using standard training
+2025-11-06 22:56:45,417 - INFO  - Max Training [0][   20/  391]   Loss 2.270382   QE Loss 0.000000   Distribution Loss 0.000000   IDM Loss 0.000000   Top1 13.281250   Top5 57.148438   LR 0.010000   QLR 0.000010   
+2025-11-06 22:56:45,417 - INFO  - Mixed 0 Training [0][   20/  391]   Loss 1.131544   QE Loss 0.000000   Distribution Loss -0.021591   IDM Loss 0.000000   Top1 12.500000   Top5 54.960938   LR 0.010000   QLR 0.000010   
+2025-11-06 22:56:45,418 - INFO  - Mixed 1 Training [0][   20/  391]   Loss 1.132960   QE Loss 0.000000   Distribution Loss -0.017062   IDM Loss 0.000000   Top1 12.343750   Top5 55.585938   LR 0.010000   QLR 0.000010   
+2025-11-06 22:56:45,418 - INFO  - Mixed 2 Training [0][   20/  391]   Loss 1.132227   QE Loss 0.000000   Distribution Loss -0.016769   IDM Loss 0.000000   Top1 12.578125   Top5 55.507812   LR 0.010000   QLR 0.000010   
+2025-11-06 22:56:45,420 - INFO  - ===================================================================================================================
+2025-11-06 22:56:47,786 - INFO  - Max Training [0][   40/  391]   Loss 2.205380   QE Loss 0.000000   Distribution Loss 0.000000   IDM Loss 0.000000   Top1 16.894531   Top5 65.117188   LR 0.010000   QLR 0.000010   
+2025-11-06 22:56:47,786 - INFO  - Mixed 0 Training [0][   40/  391]   Loss 1.115093   QE Loss 0.000000   Distribution Loss -0.020613   IDM Loss 0.000000   Top1 16.289062   Top5 64.003906   LR 0.010000   QLR 0.000010   
+2025-11-06 22:56:47,786 - INFO  - Mixed 1 Training [0][   40/  391]   Loss 1.121068   QE Loss 0.000000   Distribution Loss -0.018772   IDM Loss 0.000000   Top1 16.308594   Top5 64.082031   LR 0.010000   QLR 0.000010   
+2025-11-06 22:56:47,786 - INFO  - Mixed 2 Training [0][   40/  391]   Loss 1.110936   QE Loss 0.000000   Distribution Loss -0.017916   IDM Loss 0.000000   Top1 16.660156   Top5 64.140625   LR 0.010000   QLR 0.000010   
+2025-11-06 22:56:47,789 - INFO  - ===================================================================================================================
+2025-11-06 22:56:50,172 - INFO  - Max Training [0][   60/  391]   Loss 2.166260   QE Loss 0.000000   Distribution Loss 0.000000   IDM Loss 0.000000   Top1 18.502604   Top5 69.049479   LR 0.010000   QLR 0.000010   
+2025-11-06 22:56:50,172 - INFO  - Mixed 0 Training [0][   60/  391]   Loss 1.088888   QE Loss 0.000000   Distribution Loss -0.021438   IDM Loss 0.000000   Top1 18.033854   Top5 68.151042   LR 0.010000   QLR 0.000010   
+2025-11-06 22:56:50,172 - INFO  - Mixed 1 Training [0][   60/  391]   Loss 1.094578   QE Loss 0.000000   Distribution Loss -0.018021   IDM Loss 0.000000   Top1 18.372396   Top5 68.229167   LR 0.010000   QLR 0.000010   
+2025-11-06 22:56:50,172 - INFO  - Mixed 2 Training [0][   60/  391]   Loss 1.086756   QE Loss 0.000000   Distribution Loss -0.017078   IDM Loss 0.000000   Top1 18.437500   Top5 68.229167   LR 0.010000   QLR 0.000010   
+2025-11-06 22:56:50,175 - INFO  - ===================================================================================================================

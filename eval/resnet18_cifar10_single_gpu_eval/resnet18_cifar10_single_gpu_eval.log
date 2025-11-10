@@ -1,0 +1,86 @@
+2025-11-04 00:14:48,015 - INFO  - Log file for this run: /root/autodl-tmp/retraining-free-quantization/eval/resnet18_cifar10_single_gpu_eval/resnet18_cifar10_single_gpu_eval.log
+2025-11-04 00:14:48,159 - INFO  - Using device: cuda:0
+2025-11-04 00:14:48,159 - INFO  - Bit-width config: ./search/resnet18_cifar10_single_gpu_search_bit_width_config.json
+2025-11-04 00:14:48,159 - INFO  - Testing BER values: [0.0001, 0.001, 0.01, 0.02, 0.03, 0.04, 0.1]
+2025-11-04 00:14:48,362 - INFO  - Created `resnet18` model for `cifar10` dataset (num_classes=10)
+          Use pre-trained model = False
+2025-11-04 00:14:48,363 - INFO  - Inserting quantizers into the model
+2025-11-04 00:14:48,844 - INFO  - Loading checkpoint from ./training/resnet18_cifar10_single_gpu/resnet18_cifar10_single_gpu_checkpoint.pth.tar
+2025-11-04 00:14:49,332 - INFO  - Ignoring 1 missing optional buffers (current_bit_cands, etc.) that were added after checkpoint was saved
+2025-11-04 00:14:49,340 - INFO  - Loaded checkpoint resnet18 model (next epoch 200) from ./training/resnet18_cifar10_single_gpu/resnet18_cifar10_single_gpu_checkpoint.pth.tar
+2025-11-04 00:14:49,348 - INFO  - Initializing model output_size with a dummy forward pass
+2025-11-04 00:14:49,560 - INFO  - ✓ Model output_size initialized
+2025-11-04 00:14:49,560 - INFO  - Loading bit-width configuration from: ./search/resnet18_cifar10_single_gpu_search_bit_width_config.json
+2025-11-04 00:14:49,565 - INFO  - ✓ Bit-width configuration loaded: 19 layers
+2025-11-04 00:14:51,105 - INFO  - 
+============================================================
+2025-11-04 00:14:51,105 - INFO  - Baseline Evaluation (No Fault Injection)
+2025-11-04 00:14:51,105 - INFO  - ============================================================
+2025-11-04 00:14:51,108 - INFO  - Validation: 10000 samples (128 per mini-batch)
+2025-11-04 00:14:55,415 - INFO  - Arch 0, BitOPs 2.89 G, Size 2.82 MB, Top-1 Acc. 93.02
+2025-11-04 00:14:55,415 - INFO  - Baseline Top-1 Accuracy: 93.02%
+2025-11-04 00:14:55,415 - INFO  - 
+============================================================
+2025-11-04 00:14:55,415 - INFO  - Fault Injection Test 1/7: BER = 1.0e-04
+2025-11-04 00:14:55,415 - INFO  - ============================================================
+2025-11-04 00:14:55,420 - INFO  - Validation: 10000 samples (128 per mini-batch)
+2025-11-04 00:15:01,049 - INFO  - Arch 0, BitOPs 2.89 G, Size 2.82 MB, Top-1 Acc. 93.15
+2025-11-04 00:15:01,050 - INFO  - BER=1.0e-04: Accuracy=93.15%, Drop=-0.13%
+2025-11-04 00:15:01,050 - INFO  - 
+============================================================
+2025-11-04 00:15:01,051 - INFO  - Fault Injection Test 2/7: BER = 1.0e-03
+2025-11-04 00:15:01,051 - INFO  - ============================================================
+2025-11-04 00:15:01,054 - INFO  - Validation: 10000 samples (128 per mini-batch)
+2025-11-04 00:15:06,624 - INFO  - Arch 0, BitOPs 2.89 G, Size 2.82 MB, Top-1 Acc. 92.66
+2025-11-04 00:15:06,626 - INFO  - BER=1.0e-03: Accuracy=92.66%, Drop=0.36%
+2025-11-04 00:15:06,626 - INFO  - 
+============================================================
+2025-11-04 00:15:06,626 - INFO  - Fault Injection Test 3/7: BER = 1.0e-02
+2025-11-04 00:15:06,626 - INFO  - ============================================================
+2025-11-04 00:15:06,629 - INFO  - Validation: 10000 samples (128 per mini-batch)
+2025-11-04 00:15:12,176 - INFO  - Arch 0, BitOPs 2.89 G, Size 2.82 MB, Top-1 Acc. 84.58
+2025-11-04 00:15:12,177 - INFO  - BER=1.0e-02: Accuracy=84.58%, Drop=8.44%
+2025-11-04 00:15:12,177 - INFO  - 
+============================================================
+2025-11-04 00:15:12,177 - INFO  - Fault Injection Test 4/7: BER = 2.0e-02
+2025-11-04 00:15:12,177 - INFO  - ============================================================
+2025-11-04 00:15:12,181 - INFO  - Validation: 10000 samples (128 per mini-batch)
+2025-11-04 00:15:17,717 - INFO  - Arch 0, BitOPs 2.89 G, Size 2.82 MB, Top-1 Acc. 69.0
+2025-11-04 00:15:17,718 - INFO  - BER=2.0e-02: Accuracy=69.00%, Drop=24.02%
+2025-11-04 00:15:17,718 - INFO  - 
+============================================================
+2025-11-04 00:15:17,718 - INFO  - Fault Injection Test 5/7: BER = 3.0e-02
+2025-11-04 00:15:17,718 - INFO  - ============================================================
+2025-11-04 00:15:17,722 - INFO  - Validation: 10000 samples (128 per mini-batch)
+2025-11-04 00:15:23,372 - INFO  - Arch 0, BitOPs 2.89 G, Size 2.82 MB, Top-1 Acc. 57.8
+2025-11-04 00:15:23,374 - INFO  - BER=3.0e-02: Accuracy=57.80%, Drop=35.22%
+2025-11-04 00:15:23,374 - INFO  - 
+============================================================
+2025-11-04 00:15:23,374 - INFO  - Fault Injection Test 6/7: BER = 4.0e-02
+2025-11-04 00:15:23,374 - INFO  - ============================================================
+2025-11-04 00:15:23,378 - INFO  - Validation: 10000 samples (128 per mini-batch)
+2025-11-04 00:15:29,094 - INFO  - Arch 0, BitOPs 2.89 G, Size 2.82 MB, Top-1 Acc. 45.51
+2025-11-04 00:15:29,095 - INFO  - BER=4.0e-02: Accuracy=45.51%, Drop=47.51%
+2025-11-04 00:15:29,095 - INFO  - 
+============================================================
+2025-11-04 00:15:29,095 - INFO  - Fault Injection Test 7/7: BER = 1.0e-01
+2025-11-04 00:15:29,095 - INFO  - ============================================================
+2025-11-04 00:15:29,099 - INFO  - Validation: 10000 samples (128 per mini-batch)
+2025-11-04 00:15:34,748 - INFO  - Arch 0, BitOPs 2.89 G, Size 2.82 MB, Top-1 Acc. 11.08
+2025-11-04 00:15:34,749 - INFO  - BER=1.0e-01: Accuracy=11.08%, Drop=81.94%
+2025-11-04 00:15:34,749 - INFO  - 
+============================================================
+2025-11-04 00:15:34,749 - INFO  - Summary
+2025-11-04 00:15:34,749 - INFO  - ============================================================
+2025-11-04 00:15:34,749 - INFO  - BER          Accuracy     Drop        
+2025-11-04 00:15:34,749 - INFO  - ------------------------------------------------------------
+2025-11-04 00:15:34,749 - INFO  - Baseline     93.02        0.00        
+2025-11-04 00:15:34,749 - INFO  - 1.0e-04      93.15        -0.13       
+2025-11-04 00:15:34,749 - INFO  - 1.0e-03      92.66        0.36        
+2025-11-04 00:15:34,749 - INFO  - 1.0e-02      84.58        8.44        
+2025-11-04 00:15:34,750 - INFO  - 2.0e-02      69.00        24.02       
+2025-11-04 00:15:34,750 - INFO  - 3.0e-02      57.80        35.22       
+2025-11-04 00:15:34,750 - INFO  - 4.0e-02      45.51        47.51       
+2025-11-04 00:15:34,750 - INFO  - 1.0e-01      11.08        81.94       
+2025-11-04 00:15:34,750 - INFO  - 
+Evaluation complete!

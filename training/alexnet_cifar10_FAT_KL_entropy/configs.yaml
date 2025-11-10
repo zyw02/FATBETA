@@ -1,0 +1,113 @@
+adaptive_region_weight_decay: 0
+arch: alexnet
+cooldown_epochs: 0
+dataloader:
+  batch_size: 128
+  dataset: cifar10
+  deterministic: true
+  num_classes: 10
+  path: ./data/cifar10
+  workers: 4
+decay_epochs: 30
+decay_rate: 0.1
+device: cuda:0
+distributed: false
+dropout: 0.0
+ema_decay: 0.9997
+enable_dynamic_bit_training: true
+epochs: 200
+eval: false
+fault_aware_training:
+  ber: 1e-2
+  enabled: true
+  schedule:
+    enabled: true
+    progressive:
+      phase1_epochs: 0.75
+      phase2_epochs: 0.8
+      phase3_epochs: 0.83
+      phase4_epochs: 0.86
+      phase5_epochs: 0.9
+      phase6_epochs: 1.0
+      start_epoch_ratio: 0.7
+    type: progressive
+  seed_list:
+  - 42
+  - 100
+  - 200
+  - 300
+  - 400
+  - 500
+  - 600
+  - 700
+  - 800
+  - 900
+  trades:
+    alpha: 0.97
+    beta: 0.5
+    entropy_mode: difference
+    entropy_weight: 0.1
+    use_entropy: true
+    use_kl: true
+information_distortion_mitigation: false
+kd: false
+local_rank: 0
+log:
+  num_best_scores: 3
+  print_freq: 20
+lr: 0.01
+min_lr: 0.0
+momentum: 0.9
+name: alexnet_cifar10_FAT_KL_entropy
+num_random_path: 3
+opt: sgd
+output_dir: training
+post_training_batchnorm_calibration: true
+pre_trained: false
+quan:
+  act:
+    all_positive: true
+    bit: 2
+    mode: lsq
+    per_channel: false
+    symmetric: false
+  excepts:
+    classifier.6:
+      act:
+        all_positive: false
+        bit: null
+      weight:
+        bit: null
+    excepts_bits_width: 8
+    features.0:
+      act:
+        all_positive: false
+        bit: null
+      weight:
+        bit: null
+  weight:
+    all_positive: false
+    bit: 2
+    mode: lsq
+    per_channel: false
+    symmetric: false
+rank: 0
+resume:
+  lean: false
+  path: null
+scale_gradient: false
+sched: cosine
+search: false
+smoothing: 0.0
+split_aw_cands: false
+target_bits:
+- 6
+- 5
+- 4
+- 3
+- 2
+training_device: gpu
+warmup_epochs: 0
+warmup_lr: 0.0
+weight_decay: 0.0001
+world_size: 1

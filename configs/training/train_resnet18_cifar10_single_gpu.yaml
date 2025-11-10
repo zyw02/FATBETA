@@ -1,0 +1,102 @@
+# Experiment name - Single GPU version for 11GB 2080Ti with CIFAR10
+name: resnet18_cifar10_single_gpu
+
+# Name of output directory. Checkpoints and logs will be saved at `pwd`/output_dir
+output_dir: training
+training_device: gpu
+
+num_random_path: 3
+target_bits: [6, 5, 4, 3, 2]
+post_training_batchnorm_calibration: true
+# Disable information_distortion_mitigation to save GPU memory
+information_distortion_mitigation: false
+enable_dynamic_bit_training: true
+kd: false
+
+# Dataset loader
+dataloader:
+  dataset: cifar10
+  num_classes: 10
+  path: ./data/cifar10
+  # Batch size for CIFAR10 on 11GB GPU
+  batch_size: 128
+  workers: 4
+  deterministic: true
+
+resume:
+  path: 
+  lean: false
+
+log:
+  num_best_scores: 3
+  print_freq: 20
+
+#============================ Model ============================================
+
+arch: resnet18
+pre_trained: false  # No pre-trained weights for CIFAR ResNet18
+
+#============================ Quantization =====================================
+
+# (default for all layers)
+quan:
+  act: 
+    mode: lsq
+    bit: 2
+    per_channel: false
+    symmetric: false
+    all_positive: true
+
+  weight: 
+    mode: lsq
+    bit: 2
+    per_channel: false
+    symmetric: false
+    all_positive: false
+  
+  excepts:
+    excepts_bits_width: 8
+    # Specify quantized bit width for some layers, like this:
+    conv1:
+      act:
+        bit: 
+        all_positive: false
+      weight:
+        bit:
+    bn1:
+      act:
+        bit:
+      weight:
+        bit:
+    fc:
+      act:
+        bit:
+      weight:
+        bit:
+
+#============================ Training / Evaluation ============================
+
+eval: false
+
+epochs: 200
+smoothing: 0.0
+scale_gradient: false
+
+opt: sgd
+# Learning rate for CIFAR10 training
+lr: 0.1
+momentum: 0.9
+weight_decay: 0.0001
+adaptive_region_weight_decay: 0
+
+sched: cosine
+min_lr: 0.0
+decay_rate: 0.1
+warmup_epochs: 0
+warmup_lr: 0.0
+decay_epochs: 30
+cooldown_epochs: 0
+
+ema_decay: 0.9997
+
+

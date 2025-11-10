@@ -1,5 +1,6 @@
 from copy import deepcopy
 import torch
+import torch.distributed as dist
 from quan.func import QuanConv2d,QuanLinear,SwithableBatchNorm
 from timm.utils import reduce_tensor, distribute_bn
 from torch.distributed import get_world_size
@@ -89,12 +90,32 @@ def model_profiling(model: torch.nn.Module, first_last_layer_act_bits=8, first_l
     for name, module in model.named_modules():
         if isinstance(module, QuanConv2d):
             if hasattr(module, 'bits') and (module.bits is not None and len(module.bits) > 1):
+                # If next_bn is still True from previous Conv, it means that Conv had no BN
+                # Add None to bn list for that Conv layer
+                if next_bn and return_layers:
+                    bn.append(None)
+                
                 # module: torch.nn.Conv2d
                 assert isinstance(module.bits, (list, tuple))
                 next_bn = True
                 quantized_layers.append(module)
 
                 wbits, abits = module.bits
+                # Convert to Python int if tensor or list
+                if isinstance(wbits, torch.Tensor):
+                    wbits = int(wbits.item())
+                elif isinstance(wbits, (list, tuple)):
+                    wbits = int(wbits[0])
+                else:
+                    wbits = int(wbits)
+                    
+                if isinstance(abits, torch.Tensor):
+                    abits = int(abits.item())
+                elif isinstance(abits, (list, tuple)):
+                    abits = int(abits[0])
+                else:
+                    abits = int(abits)
+                    
                 bitops += (wbits*abits*module.kernel_size[-1]*module.kernel_size[-2]*module.in_channels*module.out_channels*module.output_size)//module.groups
                 model_size += (wbits*module.kernel_size[-1]*module.kernel_size[-2]*module.in_channels*module.out_channels)//module.groups
             
@@ -103,19 +124,62 @@ def model_profiling(model: torch.nn.Module, first_last_layer_act_bits=8, first_l
                 
                 model_size += first_last_layer_weight_bits*module.kernel_size[-1]*module.kernel_size[-2]*module.in_channels*module.out_channels
         
-        if isinstance(module, QuanLinear):
-            bitops += first_last_layer_act_bits*first_last_layer_weight_bits*module.in_features*module.out_features
-            model_size += first_last_layer_weight_bits*module.in_features*module.out_features
-        
         if isinstance(module, SwithableBatchNorm) and next_bn:
             bn.append(module)
             next_bn = False
+        
+        if isinstance(module, QuanLinear):
+            # If next_bn is still True, it means previous Conv had no BN, add None for it
+            if next_bn and return_layers:
+                bn.append(None)
+                next_bn = False
+            
+            # Check if this Linear layer has dynamic bits (not fixed_bits)
+            if hasattr(module, 'bits') and module.bits is not None and len(module.bits) > 1:
+                # Linear layer with dynamic bits - add to quantized_layers
+                quantized_layers.append(module)
+                # Linear layers don't have BN, so add None to bn list
+                if return_layers:
+                    bn.append(None)
+                
+                wbits, abits = module.bits
+                # Convert to Python int if tensor or list
+                if isinstance(wbits, torch.Tensor):
+                    wbits = int(wbits.item())
+                elif isinstance(wbits, (list, tuple)):
+                    wbits = int(wbits[0])
+                else:
+                    wbits = int(wbits)
+                    
+                if isinstance(abits, torch.Tensor):
+                    abits = int(abits.item())
+                elif isinstance(abits, (list, tuple)):
+                    abits = int(abits[0])
+                else:
+                    abits = int(abits)
+                    
+                bitops += wbits*abits*module.in_features*module.out_features
+                model_size += wbits*module.in_features*module.out_features
+            else:
+                # Fixed bits Linear layer (first/last layer)
+                bitops += first_last_layer_act_bits*first_last_layer_weight_bits*module.in_features*module.out_features
+                model_size += first_last_layer_weight_bits*module.in_features*module.out_features
+    
+    # Handle case where last Conv layer had no BN (next_bn still True at end)
+    if next_bn and return_layers:
+        bn.append(None)
     
     bitops /= 1e9
     model_size /= (8*1024*1024)
     
     if return_layers:
-        assert len(quantized_layers) == len(bn)
+        # Debug: print layer information if mismatch
+        if len(quantized_layers) != len(bn):
+            print(f"[DEBUG] Layer count mismatch: quantized_layers={len(quantized_layers)}, bn={len(bn)}")
+            for i, layer in enumerate(quantized_layers):
+                layer_type = "QuanConv2d" if isinstance(layer, QuanConv2d) else "QuanLinear"
+                print(f"  Layer {i}: {layer_type}, bits={layer.bits}, bn={bn[i] if i < len(bn) else 'MISSING'}")
+        assert len(quantized_layers) == len(bn), f"quantized_layers count ({len(quantized_layers)}) != bn count ({len(bn)})"
         return bitops, model_size, quantized_layers, bn
     else:
         return bitops, model_size
@@ -132,7 +196,7 @@ def reset_batchnorm_stats(m):
 @torch.no_grad()
 def calibrate_batchnorm_state(model, loader, num_batch=30, reset=False, distributed_training=True, epoch=0):
 
-    if epoch >= 0 and hasattr(loader, 'sampler'):
+    if epoch >= 0 and hasattr(loader, 'sampler') and hasattr(loader.sampler, 'set_epoch'):
         loader.sampler.set_epoch(epoch)
     model.eval()
 
@@ -150,7 +214,8 @@ def calibrate_batchnorm_state(model, loader, num_batch=30, reset=False, distribu
             model(inputs)
         
     if distributed_training: # all reduce for each GPU
-        distribute_bn(model, world_size=get_world_size(), reduce=True)
+        if dist.is_initialized():
+            distribute_bn(model, world_size=get_world_size(), reduce=True)
     
     model.eval()
 
@@ -184,7 +249,11 @@ def update_meter(meter, loss, QE_loss, dist_loss, IDM_loss, acc1, acc5, size, ba
                 dist_loss.data.reshape(1) if dist_loss is not None and dist_loss != 0 else torch.zeros(1, device=loss.device), 
                 IDM_loss.data.reshape(1) if IDM_loss is not None and IDM_loss != 0 else torch.zeros(1, device=loss.device), 
                  ])
-    reduced_data = reduce_tensor(data, world_size)
+    # Only reduce if distributed training is initialized
+    if dist.is_initialized() and world_size > 1:
+        reduced_data = reduce_tensor(data, world_size)
+    else:
+        reduced_data = data
     reduced_loss, reduced_top1, reduced_top5, reduced_QE_loss, reduced_dist_loss, reduced_IDM_loss = reduced_data
     
     meter['dist_loss'].update(reduced_dist_loss.item(), size)

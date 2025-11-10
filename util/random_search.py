@@ -10,7 +10,9 @@ def do_random_search(loader, model, criterion, metrics, quan_scheduler, topK=30)
     model.eval()
     reset_batchnorm_stats(model)
     
-    loader.sampler.set_epoch(0)
+    # Only set epoch if sampler has set_epoch method (DistributedSampler)
+    if hasattr(loader.sampler, 'set_epoch'):
+        loader.sampler.set_epoch(0)
     inputs, targets = next(iter(loader))
     inputs, targets = inputs.cuda(), targets.cuda()
     model.train()

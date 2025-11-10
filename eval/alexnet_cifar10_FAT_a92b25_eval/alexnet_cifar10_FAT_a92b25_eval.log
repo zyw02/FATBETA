@@ -1,0 +1,113 @@
+2025-11-10 10:29:19,758 - INFO  - Log file for this run: /root/autodl-tmp/retraining-free-quantization/eval/alexnet_cifar10_FAT_a92b25_eval/alexnet_cifar10_FAT_a92b25_eval.log
+2025-11-10 10:29:19,901 - INFO  - Using device: cuda:0
+2025-11-10 10:29:19,901 - INFO  - Bit-width config: ./search/alexnet_cifar10_FAT_a92b25search_bit_width_config.json
+2025-11-10 10:29:19,902 - INFO  - Global random seed set to 42 for reproducibility
+2025-11-10 10:29:19,902 - INFO  - Using seed_list: [42] (will use fixed seed 42 deterministically)
+2025-11-10 10:29:19,902 - INFO  - Testing BER values: [0.02, 0.03, 0.04, 0.05, 0.1]
+2025-11-10 10:29:20,495 - INFO  - Created `alexnet` model for `cifar10` dataset (num_classes=10)
+          Use pre-trained model = False
+2025-11-10 10:29:20,495 - INFO  - Inserting quantizers into the model
+2025-11-10 10:29:21,066 - INFO  - Using checkpoint from command line argument: ./training/alexnet_cifar10_FAT_KL_entropy_progressive_v2/alexnet_cifar10_FAT_KL_entropy_progressive_v2_checkpoint.pth.tar
+2025-11-10 10:29:21,066 - INFO  - Loading checkpoint from ./training/alexnet_cifar10_FAT_KL_entropy_progressive_v2/alexnet_cifar10_FAT_KL_entropy_progressive_v2_checkpoint.pth.tar
+2025-11-10 10:29:21,364 - INFO  - Loaded checkpoint alexnet model (next epoch 200) from ./training/alexnet_cifar10_FAT_KL_entropy_progressive_v2/alexnet_cifar10_FAT_KL_entropy_progressive_v2_checkpoint.pth.tar
+2025-11-10 10:29:21,383 - INFO  - Initializing model output_size with a dummy forward pass
+2025-11-10 10:29:21,651 - INFO  - ✓ Model output_size initialized
+2025-11-10 10:29:21,651 - INFO  - Loading bit-width configuration from: ./search/alexnet_cifar10_FAT_a92b25search_bit_width_config.json
+2025-11-10 10:29:21,652 - INFO  - ✓ Bit-width configuration loaded: 6 layers
+2025-11-10 10:29:23,459 - INFO  - 
+============================================================
+2025-11-10 10:29:23,459 - INFO  - Baseline Evaluation (No Fault Injection)
+2025-11-10 10:29:23,459 - INFO  - ============================================================
+2025-11-10 10:29:23,459 - INFO  - Validation: 10000 samples (128 per mini-batch)
+2025-11-10 10:29:25,098 - INFO  - Arch 0, BitOPs 1.31 G, Size 8.63 MB, Top-1 Acc. 84.03
+2025-11-10 10:29:25,099 - INFO  - Baseline Top-1 Accuracy: 84.03%
+2025-11-10 10:29:25,099 - INFO  - 
+============================================================
+2025-11-10 10:29:25,099 - INFO  - Fault Injection Test 1/5: BER = 2.0e-02
+2025-11-10 10:29:25,099 - INFO  - Performing 1 trials with different random seeds...
+2025-11-10 10:29:25,099 - INFO  - ============================================================
+2025-11-10 10:29:25,099 - INFO  -   Using fixed seed from seed_list: 42 (deterministic)
+2025-11-10 10:29:25,099 - INFO  -   Trial 1/1 (seed=42)...
+2025-11-10 10:29:25,100 - INFO  - Validation: 10000 samples (128 per mini-batch)
+2025-11-10 10:29:27,913 - INFO  - Arch 0, BitOPs 1.31 G, Size 8.63 MB, Top-1 Acc. 78.1
+2025-11-10 10:29:27,913 - INFO  -     Trial 1: Accuracy=78.10%
+2025-11-10 10:29:27,913 - INFO  - 
+BER=2.0e-02: Average Accuracy=78.10% ± 0.00% (over 1 trials)
+2025-11-10 10:29:27,913 - INFO  -   Individual trials: ['78.10']
+2025-11-10 10:29:27,913 - INFO  -   Drop from baseline: 5.93%
+2025-11-10 10:29:27,913 - INFO  - 
+============================================================
+2025-11-10 10:29:27,913 - INFO  - Fault Injection Test 2/5: BER = 3.0e-02
+2025-11-10 10:29:27,914 - INFO  - Performing 1 trials with different random seeds...
+2025-11-10 10:29:27,914 - INFO  - ============================================================
+2025-11-10 10:29:27,914 - INFO  -   Using fixed seed from seed_list: 42 (deterministic)
+2025-11-10 10:29:27,914 - INFO  -   Trial 1/1 (seed=42)...
+2025-11-10 10:29:27,914 - INFO  - Validation: 10000 samples (128 per mini-batch)
+2025-11-10 10:29:30,708 - INFO  - Arch 0, BitOPs 1.31 G, Size 8.63 MB, Top-1 Acc. 76.46
+2025-11-10 10:29:30,709 - INFO  -     Trial 1: Accuracy=76.46%
+2025-11-10 10:29:30,709 - INFO  - 
+BER=3.0e-02: Average Accuracy=76.46% ± 0.00% (over 1 trials)
+2025-11-10 10:29:30,709 - INFO  -   Individual trials: ['76.46']
+2025-11-10 10:29:30,709 - INFO  -   Drop from baseline: 7.57%
+2025-11-10 10:29:30,709 - INFO  - 
+============================================================
+2025-11-10 10:29:30,709 - INFO  - Fault Injection Test 3/5: BER = 4.0e-02
+2025-11-10 10:29:30,709 - INFO  - Performing 1 trials with different random seeds...
+2025-11-10 10:29:30,709 - INFO  - ============================================================
+2025-11-10 10:29:30,709 - INFO  -   Using fixed seed from seed_list: 42 (deterministic)
+2025-11-10 10:29:30,709 - INFO  -   Trial 1/1 (seed=42)...
+2025-11-10 10:29:30,710 - INFO  - Validation: 10000 samples (128 per mini-batch)
+2025-11-10 10:29:33,486 - INFO  - Arch 0, BitOPs 1.31 G, Size 8.63 MB, Top-1 Acc. 75.67
+2025-11-10 10:29:33,487 - INFO  -     Trial 1: Accuracy=75.67%
+2025-11-10 10:29:33,487 - INFO  - 
+BER=4.0e-02: Average Accuracy=75.67% ± 0.00% (over 1 trials)
+2025-11-10 10:29:33,487 - INFO  -   Individual trials: ['75.67']
+2025-11-10 10:29:33,487 - INFO  -   Drop from baseline: 8.36%
+2025-11-10 10:29:33,487 - INFO  - 
+============================================================
+2025-11-10 10:29:33,487 - INFO  - Fault Injection Test 4/5: BER = 5.0e-02
+2025-11-10 10:29:33,487 - INFO  - Performing 1 trials with different random seeds...
+2025-11-10 10:29:33,487 - INFO  - ============================================================
+2025-11-10 10:29:33,487 - INFO  -   Using fixed seed from seed_list: 42 (deterministic)
+2025-11-10 10:29:33,487 - INFO  -   Trial 1/1 (seed=42)...
+2025-11-10 10:29:33,488 - INFO  - Validation: 10000 samples (128 per mini-batch)
+2025-11-10 10:29:36,272 - INFO  - Arch 0, BitOPs 1.31 G, Size 8.63 MB, Top-1 Acc. 70.9
+2025-11-10 10:29:36,272 - INFO  -     Trial 1: Accuracy=70.90%
+2025-11-10 10:29:36,272 - INFO  - 
+BER=5.0e-02: Average Accuracy=70.90% ± 0.00% (over 1 trials)
+2025-11-10 10:29:36,272 - INFO  -   Individual trials: ['70.90']
+2025-11-10 10:29:36,272 - INFO  -   Drop from baseline: 13.13%
+2025-11-10 10:29:36,272 - INFO  - 
+============================================================
+2025-11-10 10:29:36,273 - INFO  - Fault Injection Test 5/5: BER = 1.0e-01
+2025-11-10 10:29:36,273 - INFO  - Performing 1 trials with different random seeds...
+2025-11-10 10:29:36,273 - INFO  - ============================================================
+2025-11-10 10:29:36,273 - INFO  -   Using fixed seed from seed_list: 42 (deterministic)
+2025-11-10 10:29:36,273 - INFO  -   Trial 1/1 (seed=42)...
+2025-11-10 10:29:36,273 - INFO  - Validation: 10000 samples (128 per mini-batch)
+2025-11-10 10:29:39,048 - INFO  - Arch 0, BitOPs 1.31 G, Size 8.63 MB, Top-1 Acc. 10.82
+2025-11-10 10:29:39,048 - INFO  -     Trial 1: Accuracy=10.82%
+2025-11-10 10:29:39,048 - INFO  - 
+BER=1.0e-01: Average Accuracy=10.82% ± 0.00% (over 1 trials)
+2025-11-10 10:29:39,048 - INFO  -   Individual trials: ['10.82']
+2025-11-10 10:29:39,048 - INFO  -   Drop from baseline: 73.21%
+2025-11-10 10:29:39,048 - INFO  - 
+================================================================================
+2025-11-10 10:29:39,048 - INFO  - Summary
+2025-11-10 10:29:39,048 - INFO  - ================================================================================
+2025-11-10 10:29:39,048 - INFO  - Checkpoint: alexnet_cifar10_FAT_KL_entropy_progressive_v2
+2025-11-10 10:29:39,048 - INFO  - Bit Config: alexnet_cifar10_FAT_a92b25search_bit_width_config.json
+2025-11-10 10:29:39,049 - INFO  - --------------------------------------------------------------------------------
+2025-11-10 10:29:39,049 - INFO  - BER          Accuracy (Avg)     Std        Drop        
+2025-11-10 10:29:39,049 - INFO  - --------------------------------------------------------------------------------
+2025-11-10 10:29:39,049 - INFO  - Baseline     84.03              -          0.00        
+2025-11-10 10:29:39,049 - INFO  - 2.0e-02      78.10              0.00       5.93        
+2025-11-10 10:29:39,049 - INFO  - 3.0e-02      76.46              0.00       7.57        
+2025-11-10 10:29:39,049 - INFO  - 4.0e-02      75.67              0.00       8.36        
+2025-11-10 10:29:39,049 - INFO  - 5.0e-02      70.90              0.00       13.13       
+2025-11-10 10:29:39,049 - INFO  - 1.0e-01      10.82              0.00       73.21       
+2025-11-10 10:29:39,049 - INFO  - 
+Note: Each BER value was evaluated 1 times with different random seeds
+2025-11-10 10:29:39,049 - INFO  -       to sample different fault patterns (simulating training distribution).
+2025-11-10 10:29:39,049 - INFO  - 
+Evaluation complete!

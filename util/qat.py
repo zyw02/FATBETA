@@ -15,7 +15,8 @@ def set_bit_width(model, confw, confa):
     for idx, (layer, bn) in enumerate(zip(layers, bns)):
         oldw, olda = layer.bits
         layer.bits = (confw[idx], confa[idx])
-        bn.switch_bn(layer.bits)
+        if bn is not None:  # Some layers (e.g., QuanLinear) don't have BatchNorm
+            bn.switch_bn(layer.bits)
 
 def set_forward_hook_for_quantized_layers(model, features, is_max=False):
     if not is_max:

@@ -1,0 +1,168 @@
+# Experiment name - Single GPU version for 11GB 2080Ti with CIFAR10
+# V2: classifier.1 uses dynamic bits [2,3,4,5,6] instead of fixed 8-bit
+# Fixed: Use multiple seeds to avoid overfitting to single fault pattern
+# Progressive BER: 2e-2 -> 3e-2 -> 4e-2 -> 5e-2 (curriculum learning for high BER robustness)
+name: alexnet_cifar10_FAT_KL_entropy_progressive_v2
+
+# Name of output directory. Checkpoints and logs will be saved at `pwd`/output_dir
+output_dir: training
+training_device: gpu
+
+num_random_path: 3
+target_bits: [6, 5, 4, 3, 2]
+post_training_batchnorm_calibration: true
+# Disable information_distortion_mitigation to save GPU memory
+information_distortion_mitigation: false
+enable_dynamic_bit_training: true
+kd: false
+
+# Dataset loader
+dataloader:
+  dataset: cifar10
+  num_classes: 10
+  path: ./data/cifar10
+  # Batch size for CIFAR10 on 11GB GPU
+  batch_size: 128
+  workers: 4
+  deterministic: true
+
+resume:
+  path: 
+  lean: false
+
+log:
+  num_best_scores: 3
+  print_freq: 20
+
+#============================ Model ============================================
+
+arch: alexnet
+pre_trained: false  # No pre-trained weights for CIFAR AlexNet
+
+#============================ Quantization =====================================
+
+# (default for all layers)
+quan:
+  act: 
+    mode: lsq
+    bit: 2
+    per_channel: false
+    symmetric: false
+    all_positive: true
+
+  weight: 
+    mode: lsq
+    bit: 2
+    per_channel: false
+    symmetric: false
+    all_positive: false
+  
+  excepts:
+    excepts_bits_width: 8
+    # Specify quantized bit width for some layers (first and last layers)
+    # For AlexNet: features.0 (first conv) and classifier.6 (last linear)
+    # NOTE: classifier.1 is removed from excepts using "__delete__" so it can be quantized with dynamic bits [2,3,4,5,6]
+    # Remove classifier.1 from template.yaml (it's only for MobileNetV2)
+    classifier.1: __delete__
+    features.0.0: __delete__  # Remove MobileNetV2 specific keys from template
+    features.0.1: __delete__
+    features.0:  # First conv layer
+      act:
+        bit: 
+        all_positive: false
+      weight:
+        bit:
+    classifier.6:  # Last linear layer (index 6 in classifier Sequential)
+      act:
+        bit:
+        all_positive: false
+      weight:
+        bit:
+
+#============================ Training / Evaluation ============================
+
+eval: false
+
+epochs: 200
+smoothing: 0.0
+scale_gradient: false
+
+opt: sgd
+# Learning rate for CIFAR10 training
+lr: 0.01
+momentum: 0.9
+weight_decay: 0.0001
+adaptive_region_weight_decay: 0
+
+sched: cosine
+min_lr: 0.0
+decay_rate: 0.1
+warmup_epochs: 0
+warmup_lr: 0.0
+decay_epochs: 30
+cooldown_epochs: 0
+
+ema_decay: 0.9997
+
+#============================ Fault-Aware Training (TRADES Style) ================
+# 故障感知训练配置（TRADES风格）
+# 用于提高模型在单粒子翻转故障下的鲁棒性
+# 注意：启用后训练时间会增加约2倍（需要两次forward）
+fault_aware_training:
+  enabled: true  # 设置为true启用故障感知训练
+  ber: 2e-2       # Bit-Error-Rate: 初始BER（渐进式调度会覆盖此值）
+  
+  # TRADES损失函数配置
+  trades:
+    use_kl: true    # 使用KL散度版本（推荐，更符合TRADES原论文）
+                     # true: L = L(x_normal, y) + β * KL(p(x_normal), p(x_faulted))
+                     # false: L = α * L(x_normal, y) + β * L(x_faulted, y)
+    alpha: 0.97     # 正常样本权重（仅当use_kl=false时使用，KL版本中无效）
+    beta: 0.3       # KL散度权重（use_kl=true时使用）
+                    # 降低到0.3，更保护clean accuracy，避免过度关注KL散度
+                    # 较小值（0.3-0.5）：更保护clean accuracy
+                    # 较大值（0.5-1.0）：更强调故障鲁棒性
+    
+    # 信息熵正则化（基于信息论的方法）
+    use_entropy: true  # 启用信息熵正则化
+                       # 在KL散度基础上添加熵约束，进一步稳定模型行为
+    entropy_weight: 0.05  # 熵正则化权重
+                          # 降低到0.05，减少熵约束强度，避免过度保守
+                          # 较小值（0.05-0.1）：温和约束，不影响主要优化目标
+                          # 较大值（0.1-0.2）：更强约束，可能影响clean accuracy
+    entropy_mode: "difference"  # 熵损失模式
+                                # "difference": 最小化正常和故障输出的熵差异（推荐，温和）
+                                #               L_entropy = |H(p_normal) - H(p_faulted)|
+                                # "constraint": 约束故障下的熵不要太大（更严格）
+                                #               L_entropy = max(0, H(p_faulted) - H(p_normal))
+                                # "balance": 平衡正常和故障下的熵，同时约束故障熵（折中）
+                                #            L_entropy = |H(p_normal) - H(p_faulted)| + 0.5 * max(0, H(p_faulted) - 1.2*H(p_normal))
+  
+  # 渐进式BER调度（课程学习：逐步增加BER以提高高BER容错能力）
+  schedule:
+    enabled: true   # 启用调度
+    type: "progressive"  # 渐进式BER模式
+    progressive:
+      start_epoch_ratio: 0.25  # FAT从第50个epoch开始（200 * 0.25 = 50）
+      # 渐进式BER阶段（基于总训练进度的比例）
+      # 注意：代码中Phase 1-2的BER值较小（1e-3, 1e-2），我们跳过它们
+      # Phase 1-2: 设置为0.24，让FAT开始时（epoch 50, progress=0.25）直接进入Phase 3
+      phase1_epochs: 0.24  # 跳过Phase 1 (BER=1e-3)
+      phase2_epochs: 0.24  # 跳过Phase 2 (BER=1e-2)
+      # Phase 3 (epoch 50-90, 20%): BER = 2e-2 - 保持低BER表现
+      phase3_epochs: 0.45  # 45% = epoch 90
+      # Phase 4 (epoch 90-130, 20%): BER = 3e-2 - 当前训练BER
+      phase4_epochs: 0.65  # 65% = epoch 130
+      # Phase 5 (epoch 130-170, 20%): BER = 4e-2 - 继续增加
+      phase5_epochs: 0.85  # 85% = epoch 170
+      # Phase 6 (epoch 170-200, 15%): BER = 5e-2 - 目标高BER
+      phase6_epochs: 1.0   # 100% = epoch 200
+      # Phase 7 不使用（phase6_epochs=1.0会覆盖）
+      phase7_epochs: 1.0
+  
+  # 使用多个seed训练（避免过度拟合单一故障模式）
+  # 训练时：轮询使用这些seed，让模型学习应对多种故障模式，提高泛化能力
+  # 验证时：可以使用相同的seed进行验证
+  # 修复：之前只用seed=42导致模型只学会了应对一种故障模式，在其他BER下表现差
+  seed_list: [42, 100, 200, 300, 400]
+

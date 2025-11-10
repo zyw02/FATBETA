@@ -1,2 +1,53 @@
-
+# Python
 *.pyc
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Data and checkpoints
+data/
+*.pth.tar
+*.pth
+*.ckpt
+*.pt
+*.h5
+*.hdf5
+
+# Training outputs (exclude checkpoints but keep logs)
+training/*/checkpoint.pth.tar
+training/*/epoch_*_checkpoint.pth.tar
+training/*/*_checkpoint.pth.tar
+eval/*/checkpoint.pth.tar
+eval/*/epoch_*_checkpoint.pth.tar
+
+# Search outputs (exclude checkpoints but keep configs)
+search/*/checkpoint.pth.tar
+search/*/epoch_*_checkpoint.pth.tar
+
+# Keep log files
+!training/*/*.log
+!eval/*/*.log
+!search/*/*.log
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb
+
+# Environment
+venv/
+env/
+ENV/
+.venv

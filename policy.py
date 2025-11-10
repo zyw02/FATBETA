@@ -9,6 +9,12 @@ MOBILENETV2_POLICY = {
 }
 
 
-BITS = {
+ALEXNET_POLICY = {
+    
+}
 
+BITS = {
+    'alexnet': ALEXNET_POLICY,
+    'resnet18': RESNET18_POLICY,
+    'mobilenetv2': MOBILENETV2_POLICY,
 }

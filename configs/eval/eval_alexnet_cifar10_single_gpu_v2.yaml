@@ -1,0 +1,101 @@
+# Experiment name - Single GPU evaluation for AlexNet CIFAR10 (V2 model)
+# This config is for evaluating the NEW checkpoint where classifier.1 uses dynamic bits [2,3,4,5,6]
+name: alexnet_cifar10_FAT_a92b25_eval
+
+# Name of output directory. Checkpoints and logs will be saved at `pwd`/output_dir
+output_dir: eval
+training_device: gpu
+
+target_bits: [6, 5, 4, 3, 2]
+post_training_batchnorm_calibration: false  # Usually not needed for evaluation
+information_distortion_mitigation: false
+
+# Dataset loader
+dataloader: 
+  dataset: cifar10
+  num_classes: 10
+  path: ./data/cifar10
+  batch_size: 128
+  workers: 4
+  deterministic: true
+
+resume:
+  path: ./training/alexnet_cifar10_single_gpu_v2/alexnet_cifar10_single_gpu_v2_checkpoint.pth.tar
+  lean: false
+
+log:
+  num_best_scores: 3
+  print_freq: 20
+
+#============================ Model ============================================
+
+arch: alexnet
+pre_trained: false
+
+# Bit-width configuration JSON file from search (if available)
+# This will be loaded to set mixed-precision bit-widths
+bit_width_config_path: ./search/alexnet_cifar10_single_gpu_v2_search_bit_width_config.json
+
+#============================ Quantization =====================================
+
+# (default for all layers)
+quan:
+  act: 
+    mode: lsq
+    bit: 2
+    per_channel: false
+    symmetric: false
+    all_positive: true
+
+  weight: 
+    mode: lsq
+    bit: 2
+    per_channel: false
+    symmetric: false
+    all_positive: false
+  
+  excepts:
+    excepts_bits_width: 8
+    # NEW config: classifier.1 is NOT in excepts, uses dynamic bits [2,3,4,5,6]
+    # Remove classifier.1 from template.yaml (it's only for MobileNetV2)
+    classifier.1: __delete__
+    features.0.0: __delete__  # Remove MobileNetV2 specific keys from template
+    features.0.1: __delete__
+    features.0:  # First conv layer
+      act:
+        bit: 
+        all_positive: false
+      weight:
+        bit:
+    classifier.6:  # Last linear layer (index 6 in classifier Sequential)
+      act:
+        bit:
+        all_positive: false
+      weight:
+        bit:
+
+#============================ Training / Evaluation ============================
+
+search: false
+eval: true
+
+epochs: 1
+smoothing: 0.0
+scale_gradient: false
+
+opt: sgd
+lr: 0.01
+momentum: 0.9
+weight_decay: 0.0001
+adaptive_region_weight_decay: 0
+
+sched: cosine
+min_lr: 0.0
+decay_rate: 0.1
+warmup_epochs: 0
+warmup_lr: 0.0
+decay_epochs: 30
+cooldown_epochs: 0
+
+ema_decay: 0.9997
+

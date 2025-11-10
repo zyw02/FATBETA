@@ -56,6 +56,9 @@ class ModelEma:
             bits_cands_w = []
             bits_cands_a = []
 
+            # Get current model state dict to check shape compatibility
+            model_state_dict = self.ema.state_dict()
+
             for k, v in checkpoint['state_dict_ema'].items():
                 # ema model may have been wrapped by DataParallel, and need module prefix
                 if self.ema_has_module:
@@ -71,7 +74,24 @@ class ModelEma:
                         bits_cands_a.append(checkpoint['state_dict'][k])
                     
                 else:
-                    new_state_dict[name] = v
+                    # Check shape compatibility before adding to state dict
+                    if name in model_state_dict:
+                        if model_state_dict[name].shape == v.shape:
+                            new_state_dict[name] = v
+                        else:
+                            # For quantizer parameters (quan_*.s, init_state), allow shape mismatch
+                            # They will be auto-initialized during forward pass if needed
+                            is_quantizer_param = any(pattern in name for pattern in ['quan_w_fn.s', 'quan_a_fn.s', 'quan_w_fn.init_state', 'quan_a_fn.init_state'])
+                            if is_quantizer_param:
+                                _logger.info(f"Skipping quantizer parameter '{name}' due to shape mismatch: "
+                                           f"checkpoint shape {v.shape} vs model shape {model_state_dict[name].shape} "
+                                           f"(will be auto-initialized during forward pass)")
+                            else:
+                                _logger.warning(f"Skipping parameter '{name}' due to shape mismatch: "
+                                              f"checkpoint shape {v.shape} vs model shape {model_state_dict[name].shape}")
+                    else:
+                        # Key not in model, skip it
+                        pass
 
             self.ema.load_state_dict(new_state_dict, strict=False)
             if not reset_bits_cands:

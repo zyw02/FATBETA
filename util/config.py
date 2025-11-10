@@ -11,8 +11,19 @@ import yaml
 def merge_nested_dict(d, other):
     new = dict(d)
     for k, v in other.items():
+        # Special marker to delete a key: use "__delete__" as value
+        if v == "__delete__":
+            if k in new:
+                del new[k]
+            continue
         if d.get(k, None) is not None and type(v) is dict:
-            new[k] = merge_nested_dict(d[k], v)
+            merged = merge_nested_dict(d[k], v)
+            # If merged dict is empty or contains only "__delete__" markers, remove the key
+            if merged and not all(v == "__delete__" for v in merged.values()):
+                new[k] = merged
+            else:
+                # Remove keys that were marked for deletion
+                new[k] = {k2: v2 for k2, v2 in merged.items() if v2 != "__delete__"}
         else:
             new[k] = v
     return new
@@ -25,6 +36,10 @@ def get_config(default_file):
     p.add_argument("--local_rank", default=0, type=int)
     p.add_argument("--enable_dynamic_bit_training", type=bool, default=True)
     p.add_argument("--split_aw_cands", type=bool, default=False)
+    # Support for command line arguments that override YAML config
+    # Use dot notation for nested keys, e.g., --dataloader.path /path/to/data
+    p.add_argument("--bit_width_config_path", type=str, default=None,
+                   help='path to bit width configuration JSON file from search')
     arg = p.parse_args()
 
     with open(default_file) as yaml_file:
@@ -42,6 +57,9 @@ def get_config(default_file):
         args.enable_dynamic_bit_training = arg.enable_dynamic_bit_training
     if 'split_aw_cands' not in args:
         args.split_aw_cands = arg.split_aw_cands
+    # Override with command line argument if provided
+    if arg.bit_width_config_path is not None:
+        args.bit_width_config_path = arg.bit_width_config_path
 
     print(args)
 
