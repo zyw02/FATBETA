@@ -45,6 +45,30 @@ def remove_hook_for_quantized_layers(hooks):
     for h in hooks:
         h.remove()
 
+
+def set_forward_hook_for_conv_linear_layers(model, activations_container: list):
+    """
+    为所有QuanConv2d和QuanLinear层注册forward hook，用于提取激活值。
+    
+    Args:
+        model: 模型
+        activations_container: 用于存储激活值的列表，每个元素是一个层的激活值
+    
+    Returns:
+        hooks: hook列表，用于后续移除
+    """
+    def activation_hook(module, inp, out):
+        # 保存激活值（使用detach避免梯度计算）
+        activations_container.append(out.detach())
+    
+    hooks = []
+    for name, module in model.named_modules():
+        from quan.func import QuanConv2d, QuanLinear
+        if isinstance(module, (QuanConv2d, QuanLinear)):
+            hooks.append(module.register_forward_hook(activation_hook))
+    
+    return hooks
+
 def profile_layerwise_quantization_metric(model: nn.Module, proportion=0.25):
     num_shifed_ls = []
 

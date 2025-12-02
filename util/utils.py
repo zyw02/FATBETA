@@ -8,6 +8,11 @@ import numpy as np
 import random
 import torch.nn as nn
 from timm.scheduler import create_scheduler
+import os
+import shutil
+import logging
+
+logger = logging.getLogger()
 
 def create_optimizer_and_lr_scheduler(model, configs):
     all_parameters = model.parameters()
@@ -244,10 +249,28 @@ def accuracy(output, target, topk=(1,)):
 
 
 def update_meter(meter, loss, QE_loss, dist_loss, IDM_loss, acc1, acc5, size, batch_time, world_size):
-    data = torch.cat([loss.data.reshape(1), acc1.reshape(1), acc5.reshape(1), 
-                QE_loss.data.reshape(1) if QE_loss is not None and QE_loss != 0 else torch.zeros(1, device=loss.device), 
-                dist_loss.data.reshape(1) if dist_loss is not None and dist_loss != 0 else torch.zeros(1, device=loss.device), 
-                IDM_loss.data.reshape(1) if IDM_loss is not None and IDM_loss != 0 else torch.zeros(1, device=loss.device), 
+    # 确保loss是tensor，如果是标量则转换为tensor
+    if not isinstance(loss, torch.Tensor):
+        if loss is None or loss == 0:
+            loss = torch.tensor(0.0)
+        else:
+            loss = torch.tensor(float(loss))
+    
+    # 获取device（如果loss是tensor）
+    device = loss.device if isinstance(loss, torch.Tensor) else torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    
+    # 确保loss是可reshape的
+    if isinstance(loss, torch.Tensor) and loss.dim() == 0:
+        loss_reshaped = loss.reshape(1)
+    elif isinstance(loss, torch.Tensor):
+        loss_reshaped = loss.data.reshape(1) if hasattr(loss, 'data') else loss.reshape(1)
+    else:
+        loss_reshaped = torch.tensor([float(loss)], device=device)
+    
+    data = torch.cat([loss_reshaped, acc1.reshape(1), acc5.reshape(1), 
+                QE_loss.data.reshape(1) if QE_loss is not None and QE_loss != 0 and isinstance(QE_loss, torch.Tensor) else torch.zeros(1, device=device), 
+                dist_loss.data.reshape(1) if dist_loss is not None and dist_loss != 0 and isinstance(dist_loss, torch.Tensor) else torch.zeros(1, device=device), 
+                IDM_loss.data.reshape(1) if IDM_loss is not None and IDM_loss != 0 and isinstance(IDM_loss, torch.Tensor) else torch.zeros(1, device=device), 
                  ])
     # Only reduce if distributed training is initialized
     if dist.is_initialized() and world_size > 1:
@@ -263,3 +286,62 @@ def update_meter(meter, loss, QE_loss, dist_loss, IDM_loss, acc1, acc5, size, ba
     meter['top1'].update(reduced_top1.item(), size)
     meter['top5'].update(reduced_top5.item(), size)
     meter['batch_time'].update(batch_time)
+
+
+def copy_code(logger, src=None, dst="./code/", exclude_dirs=None, exclude_files=None):
+    """
+    Copy code files from source directory to destination directory.
+    Similar to SAQ's copy_code function, saves experiment code for reproducibility.
+    
+    Args:
+        logger: Logger instance
+        src: Source directory (default: current working directory)
+        dst: Destination directory (default: "./code/")
+        exclude_dirs: List of directory names to exclude (default: ["output", "log", "training", "eval", "search", "data", "__pycache__", ".git"])
+        exclude_files: List of file patterns to exclude (default: ["__pycache__", ".pyc", ".pyo"])
+    """
+    if src is None:
+        src = os.path.abspath(".")
+    
+    if exclude_dirs is None:
+        exclude_dirs = ["output", "log", "training", "eval", "search", "data", "__pycache__", ".git", "code"]
+    
+    if exclude_files is None:
+        exclude_files = ["__pycache__", ".pyc", ".pyo", ".pth", ".pth.tar", ".ckpt", ".pt"]
+    
+    # Only copy on main process (rank 0)
+    if dist.is_initialized() and dist.get_rank() != 0:
+        return
+    if not dist.is_initialized() or dist.get_rank() == 0:
+        try:
+            for f in os.listdir(src):
+                # Skip excluded directories and files
+                if f in exclude_dirs:
+                    continue
+                if any(pattern in f for pattern in exclude_files):
+                    continue
+                
+                src_file = os.path.join(src, f)
+                
+                # Copy Python files
+                if f.endswith(".py"):
+                    if not os.path.isdir(dst):
+                        os.makedirs(dst, exist_ok=True)
+                    dst_file = os.path.join(dst, f)
+                    try:
+                        shutil.copy2(src=src_file, dst=dst_file)
+                        logger.info(f"Copied code file: {f}")
+                    except Exception as e:
+                        logger.warning(f"Failed to copy file {src_file} to {dst_file}: {e}")
+                
+                # Recursively copy directories (but skip excluded ones)
+                elif os.path.isdir(src_file):
+                    # Skip if it's an excluded directory
+                    if f in exclude_dirs:
+                        continue
+                    deeper_dst = os.path.join(dst, f)
+                    copy_code(logger, src=src_file, dst=deeper_dst, exclude_dirs=exclude_dirs, exclude_files=exclude_files)
+            
+            logger.info(f"Code backup completed. Code saved to: {dst}")
+        except Exception as e:
+            logger.error(f"Error during code backup: {e}")

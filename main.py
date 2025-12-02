@@ -10,6 +10,7 @@ import torch.distributed as dist
 from model import create_model
 from util import (ProgressMonitor, TensorBoardMonitor, 
                   get_config, init_logger, set_global_seed, setup_print, load_checkpoint, save_checkpoint, preprocess_model, init_dataloader)
+from util.utils import copy_code
 from util.mpq import sample_min_cands, switch_bit_width
 from util.greedy_search import search, reset_bit_cands
 from util.model_ema import ModelEma
@@ -23,6 +24,7 @@ from policy import BITS
 from process import train, validate, PerformanceScoreboard
 from evolution_search import EvolutionSearcher
 from util.fault_injector import FaultInjector
+from util.output_corrector import create_output_corrector
 
 
 def init_logger_and_monitor(configs, script_dir):
@@ -61,6 +63,12 @@ def main():
     monitors = [pymonitor, tbmonitor]
 
     setup_print(is_master=(configs.local_rank == 0))
+    
+    # Backup code for experiment reproducibility (similar to SAQ)
+    if not configs.eval and not configs.search:
+        code_dst = os.path.join(log_dir, "code")
+        copy_code(logger, src=str(script_dir), dst=code_dst)
+    
     set_global_seed(seed=0)
 
     teacher_model = None
@@ -104,6 +112,68 @@ def main():
 
     optimizer, optimizer_q, lr_scheduler, lr_scheduler_q = create_optimizer_and_lr_scheduler(
         model, configs)
+    
+    # 初始化输出修正器（如果启用故障感知训练）
+    output_corrector = None
+    if not configs.eval and not configs.search:
+        fault_aware_training_config = getattr(configs, 'fault_aware_training', None)
+        if fault_aware_training_config is not None and getattr(fault_aware_training_config, 'enabled', False):
+            trades_config = getattr(fault_aware_training_config, 'trades', {})
+            use_corrector = getattr(trades_config, 'use_corrector', False)
+            if use_corrector:
+                num_classes = configs.dataloader.num_classes
+                wmid_tau = getattr(trades_config, 'corrector_wmid_tau', 2.0)
+                wmid_beta = getattr(trades_config, 'corrector_wmid_beta', 2.0)
+                logits_feature_dim = getattr(trades_config, 'corrector_logits_feature_dim', 32)
+                fusion_hidden_dim = getattr(trades_config, 'corrector_fusion_hidden_dim', 128)
+                gap_stats_momentum = getattr(trades_config, 'corrector_gap_stats_momentum', 0.95)
+                direction_deadzone = getattr(trades_config, 'corrector_direction_deadzone', 0.05)
+                anchor_ber = getattr(trades_config, 'corrector_anchor_ber', getattr(fault_aware_training_config, 'ber', 2e-2))
+                ber_bucket_centers = getattr(trades_config, 'corrector_ber_buckets', None)
+                # AlexNet的中间层数量（根据模型架构确定）
+                num_layers = 8  # AlexNet约8层（conv1-5 + fc6-8）
+                output_corrector = create_output_corrector(
+                    num_classes=num_classes,
+                    num_layers=num_layers,
+                    device=torch.device('cuda'),
+                    wmid_tau=wmid_tau,
+                    wmid_beta=wmid_beta,
+                    logits_feature_dim=logits_feature_dim,
+                    fusion_hidden_dim=fusion_hidden_dim,
+                    max_correction=getattr(trades_config, 'corrector_max_correction', 3.0),
+                    gap_stats_momentum=gap_stats_momentum,
+                    direction_deadzone=direction_deadzone,
+                    anchor_ber=anchor_ber,
+                    ber_bucket_centers=ber_bucket_centers
+                )
+                output_corrector.set_runtime_context(ber=0.0, stage='train')
+                # 创建独立的corrector optimizer（完全独立于模型训练）
+                corrector_params = list(output_corrector.parameters())
+                corrector_optimizer = torch.optim.Adam(
+                    corrector_params,
+                    lr=getattr(trades_config, 'corrector_lr', configs.lr * 0.1),  # 可以使用不同的学习率
+                    weight_decay=configs.weight_decay
+                )
+                corrector_lr_scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
+                    corrector_optimizer, T_max=configs.epochs, eta_min=0
+                )
+                logger_info(logger, '=' * 80)
+                logger_info(logger, '🔧 OUTPUT CORRECTOR - ENABLED (INDEPENDENT TRAINING)')
+                logger_info(logger, '=' * 80)
+                logger_info(logger, f'  ✅ Corrector initialized: {num_classes} classes')
+                logger_info(logger, f'  ✅ Parameters: {output_corrector.get_num_parameters()} total')
+                logger_info(logger, f'  ✅ Independent optimizer: Adam (lr={corrector_optimizer.param_groups[0]["lr"]})')
+                logger_info(logger, '  ✅ Corrector training is completely independent from model training')
+                logger_info(logger, '=' * 80)
+            else:
+                corrector_optimizer = None
+                corrector_lr_scheduler = None
+        else:
+            corrector_optimizer = None
+            corrector_lr_scheduler = None
+    else:
+        corrector_optimizer = None
+        corrector_lr_scheduler = None
 
     start_epoch = 0
 
@@ -119,7 +189,8 @@ def main():
     
     if configs.resume.path and os.path.exists(configs.resume.path):
         model, start_epoch, _ = load_checkpoint(model, configs.resume.path, 'cuda', lean=configs.resume.lean, optimizer=optimizer, override_optim=configs.eval,
-                                                lr_scheduler=lr_scheduler, lr_scheduler_q=lr_scheduler_q, optimizer_q=optimizer_q)
+                                                lr_scheduler=lr_scheduler, lr_scheduler_q=lr_scheduler_q, optimizer_q=optimizer_q,
+                                                output_corrector=output_corrector, corrector_optimizer=corrector_optimizer)
         reset_bn_cands = not (getattr(configs, "eval", False) or getattr(configs, "search", False))
         
         w_cands, a_cands = target_model._load_checkpoint(configs.resume.path, )
@@ -355,7 +426,9 @@ def main():
                                            optimizer_q=optimizer_q, mode=mode, 
                                            annealing_schedule=annealing_schedule,
                                            freezing_annealing_schedule=freezing_annealing_schedule,
-                                           fault_injector=fault_injector
+                                           fault_injector=fault_injector,
+                                           output_corrector=output_corrector,
+                                           corrector_optimizer=corrector_optimizer
                                            )
             
             # 如果有验证阶段，也需要记录验证时间
@@ -410,6 +483,10 @@ def main():
 
             if lr_scheduler_q is not None:
                 lr_scheduler_q.step()
+            
+            # 更新corrector的学习率（独立于模型）
+            if corrector_lr_scheduler is not None:
+                corrector_lr_scheduler.step()
 
             tbmonitor_add_scalars(tbmonitor, 'Train_vs_Validation/Loss', {'train': t_loss, 'val': v_loss}, epoch)
             tbmonitor_add_scalars(tbmonitor, 'Train_vs_Validation/Top1', {'train': t_top1, 'val': v_top1}, epoch)
@@ -423,11 +500,13 @@ def main():
                             {
                                 'top1': v_top1, 'top5': v_top5
                             },
-                            False, configs.name, log_dir, lr_scheduler=lr_scheduler, lr_scheduler_q=lr_scheduler_q, optimizer_q=optimizer_q)
+                            False, configs.name, log_dir, lr_scheduler=lr_scheduler, lr_scheduler_q=lr_scheduler_q, optimizer_q=optimizer_q,
+                            output_corrector=output_corrector, corrector_optimizer=corrector_optimizer)
 
             if epoch % 20 == 0:
                 save_checkpoint(epoch, configs.arch, model, target_model, optimizer, {
-                    'top1': v_top1, 'top5': v_top5}, False, f'epoch_{str(epoch)}_checkpoint.pth.tar', log_dir, lr_scheduler=lr_scheduler, lr_scheduler_q=lr_scheduler_q, optimizer_q=optimizer_q)
+                    'top1': v_top1, 'top5': v_top5}, False, f'epoch_{str(epoch)}_checkpoint.pth.tar', log_dir, lr_scheduler=lr_scheduler, lr_scheduler_q=lr_scheduler_q, optimizer_q=optimizer_q,
+                    output_corrector=output_corrector, corrector_optimizer=corrector_optimizer)
     
     # 训练结束后打印seed使用统计
     if fault_injector is not None and hasattr(fault_injector, 'print_seed_usage_stats'):

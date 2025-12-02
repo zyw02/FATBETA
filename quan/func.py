@@ -105,10 +105,41 @@ class QuanConv2d(torch.nn.Conv2d):
             else:
                 wbits, abits = self.bits
 
-            weight = self.quan_w_fn(weight, wbits, is_activation=False)
+            # 量化权重
+            quantized_weight = self.quan_w_fn(weight, wbits, is_activation=False)
+            
+            # ⭐ SAM支持：保存量化权重并添加扰动（仅在训练模式）
+            if self.training:
+                # 保存量化权重（用于SAM）
+                if quantized_weight.requires_grad:
+                    quantized_weight.retain_grad()
+                self.quantized_weight = quantized_weight
+                
+                # 如果设置了epsilon（SAM ascent step后），添加扰动
+                if hasattr(self, 'epsilon') and self.epsilon is not None:
+                    quantized_weight = quantized_weight + self.epsilon
+            else:
+                # 评估/故障注入模式：清除状态，避免意外使用
+                self.quantized_weight = None
+                if hasattr(self, 'epsilon'):
+                    self.epsilon = None
+                # 使用量化权重（不添加扰动）
+                weight = quantized_weight
+            
+            # 量化激活
             x = self.quan_a_fn(x, abits, is_activation=True)
+            
+            # 使用量化权重进行卷积
+            if self.training and hasattr(self, 'quantized_weight') and self.quantized_weight is not None:
+                # 训练模式：使用可能被扰动的量化权重
+                out = F.conv2d(x, weight=quantized_weight, stride=self.stride, padding=self.padding, groups=self.groups)
+            else:
+                # 评估模式：使用标准量化权重
+                out = F.conv2d(x, weight=weight, stride=self.stride, padding=self.padding, groups=self.groups)
 
-        out = F.conv2d(x, weight=weight, stride=self.stride, padding=self.padding, groups=self.groups)
+        else:
+            # 未量化：直接使用原始权重
+            out = F.conv2d(x, weight=weight, stride=self.stride, padding=self.padding, groups=self.groups)
 
         self.output_size = out.shape[-1]**2
         return out
@@ -187,12 +218,38 @@ class QuanLinear(torch.nn.Linear):
                 wbits, abits = self.fixed_bits
             else:
                 wbits, abits = self.bits
-            weight = self.quan_w_fn(self.weight, wbits, is_activation=False)
+            
+            # 量化权重
+            quantized_weight = self.quan_w_fn(self.weight, wbits, is_activation=False)
+            
+            # ⭐ SAM支持：保存量化权重并添加扰动（仅在训练模式）
+            if self.training:
+                # 保存量化权重（用于SAM）
+                if quantized_weight.requires_grad:
+                    quantized_weight.retain_grad()
+                self.quantized_weight = quantized_weight
+                
+                # 如果设置了epsilon（SAM ascent step后），添加扰动
+                if hasattr(self, 'epsilon') and self.epsilon is not None:
+                    quantized_weight = quantized_weight + self.epsilon
+            else:
+                # 评估/故障注入模式：清除状态，避免意外使用
+                self.quantized_weight = None
+                if hasattr(self, 'epsilon'):
+                    self.epsilon = None
+            
+            # 量化激活
             x = self.quan_a_fn(x, abits, floor_tensor=False, is_activation=True)
 
             bias = self.bias
             
-            return F.linear(x, weight, bias)
+            # 使用量化权重进行线性变换
+            if self.training and hasattr(self, 'quantized_weight') and self.quantized_weight is not None:
+                # 训练模式：使用可能被扰动的量化权重
+                return F.linear(x, quantized_weight, bias)
+            else:
+                # 评估模式：使用标准量化权重
+                return F.linear(x, quantized_weight, bias)
         else:
             return F.linear(x, self.weight, self.bias)
 

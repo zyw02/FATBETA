@@ -94,7 +94,7 @@ def filter_optimizer_state(optimizer, optimizer_state, model):
     return filtered_state
 
 @master_only
-def save_checkpoint(epoch, arch, model, target_model, optimizer, extras=None, is_best=None, name=None, output_dir='.', lr_scheduler=None, lr_scheduler_q=None, optimizer_q=None):
+def save_checkpoint(epoch, arch, model, target_model, optimizer, extras=None, is_best=None, name=None, output_dir='.', lr_scheduler=None, lr_scheduler_q=None, optimizer_q=None, output_corrector=None, corrector_optimizer=None, sensitive_restorer=None, sensitive_optimizer=None, sensitive_lr_scheduler=None):
     """Save a pyTorch training checkpoint
     Args:
         epoch: current epoch number
@@ -124,12 +124,31 @@ def save_checkpoint(epoch, arch, model, target_model, optimizer, extras=None, is
         'state_dict': get_state_dict(model), 
         'arch': arch,
         'extras': extras,
-        'optimizer': optimizer.state_dict(), 
-        'state_dict_ema': get_state_dict(unwrap_model(target_model.ema)), 
-        'lr_scheduler': lr_scheduler.state_dict(), 
-        'lr_scheduler_q': lr_scheduler_q.state_dict(), 
-        'optimizer_q': optimizer_q.state_dict(), 
+        'optimizer': optimizer.state_dict() if optimizer else None,
+        'lr_scheduler': lr_scheduler.state_dict() if lr_scheduler else None,
+        'lr_scheduler_q': lr_scheduler_q.state_dict() if lr_scheduler_q else None,
+        'optimizer_q': optimizer_q.state_dict() if optimizer_q else None,
     }
+
+    if target_model is not None:
+        # Check if target_model has ema attribute (for EMA models)
+        if hasattr(target_model, 'ema') and target_model.ema is not None:
+            checkpoint['state_dict_ema'] = get_state_dict(unwrap_model(target_model.ema))
+        else:
+            checkpoint['state_dict_ema'] = None
+    else:
+        checkpoint['state_dict_ema'] = None
+
+    if output_corrector is not None:
+        checkpoint['output_corrector'] = output_corrector.state_dict()
+    if corrector_optimizer is not None:
+        checkpoint['corrector_optimizer'] = corrector_optimizer.state_dict()
+    if sensitive_restorer is not None:
+        checkpoint['sensitive_restorer'] = sensitive_restorer.state_dict()
+    if sensitive_optimizer is not None:
+        checkpoint['sensitive_optimizer'] = sensitive_optimizer.state_dict()
+    if sensitive_lr_scheduler is not None:
+        checkpoint['sensitive_lr_scheduler'] = sensitive_lr_scheduler.state_dict()
 
     msg = '([%d] Epoch) Saving checkpoint to:\n' % epoch
     msg += '             Current: %s\n' % filepath
@@ -140,7 +159,7 @@ def save_checkpoint(epoch, arch, model, target_model, optimizer, extras=None, is
     logger.info(msg)
 
 
-def load_checkpoint(model:nn.Module, chkp_file, model_device=None, strict=True, lean=False, optimizer=None, override_optim=False, lr_scheduler=None, lr_scheduler_q=None, optimizer_q=None):
+def load_checkpoint(model:nn.Module, chkp_file, model_device=None, strict=True, lean=False, optimizer=None, override_optim=False, lr_scheduler=None, lr_scheduler_q=None, optimizer_q=None, output_corrector=None, corrector_optimizer=None, sensitive_restorer=None, sensitive_optimizer=None):
     """Load a pyTorch training checkpoint.
     Args:
         model: the pyTorch model to which we will load the parameters.  You can
@@ -274,6 +293,34 @@ def load_checkpoint(model:nn.Module, chkp_file, model_device=None, strict=True, 
             
 
     model.cuda()
+
+    if output_corrector is not None and 'output_corrector' in checkpoint:
+        try:
+            output_corrector.load_state_dict(checkpoint['output_corrector'])
+            logger.info("Loaded output corrector state from checkpoint")
+        except Exception as e:
+            logger.warning(f"Failed to load output corrector state: {e}. Continuing with fresh corrector state.")
+
+    if corrector_optimizer is not None and 'corrector_optimizer' in checkpoint and not override_optim:
+        try:
+            corrector_optimizer.load_state_dict(checkpoint['corrector_optimizer'])
+            logger.info("Loaded corrector optimizer state from checkpoint")
+        except Exception as e:
+            logger.warning(f"Failed to load corrector optimizer state: {e}. Continuing with fresh optimizer state.")
+
+    if sensitive_restorer is not None and 'sensitive_restorer' in checkpoint:
+        try:
+            sensitive_restorer.load_state_dict(checkpoint['sensitive_restorer'])
+            logger.info("Loaded sensitive restorer state from checkpoint")
+        except Exception as e:
+            logger.warning(f"Failed to load sensitive restorer state: {e}. Continuing with fresh state.")
+
+    if sensitive_optimizer is not None and 'sensitive_optimizer' in checkpoint and not override_optim:
+        try:
+            sensitive_optimizer.load_state_dict(checkpoint['sensitive_optimizer'])
+            logger.info("Loaded sensitive optimizer state from checkpoint")
+        except Exception as e:
+            logger.warning(f"Failed to load sensitive optimizer state: {e}. Continuing with fresh optimizer state.")
 
     if lean:
         logger.info("Loaded checkpoint %s model (next epoch %d) from %s", arch, 0, chkp_file)

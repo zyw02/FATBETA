@@ -176,7 +176,98 @@ def get_meters(mode, target_bits, nr_random_sample, sample_current_max, sample_c
     
     return meters, num_fixed_sample
 
-def train(train_loader, model, criterion, optimizer, epoch, monitors, configs, model_ema=None, nr_random_sample=2, mode='training', soft_criterion=None, teacher_model=None, optimizer_q=None, annealing_schedule=None, freezing_annealing_schedule=None, IDM_weight=0.01, scaler=None, fault_injector=None):
+def train(train_loader, model, criterion, optimizer, epoch, monitors, configs, model_ema=None, nr_random_sample=2, mode='training', soft_criterion=None, teacher_model=None, optimizer_q=None, annealing_schedule=None, freezing_annealing_schedule=None, IDM_weight=0.01, scaler=None, fault_injector=None, output_corrector=None, corrector_optimizer=None, device=None):
+    is_restorer_training = (optimizer is None and output_corrector is not None and corrector_optimizer is not None)
+    if is_restorer_training:
+        if device is None:
+            device = next(model.parameters()).device
+        logger_info(logger, f'Entered Stage 2 Restorer Training mode for epoch {epoch}.')
+        model.eval()
+        output_corrector.train()
+        meters = {
+            'restorer_loss': AverageMeter(),
+            'clean_acc': AverageMeter(),
+            'faulted_acc': AverageMeter(),
+            'restored_acc': AverageMeter(),
+            'improvement': AverageMeter(),
+            'batch_time': AverageMeter()
+        }
+        end = time.time()
+        for batch_idx, (inputs, targets) in enumerate(train_loader):
+            inputs = inputs.cuda(non_blocking=True)
+            targets = targets.cuda(non_blocking=True)
+            corrector_optimizer.zero_grad()
+            if fault_injector:
+                # For restorer training: sample BER using Beta distribution (中间胖，两头瘦)
+                if hasattr(fault_injector, 'use_random_flip_in_training') and fault_injector.use_random_flip_in_training:
+                    import numpy as np
+                    ber_min = 1e-2
+                    ber_max = 1e-1
+                    beta_alpha = 2.0  # Beta distribution shape parameter
+                    beta_beta = 2.0  # Beta distribution shape parameter
+                    # Beta(2, 2) gives a bell-shaped distribution (中间胖，两头瘦)
+                    beta_sample = np.random.beta(beta_alpha, beta_beta)
+                    effective_ber = ber_min + (ber_max - ber_min) * beta_sample
+                    fault_injector.ber = effective_ber
+                fault_injector.disable()
+            with torch.no_grad():
+                logits_clean = model(inputs)
+            if fault_injector:
+                fault_injector.enable()
+                fault_injector.reset_forward_seed()
+            collector = getattr(output_corrector, 'collector', None)
+            if collector is not None:
+                try:
+                    # Re-register hooks if they were removed during validation
+                    if not getattr(collector, 'handles', None) or len(collector.handles) == 0:
+                        collector._register_hooks()
+                    collector.clear()
+                except Exception:
+                    pass
+            with torch.no_grad():
+                logits_faulted = model(inputs)
+            if collector is not None:
+                _res = collector.build_layer_features(inputs.device)
+                if isinstance(_res, tuple):
+                    layer_features = _res[0]
+                else:
+                    layer_features = _res
+                if not layer_features:
+                    layer_features = []
+            else:
+                layer_features = []
+            logits_restored, _gate = output_corrector(logits_faulted.detach(), layer_features)
+            ce_loss = F.cross_entropy(logits_restored, targets)
+            kl_loss = torch.tensor(0.0, device=inputs.device)
+            if getattr(configs.sensitive_restorer, 'kl_div_weight', 0) > 0:
+                T = getattr(configs.sensitive_restorer, 'temperature', 1.0)
+                kl_loss = F.kl_div(
+                    F.log_softmax(logits_restored / T, dim=1),
+                    F.softmax(logits_clean.detach() / T, dim=1),
+                    reduction='batchmean'
+                )
+            dir_loss = torch.tensor(0.0, device=inputs.device)
+            if getattr(configs.sensitive_restorer, 'direction_weight', 0) > 0:
+                pred_delta = logits_restored - logits_faulted.detach()
+                target_delta = logits_clean.detach() - logits_faulted.detach()
+                dir_loss = 1 - F.cosine_similarity(pred_delta, target_delta, dim=-1).mean()
+            total_loss = ce_loss + getattr(configs.sensitive_restorer, 'kl_div_weight', 0) * kl_loss + getattr(configs.sensitive_restorer, 'direction_weight', 0) * dir_loss
+            total_loss.backward()
+            corrector_optimizer.step()
+            with torch.no_grad():
+                clean_acc, _ = accuracy(logits_clean, targets, topk=(1, 5))
+                faulted_acc, _ = accuracy(logits_faulted, targets, topk=(1, 5))
+                restored_acc, _ = accuracy(logits_restored, targets, topk=(1, 5))
+                meters['restorer_loss'].update(total_loss.item(), inputs.size(0))
+                meters['clean_acc'].update(clean_acc.item(), inputs.size(0))
+                meters['faulted_acc'].update(faulted_acc.item(), inputs.size(0))
+                meters['restored_acc'].update(restored_acc.item(), inputs.size(0))
+                meters['improvement'].update(restored_acc.item() - faulted_acc.item(), inputs.size(0))
+            meters['batch_time'].update(time.time() - end)
+            end = time.time()
+            if (batch_idx + 1) % configs.log.print_freq == 0:
+                logger_info(logger, f"Epoch: [{epoch}][{batch_idx+1}/{len(train_loader)}] | Time {meters['batch_time'].val:.3f} ({meters['batch_time'].avg:.3f}) | Loss {meters['restorer_loss'].avg:.4f} | Accs(C/F/R): {meters['clean_acc'].avg:.2f}/{meters['faulted_acc'].avg:.2f}/{meters['restored_acc'].avg:.2f} | Gain {meters['improvement'].avg:+.2f}%")
+        return meters['restored_acc'].avg, 0, meters['restorer_loss'].avg
     assert mode in ['finetuning', 'training']
 
     target_bits = configs.target_bits
