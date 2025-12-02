@@ -10,6 +10,7 @@
 """
 
 import argparse
+import json
 import sys
 from pathlib import Path
 
@@ -27,17 +28,14 @@ from util.fault_injector import FaultInjector, setup_model_with_bit_width_config
 from util.olm_encoder import create_olm_encoder
 
 
-def evaluate_model(model, dataloader, device, max_samples=None):
-    """评估模型准确率"""
+def evaluate_model(model, dataloader, device):
+    """评估模型准确率（在整个验证集上）"""
     model.eval()
     correct = 0
     total = 0
     
     with torch.no_grad():
         for batch_idx, (inputs, targets) in enumerate(dataloader):
-            if max_samples is not None and total >= max_samples:
-                break
-            
             inputs, targets = inputs.to(device), targets.to(device)
             outputs = model(inputs)
             _, predicted = outputs.max(1)
@@ -54,24 +52,26 @@ def main():
     parser.add_argument('--ckpt', type=str, required=True, help='Checkpoint path')
     parser.add_argument('--bit_width_config', type=str, help='Bit-width config JSON file')
     parser.add_argument('--ber', type=float, default=1e-1, help='Bit error rate')
-    parser.add_argument('--num_samples', type=int, default=10, help='Number of samples for evaluation')
     parser.add_argument('--layer', type=str, default='features.0', help='Layer to test')
     parser.add_argument('--device', type=str, default='cuda', help='Device')
     parser.add_argument('--seed', type=int, default=42, help='Random seed')
+    parser.add_argument('--olm_json', type=str, default=None, help='Path to OLM encoding JSON file (if provided, will load from file instead of generating)')
     
     args = parser.parse_args()
     
     # 加载配置
-    original_argv = sys.argv
-    sys.argv = [sys.argv[0], '--config', args.config]
-    config = get_config()
-    sys.argv = original_argv
+    original_argv = sys.argv.copy()
+    sys.argv = [sys.argv[0], args.config]
+    try:
+        config = get_config(default_file=args.config)
+    finally:
+        sys.argv = original_argv
     
     device = torch.device(args.device if torch.cuda.is_available() else 'cpu')
     torch.manual_seed(args.seed)
     
     # 创建模型
-    model = create_model(config)
+    model = create_model(config.arch, dataset=config.dataloader.dataset, pre_trained=config.pre_trained)
     model = model.to(device)
     
     # 应用量化
@@ -83,22 +83,25 @@ def main():
         setup_model_with_bit_width_config(model, args.bit_width_config, verbose=True)
     
     # 加载checkpoint
-    load_checkpoint(model, args.ckpt, device=device)
+    load_checkpoint(model, args.ckpt, model_device=device)
     
     # 准备数据
-    _, test_loader = init_dataloader(config, distributed=False)
+    _, _, test_loader, _, _ = init_dataloader(config.dataloader, config.arch)
+    
+    # 获取验证集大小
+    total_samples = len(test_loader.dataset) if hasattr(test_loader, 'dataset') else len(test_loader) * test_loader.batch_size
     
     print("="*80)
     print("OLM编码故障注入测试")
     print("="*80)
     print(f"测试层: {args.layer}")
     print(f"BER: {args.ber}")
-    print(f"样本数: {args.num_samples}")
+    print(f"验证集大小: {total_samples} 样本")
     print()
     
     # Test 1: Baseline（无故障）
     print("Test 1: Baseline (无故障注入)")
-    accuracy_baseline = evaluate_model(model, test_loader, device, max_samples=args.num_samples)
+    accuracy_baseline = evaluate_model(model, test_loader, device)
     print(f"准确率: {accuracy_baseline:.2f}%")
     print()
     
@@ -114,7 +117,7 @@ def main():
         enable_statistics=True
     )
     injector_binary.enable()
-    accuracy_binary = evaluate_model(model, test_loader, device, max_samples=args.num_samples)
+    accuracy_binary = evaluate_model(model, test_loader, device)
     injector_binary.disable()
     print(f"准确率: {accuracy_binary:.2f}%")
     print(f"相对Baseline下降: {accuracy_baseline - accuracy_binary:.2f}%")
@@ -133,7 +136,7 @@ def main():
         enable_statistics=True
     )
     injector_gray.enable()
-    accuracy_gray = evaluate_model(model, test_loader, device, max_samples=args.num_samples)
+    accuracy_gray = evaluate_model(model, test_loader, device)
     injector_gray.disable()
     print(f"准确率: {accuracy_gray:.2f}%")
     print(f"相对Baseline下降: {accuracy_baseline - accuracy_gray:.2f}%")
@@ -142,13 +145,39 @@ def main():
     
     # Test 4: OLM编码
     print("Test 4: OLM编码 + 故障注入")
-    print("  正在生成OLM映射...")
     try:
-        value_to_code, code_to_value, lrobust = create_olm_encoder(
-            model, args.layer, method='greedy', num_samples=1000
-        )
-        print(f"  LRobust值: {lrobust:.4f}")
-        print(f"  映射表大小: {len(value_to_code)}")
+        if args.olm_json and Path(args.olm_json).exists():
+            # 从JSON文件加载OLM映射
+            print(f"  正在从JSON文件加载OLM映射: {args.olm_json}")
+            with open(args.olm_json, 'r') as f:
+                olm_data = json.load(f)
+            
+            # 检查JSON格式
+            if 'layer_mappings' in olm_data:
+                # 新格式：包含多个层的映射
+                if args.layer not in olm_data['layer_mappings']:
+                    raise ValueError(f"Layer {args.layer} not found in OLM JSON file. Available layers: {list(olm_data['layer_mappings'].keys())}")
+                
+                layer_data = olm_data['layer_mappings'][args.layer]
+                value_to_code = {int(k): int(v) for k, v in layer_data['value_to_code'].items()}
+                lrobust = layer_data.get('lrobust', 0.0)
+                print(f"  LRobust值: {lrobust:.4f}")
+                print(f"  映射表大小: {len(value_to_code)}")
+                print(f"  位宽: {layer_data.get('bit_width', 'unknown')}")
+            else:
+                # 旧格式：直接包含value_to_code
+                value_to_code = {int(k): int(v) for k, v in olm_data['value_to_code'].items()}
+                lrobust = olm_data.get('lrobust', 0.0)
+                print(f"  LRobust值: {lrobust:.4f}")
+                print(f"  映射表大小: {len(value_to_code)}")
+        else:
+            # 生成OLM映射
+            print("  正在生成OLM映射...")
+            value_to_code, code_to_value, lrobust = create_olm_encoder(
+                model, args.layer, method='greedy', num_samples=1000
+            )
+            print(f"  LRobust值: {lrobust:.4f}")
+            print(f"  映射表大小: {len(value_to_code)}")
         
         injector_olm = FaultInjector(
             model=model,
@@ -161,7 +190,7 @@ def main():
             enable_statistics=True
         )
         injector_olm.enable()
-        accuracy_olm = evaluate_model(model, test_loader, device, max_samples=args.num_samples)
+        accuracy_olm = evaluate_model(model, test_loader, device)
         injector_olm.disable()
         print(f"准确率: {accuracy_olm:.2f}%")
         print(f"相对Baseline下降: {accuracy_baseline - accuracy_olm:.2f}%")
