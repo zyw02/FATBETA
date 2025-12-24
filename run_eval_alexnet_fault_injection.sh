@@ -36,11 +36,17 @@ SEED=42
 # Configuration index to use from JSON file (if multiple configurations exist)
 CONFIG_INDEX=0
 
+# Number of samples from test set for corrector calibration
+# Default: 500 (~5% of CIFAR10 test set, prevents data leakage)
+# Set to 0 to disable calibration and use training baseline statistics
+CALIBRATION_SAMPLES=500
+
 # Run evaluation with fault injection
 python tools/eval_with_fault_injection.py \
     --config $EVAL_CONFIG \
     --bit_width_config $BIT_WIDTH_CONFIG \
     --ber_list "$BER_LIST" \
     --seed $SEED \
-    --config_index $CONFIG_INDEX
+    --config_index $CONFIG_INDEX \
+    --calibration_samples $CALIBRATION_SAMPLES
 

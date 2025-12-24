@@ -7,8 +7,9 @@ output_dir: eval
 training_device: gpu
 
 target_bits: [6, 5, 4, 3, 2]
-post_training_batchnorm_calibration: false  # Usually not needed for evaluation
+post_training_batchnorm_calibration: true  # Enable BN calibration for accurate evaluation
 information_distortion_mitigation: false
+enable_dynamic_bit_training: true  # Enable dynamic bit training mode
 
 # Dataset loader
 dataloader: 
@@ -20,7 +21,7 @@ dataloader:
   deterministic: true
 
 resume:
-  path: ./training/alexnet_cifar10_single_gpu_v2/alexnet_cifar10_single_gpu_v2_checkpoint.pth.tar
+  path: ./training/alexnet_cifar10_FAT_KL_entropy_corrector_v7/epoch_60_checkpoint.pth.tar_checkpoint.pth.tar
   lean: false
 
 log:

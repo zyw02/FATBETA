@@ -1,0 +1,47 @@
+# Experiment name - Evaluate ordinary ResNet18 with nr_random_sample
+name: resnet18_cifar10_ordinary_eval
+
+# Name of output directory. Checkpoints and logs will be saved at `pwd`/output_dir
+output_dir: eval
+training_device: gpu
+
+# nr_random_sample settings (only meaningful in eval mode)
+# This will use nr_random_sample=300 for evaluation
+target_bits: [6, 5, 4, 3, 2]  # Dummy values, not used in ordinary eval
+post_training_batchnorm_calibration: false
+information_distortion_mitigation: false
+
+# Dataset loader
+dataloader:
+  dataset: cifar10
+  num_classes: 10
+  path: ./data/cifar10
+  batch_size: 128
+  workers: 4
+  deterministic: true
+
+resume:
+  # Path to your trained ordinary ResNet18 checkpoint
+  path: ./training/resnet18_cifar10_ordinary_training/resnet18_cifar10_ordinary_training_checkpoint.pth.tar
+  lean: false
+
+log:
+  num_best_scores: 3
+  print_freq: 20
+
+#============================ Model ============================================
+
+arch: resnet18
+pre_trained: false
+
+#============================ Quantization =====================================
+# DISABLED: No quantization for ordinary model evaluation
+# quan: ...
+
+#============================ Evaluation ============================
+
+eval: true
+
+# No bit_width_config_path needed for ordinary model evaluation
+# bit_width_config_path: ...
+

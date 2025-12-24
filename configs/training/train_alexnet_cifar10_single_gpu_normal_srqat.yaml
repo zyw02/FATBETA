@@ -1,0 +1,111 @@
+# Experiment name - Single GPU version for AlexNet CIFAR10 (NORMAL + SR-QAT)
+# NOTE:
+# - This config is for main_normal.py/process_normal.py (Distribution Loss disabled)
+# - Adds SR-QAT scale penalty (see chat/doc.md)
+# - Copied from train_alexnet_cifar10_single_gpu.yaml to avoid polluting original config
+name: alexnet_cifar10_single_gpu_normal_srqat
+
+output_dir: training
+training_device: gpu
+
+num_random_path: 3
+target_bits: [6, 5, 4, 3, 2]
+post_training_batchnorm_calibration: true
+information_distortion_mitigation: false
+enable_dynamic_bit_training: true
+kd: false
+
+dataloader:
+  dataset: cifar10
+  num_classes: 10
+  path: ./data/cifar10
+  batch_size: 128
+  workers: 4
+  deterministic: true
+
+resume:
+  path:
+  lean: false
+
+log:
+  num_best_scores: 3
+  print_freq: 20
+
+#============================ Model ============================================
+arch: alexnet
+pre_trained: false
+
+#============================ Quantization =====================================
+quan:
+  act:
+    mode: lsq
+    bit: 2
+    per_channel: false
+    symmetric: false
+    all_positive: true
+
+  weight:
+    mode: lsq
+    bit: 2
+    per_channel: false
+    symmetric: false
+    all_positive: false
+
+  excepts:
+    excepts_bits_width: 8
+    # Fair comparison with clean120: treat classifier.1 as a dynamic-bit layer
+    # (remove it from excepts using "__delete__" so it can use target_bits candidates)
+    classifier.1: __delete__
+    # Remove MobileNetV2-specific keys from template (harmless for AlexNet)
+    features.0.0: __delete__
+    features.0.1: __delete__
+    # Keep fixed-bit layers
+    features.0:
+      act:
+        bit:
+        all_positive: false
+      weight:
+        bit:
+    classifier.6:
+      act:
+        bit:
+        all_positive: false
+      weight:
+        bit:
+
+#============================ Training / Evaluation ============================
+eval: false
+
+# AlexNet is faster than ResNet18, but for quick grid search you can reduce epochs.
+# If you want a closer-to-final model, set it back to 200.
+epochs: 120
+smoothing: 0.0
+scale_gradient: false
+
+opt: sgd
+lr: 0.01
+momentum: 0.9
+weight_decay: 0.0001
+adaptive_region_weight_decay: 0
+
+sched: cosine
+min_lr: 0.0
+decay_rate: 0.1
+warmup_epochs: 0
+warmup_lr: 0.0
+decay_epochs: 30
+cooldown_epochs: 0
+
+ema_decay: 0.9997
+
+#============================ SR-QAT (Scale Penalty) ===========================
+scale_penalty:
+  enabled: true
+  lambda_scale: 1e-6
+  eps: 1e-6
+  margin_momentum: 0.9
+  start_epoch: 0
+  apply_on_faulted: false
+  normalize_by_num_layers: false
+
+

@@ -111,9 +111,13 @@ def main():
     modules_to_replace = find_modules_to_quantize(model, config)
     replace_module_by_names(model, modules_to_replace)
     
-    # 加载bit-width配置
+    # 加载checkpoint（先加载权重）
+    print(f"步骤2: 加载checkpoint: {args.ckpt}")
+    load_checkpoint(model, args.ckpt, model_device=device)
+    
+    # 加载bit-width配置（在加载checkpoint之后设置，确保位宽正确）
     if args.bit_width_config:
-        print(f"步骤2: 加载bit-width配置: {args.bit_width_config}")
+        print(f"步骤3: 加载bit-width配置: {args.bit_width_config}")
         # 检查文件是否存在
         if not os.path.exists(args.bit_width_config):
             raise FileNotFoundError(
@@ -126,10 +130,15 @@ def main():
             config_index=0,
             verbose=True
         )
-    
-    # 加载checkpoint
-    print(f"步骤3: 加载checkpoint: {args.ckpt}")
-    load_checkpoint(model, args.ckpt, model_device=device)
+    else:
+        # 如果没有提供bit_width_config，使用target_bits的最大值（对于动态位宽训练模型）
+        print(f"步骤3: 未提供bit_width_config，使用target_bits的最大值")
+        from util.mpq import switch_bit_width
+        target_bits = getattr(config, 'target_bits', [6, 5, 4, 3, 2])
+        max_bit = max(target_bits) if target_bits else 6
+        print(f"  使用target_bits的最大值: {max_bit}-bit")
+        print(f"  注意: fixed_bits层（features.0, classifier.6）将保持8-bit")
+        switch_bit_width(model, quan_scheduler=config.quan, wbit=max_bit, abits=max_bit)
     
     # 确保模型处于eval模式
     model.eval()
@@ -169,6 +178,7 @@ def main():
             wbits = int(wbits)
         
         print(f"  层位宽: {wbits} bits")
+        print(f"  确认: module.bits = {getattr(target_module, 'bits', None)}, fixed_bits = {getattr(target_module, 'fixed_bits', None)}")
         print()
         
         # 收集量化值分布
@@ -241,6 +251,7 @@ def main():
             print(f"  使用方法: {selected_method}")
             print(f"  LRobust值: {lrobust:.4f}")
             print(f"  映射表大小: {len(value_to_code)}")
+            print(f"  ⚠️  重要：此映射基于 {wbits}-bit 位宽生成，测试时必须使用相同的位宽！")
             print()
             
             # 显示一些映射示例
@@ -346,6 +357,22 @@ def main():
             accuracy = 100. * correct / total if total > 0 else 0.0
             return accuracy
         
+        # 在测试前确认位宽设置
+        print("测试前位宽确认:")
+        for layer_name in layer_names:
+            module = dict(model.named_modules())[layer_name]
+            wbits = None
+            if hasattr(module, 'bits') and module.bits is not None:
+                wbits = module.bits[0] if isinstance(module.bits, (list, tuple)) else module.bits
+            elif hasattr(module, 'fixed_bits') and module.fixed_bits is not None:
+                wbits = module.fixed_bits[0] if isinstance(module.fixed_bits, (list, tuple)) else module.fixed_bits
+            if isinstance(wbits, torch.Tensor):
+                wbits = int(wbits.item())
+            else:
+                wbits = int(wbits) if wbits is not None else None
+            print(f"  {layer_name}: {wbits}-bit")
+        print()
+        
         # Test 1: Baseline（无故障）
         print("Test 1: Baseline (无故障注入)")
         accuracy_baseline = evaluate_model(model, test_loader, device)
@@ -393,12 +420,44 @@ def main():
         # Test 4: OLM编码
         print("Test 4: OLM编码 + 故障注入")
         try:
-            # 构建olm_layers字典
+            # 构建olm_layers字典，并验证位宽匹配
             olm_layers_dict = {}
+            print("  OLM映射验证:")
             for layer_name in layer_names:
                 if layer_name in all_olm_mappings:
                     olm_layers_dict[layer_name] = all_olm_mappings[layer_name]['value_to_code']
-                    print(f"  {layer_name}: OLM映射表大小={len(olm_layers_dict[layer_name])}")
+                    mapping_data = all_olm_mappings[layer_name]
+                    
+                    # 获取映射生成时的位宽
+                    mapping_bit_width = mapping_data.get('bit_width', None)
+                    
+                    # 获取当前模型的位宽
+                    module = dict(model.named_modules())[layer_name]
+                    current_wbits = None
+                    if hasattr(module, 'bits') and module.bits is not None:
+                        current_wbits = module.bits[0] if isinstance(module.bits, (list, tuple)) else module.bits
+                    elif hasattr(module, 'fixed_bits') and module.fixed_bits is not None:
+                        current_wbits = module.fixed_bits[0] if isinstance(module.fixed_bits, (list, tuple)) else module.fixed_bits
+                    if isinstance(current_wbits, torch.Tensor):
+                        current_wbits = int(current_wbits.item())
+                    else:
+                        current_wbits = int(current_wbits) if current_wbits is not None else None
+                    
+                    # 验证位宽匹配
+                    if mapping_bit_width is not None and current_wbits is not None:
+                        if mapping_bit_width != current_wbits:
+                            print(f"  ⚠️  {layer_name}: 位宽不匹配！映射生成时={mapping_bit_width}-bit, 当前={current_wbits}-bit")
+                            print(f"     这会导致OLM映射失效！请确保测试时使用与生成映射时相同的位宽。")
+                        else:
+                            print(f"  ✅ {layer_name}: 位宽匹配 ({mapping_bit_width}-bit)")
+                    else:
+                        print(f"  ⚠️  {layer_name}: 无法验证位宽 (映射位宽={mapping_bit_width}, 当前位宽={current_wbits})")
+                    
+                    print(f"    映射表大小={len(olm_layers_dict[layer_name])}, LRobust={mapping_data.get('lrobust', 'N/A'):.4f}")
+            
+            if not olm_layers_dict:
+                print("  ❌ 没有有效的OLM映射！")
+                return
             
             injector_olm = FaultInjector(
                 model=model,

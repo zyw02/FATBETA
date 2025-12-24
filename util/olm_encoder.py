@@ -54,6 +54,11 @@ def collect_quantized_value_distribution(
     if wbits is None:
         raise ValueError(f"Layer {layer_name} has no bit-width configuration (neither bits nor fixed_bits)")
     
+    # 递归处理嵌套的列表/元组，直到得到单个值
+    while isinstance(wbits, (list, tuple)) and len(wbits) > 0:
+        wbits = wbits[0]
+    
+    # 处理 torch.Tensor
     if isinstance(wbits, torch.Tensor):
         wbits = int(wbits.item())
     else:
@@ -327,11 +332,26 @@ def create_olm_encoder(
     # 收集分布
     distribution = collect_quantized_value_distribution(model, layer_name, num_samples)
     
-    # 获取位宽
+    # 获取位宽（支持bits和fixed_bits）
     module = dict(model.named_modules())[layer_name]
-    wbits = module.bits[0] if isinstance(module.bits, (list, tuple)) else module.bits
+    
+    # 优先从bits获取，如果没有则从fixed_bits获取
+    wbits = None
+    if hasattr(module, 'bits') and module.bits is not None:
+        wbits = module.bits[0] if isinstance(module.bits, (list, tuple)) else module.bits
+    elif hasattr(module, 'fixed_bits') and module.fixed_bits is not None:
+        wbits = module.fixed_bits[0] if isinstance(module.fixed_bits, (list, tuple)) else module.fixed_bits
+    
+    if wbits is None:
+        raise ValueError(f"Layer {layer_name} has no bits or fixed_bits attribute")
+    
+    # 递归处理嵌套的列表/元组，直到得到单个值
+    while isinstance(wbits, (list, tuple)) and len(wbits) > 0:
+        wbits = wbits[0]
+    
+    # 处理 torch.Tensor
     if isinstance(wbits, torch.Tensor):
-        wbits = int(wbits.item())
+        wbits = int(wbits.item()) if wbits.numel() == 1 else int(wbits[0].item())
     else:
         wbits = int(wbits)
     

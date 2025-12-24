@@ -16,7 +16,8 @@ export CUDA_VISIBLE_DEVICES=0
 CIFAR10_PATH="./data/cifar10"
 
 # Path to the evaluation config YAML file (V2 version)
-EVAL_CONFIG="./configs/eval/eval_alexnet_cifar10_single_gpu_v2.yaml"
+# For stage1, we can use the training config or create an eval config
+EVAL_CONFIG="./configs/training/train_alexnet_cifar10_sensitive_stage1.yaml"
 
 # Path to the trained checkpoint (from V2 training phase)
 # Uncomment the one you want to evaluate:
@@ -29,20 +30,24 @@ EVAL_CONFIG="./configs/eval/eval_alexnet_cifar10_single_gpu_v2.yaml"
 # CHECKPOINT_PATH="./training/alexnet_cifar10_FAT_KL_entropy_multi_seed/alexnet_cifar10_FAT_KL_entropy_multi_seed_checkpoint.pth.tar"
 # CHECKPOINT_PATH="./training/alexnet_cifar10_FAT_KL_entropy_multi_seed_ber3e2/alexnet_cifar10_FAT_KL_entropy_multi_seed_ber3e2_checkpoint.pth.tar"
 # CHECKPOINT_PATH="./training/alexnet_cifar10_FAT_KL_entropy_progressive_ber/epoch_160_checkpoint.pth.tar_checkpoint.pth.tar"
-CHECKPOINT_PATH="./training/alexnet_cifar10_FAT_KL_entropy_progressive_v2/alexnet_cifar10_FAT_KL_entropy_progressive_v2_checkpoint.pth.tar"
+# CHECKPOINT_PATH="./training/alexnet_cifar10_FAT_KL_entropy_progressive_v4/alexnet_cifar10_FAT_KL_entropy_progressive_v4_checkpoint.pth.tar"
+CHECKPOINT_PATH="./training/alexnet_cifar10_sensitive_stage1/alexnet_cifar10_sensitive_stage1_checkpoint.pth.tar"
 
 # Path to the bit-width configuration JSON file (from V2 search phase)
-# Note: Both v2 and FAT use the same search config (bit-width=[2,2,2,2,2,2])
+# Note: stage1 uses dynamic bit training, so bit-width config may not be needed
 # If you want to evaluate FAT model, make sure to use FAT checkpoint above
 # BIT_WIDTH_CONFIG="./search/alexnet_cifar10_single_gpu_v2_search_bit_width_config.json"
 # BIT_WIDTH_CONFIG="./search/alexnet_cifar10_FAT_search_bit_width_config.json"
 BIT_WIDTH_CONFIG="./search/alexnet_cifar10_FAT_a92b25search_bit_width_config.json"
+# For stage1, we don't need bit-width config (uses dynamic bits, will switch to max bit)
+# To use JSON config, uncomment one of the lines above and set BIT_WIDTH_CONFIG
+# BIT_WIDTH_CONFIG=""
 
 # BER (Bit-Error-Rate) values to test (comma-separated)
 # These represent the probability of bit-flip per bit
 # Lower values = fewer faults, Higher values = more faults
-# Testing multiple BER values: 2e-2, 3e-2, 4e-2, 5e-2, 1e-1
-BER_LIST="2e-2,3e-2,4e-2,5e-2,1e-1"
+# Testing multiple BER values including 1e-1 to confirm baseline accuracy
+BER_LIST="1e-5,1e-4,1e-3,2e-3,5e-3,1e-2,2e-2,5e-2,1e-1"
 
 # Random seed for reproducibility
 SEED=42
@@ -55,16 +60,17 @@ NUM_TRIALS=1
 # Seed list used during training (should match the seed_list in training config)
 # Training: each forward randomly selects from this list
 # Evaluation: trials will sample from this list to ensure same fault patterns as training
-# Using only seed=42 as requested
+# Using seed=42 to match test_gradient_statistics_restorer.sh
 SEED_LIST="42"
 
 # Configuration index to use from JSON file (if multiple configurations exist)
 CONFIG_INDEX=0
 
 # Run evaluation with fault injection
+# Note: For stage1, bit_width_config is empty (uses dynamic bits, will switch to max bit)
 python tools/eval_with_fault_injection.py \
     --config $EVAL_CONFIG \
-    --bit_width_config $BIT_WIDTH_CONFIG \
+    --bit_width_config "$BIT_WIDTH_CONFIG" \
     --resume_path $CHECKPOINT_PATH \
     --ber_list "$BER_LIST" \
     --seed $SEED \

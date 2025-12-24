@@ -15,3 +15,8 @@ export CUDA_VISIBLE_DEVICES=0
 cd /root/autodl-tmp/retraining-free-quantization
 python main.py configs/eval/eval_alexnet_cifar10_FAT_KL_entropy_progressive_ber.yaml
 
+
+
+
+
+

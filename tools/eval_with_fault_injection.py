@@ -27,6 +27,8 @@ from util.data_loader import init_dataloader
 from util.checkpoint import load_checkpoint
 from util.dist import logger_info
 from util.fault_injector import FaultInjector, setup_model_with_bit_width_config
+# No output corrector needed for main model evaluation
+# from util.output_corrector import create_output_corrector
 from process import validate
 from util.monitor import ProgressMonitor
 from timm.loss import LabelSmoothingCrossEntropy
@@ -46,8 +48,8 @@ def main():
     parser = argparse.ArgumentParser(description='Evaluate model with fault injection')
     parser.add_argument('--config', type=str, required=True,
                         help='Path to evaluation config YAML file')
-    parser.add_argument('--bit_width_config', type=str, required=True,
-                        help='Path to bit-width configuration JSON file from search')
+    parser.add_argument('--bit_width_config', type=str, required=False, default="",
+                        help='Path to bit-width configuration JSON file from search (optional, for dynamic bit training models)')
     parser.add_argument('--resume_path', type=str, default=None,
                         help='Path to checkpoint file (overrides YAML config resume.path)')
     parser.add_argument('--ber_list', type=str, default="1e-8,1e-7,1e-6,1e-5,1e-4",
@@ -62,6 +64,9 @@ def main():
                         help='If True, use position-based fixed mask (same weight position always gets same mask). If False, use random mask each time (default: False).')
     parser.add_argument('--seed_list', type=str, default=None,
                         help='Comma-separated list of seeds to use (e.g., "42,100,200,300"). If provided, trials will sample from this list instead of generating seeds. This ensures the same fault patterns as training.')
+    # No calibration needed for main model evaluation
+    # parser.add_argument('--calibration_samples', type=int, default=500,
+    #                     help='Number of samples from test set for corrector calibration (default: 500, ~5%% of CIFAR10 test set). Set to 0 to disable calibration.')
     
     args, unknown = parser.parse_known_args()
     
@@ -187,6 +192,10 @@ def main():
         checkpoint_path = configs.resume.path
         logger_info(logger, f"Using checkpoint from YAML config: {checkpoint_path}")
     
+    # This script is for evaluating the main model with fault injection only
+    # No output corrector is used here
+    output_corrector = None
+    
     if checkpoint_path:
         if os.path.exists(checkpoint_path):
             logger_info(logger, f"Loading checkpoint from {checkpoint_path}")
@@ -204,8 +213,38 @@ def main():
         logger.error("No checkpoint path specified. Please provide --resume_path or set resume.path in YAML config.")
         return
     
+    # Load and set bit-width configuration FIRST (CRITICAL for mixed-precision models)
+    # This must be done BEFORE initializing output_size, as the bit width affects quantization
+    # For dynamic bit training models (like stage1), bit_width_config may be empty
+    if args.bit_width_config and args.bit_width_config.strip():
+        logger_info(logger, f"Loading bit-width configuration from: {args.bit_width_config}")
+        try:
+            weight_bits, act_bits = setup_model_with_bit_width_config(
+                model,
+                args.bit_width_config,
+                config_index=args.config_index,
+                verbose=True
+            )
+            logger_info(logger, f"✓ Bit-width configuration loaded: {len(weight_bits)} layers")
+        except Exception as e:
+            logger.error(f"Failed to load bit-width configuration: {e}")
+            import traceback
+            traceback.print_exc()
+            return
+    else:
+        # For dynamic bit training models, switch to max bit width
+        logger_info(logger, "No bit-width config provided, using max target bit width (for dynamic bit training models)")
+        from util.mpq import switch_bit_width
+        target_bits = configs.target_bits if hasattr(configs, 'target_bits') else [6, 5, 4, 3, 2]
+        max_bit = max(target_bits)
+        logger_info(logger, f"Switching model to {max_bit}-bit quantization (max target-bit)...")
+        logger_info(logger, f"Note: Layers in excepts (features.0, classifier.6) will remain 8-bit")
+        switch_bit_width(model, quan_scheduler=configs.quan, wbit=max_bit, abits=max_bit)
+        logger_info(logger, f"✓ Model switched to {max_bit}-bit successfully.")
+    
     # Initialize output_size by doing a forward pass (needed for model_profiling)
     # This sets output_size for each QuanConv2d layer
+    # IMPORTANT: Do this AFTER setting bit width, so quantization uses correct bit width
     logger_info(logger, "Initializing model output_size with a dummy forward pass")
     model.eval()
     with torch.no_grad():
@@ -216,23 +255,9 @@ def main():
             _ = model(dummy_input)
             logger_info(logger, "✓ Model output_size initialized")
         except Exception as e:
-            logger.warning(f"Forward pass failed (this is okay if bits not set yet): {e}")
-    
-    # Load and set bit-width configuration (CRITICAL for mixed-precision models)
-    logger_info(logger, f"Loading bit-width configuration from: {args.bit_width_config}")
-    try:
-        weight_bits, act_bits = setup_model_with_bit_width_config(
-            model,
-            args.bit_width_config,
-            config_index=args.config_index,
-            verbose=True
-        )
-        logger_info(logger, f"✓ Bit-width configuration loaded: {len(weight_bits)} layers")
-    except Exception as e:
-        logger.error(f"Failed to load bit-width configuration: {e}")
-        import traceback
-        traceback.print_exc()
-        return
+            logger.warning(f"Forward pass failed: {e}")
+            import traceback
+            traceback.print_exc()
     
     # Initialize data loaders
     train_loader, val_loader, test_loader, _, _ = init_dataloader(configs.dataloader, arch=configs.arch)
@@ -244,16 +269,20 @@ def main():
     # Create monitors
     monitors = [ProgressMonitor(logger) for _ in range(len(ber_values) + 1)]
     
+    # No output corrector calibration needed for main model evaluation
+    
     # Baseline evaluation (no fault injection)
     logger_info(logger, "\n" + "="*60)
     logger_info(logger, "Baseline Evaluation (No Fault Injection)")
     logger_info(logger, "="*60)
+    # Evaluate baseline (no fault injection)
     model.eval()
-    baseline_acc = validate(
+    baseline_result = validate(
         test_loader, model, criterion, -1, monitors[0], configs,
-        train_loader=train_loader
+        train_loader=train_loader,
+        eval_predefined_arch=[(32, None, None)]  # Preserve current bit-width (avoid MIN_POLICY)
     )
-    baseline_acc = baseline_acc[0] if isinstance(baseline_acc, list) else baseline_acc
+    baseline_acc = baseline_result[0] if isinstance(baseline_result, list) else baseline_result
     logger_info(logger, f"Baseline Top-1 Accuracy: {baseline_acc:.2f}%")
     
     # Evaluate with different BER values
@@ -311,36 +340,86 @@ def main():
                 seed=selected_seed,
                 use_position_based_mask=args.use_position_based_mask,  # Use args setting (default False for performance)
                 seed_list=None,  # Don't pass seed_list in eval mode to ensure explicit seed is used
+                skip_first_last=False,  # Inject faults in all layers including first and last
             )
             
             # Enable fault injection
             injector.enable()
             
-            # Evaluate model
+            # CRITICAL: validate() by default calls sample_min_cands() which sets model to minimum bit-width (2-bit)
+            # This would break our fixed bit-width configuration (6-bit from JSON or max bit)!
+            # Solution: Pass eval_predefined_arch=[(32, None, None)] to skip bit-width modification
+            # When arch[0] == 32, validate() does 'pass' and doesn't change bit-width
             model.eval()
-            acc_with_fault = validate(
+            if output_corrector is not None:
+                output_corrector.set_runtime_context(ber=ber, stage='eval_fault')
+            # Note: Root process.py validate() doesn't support output_corrector parameter
+            # Use eval_predefined_arch=[(32, None, None)] to preserve current bit-width configuration
+            result = validate(
                 test_loader, model, criterion, -1, monitors[idx], configs,
-                train_loader=train_loader
+                train_loader=train_loader,
+                eval_predefined_arch=[(32, None, None)]  # Skip bit-width modification (arch[0] == 32 means 'pass')
             )
-            acc_with_fault = acc_with_fault[0] if isinstance(acc_with_fault, list) else acc_with_fault
-            trial_accs.append(acc_with_fault)
+            # Handle both old format (single list) and new format (tuple of two lists)
+            if isinstance(result, tuple):
+                # New format: (model_accs, corrected_accs)
+                model_acc, corrected_acc = result
+                model_acc = model_acc[0] if isinstance(model_acc, list) else model_acc
+                corrected_acc = corrected_acc[0] if isinstance(corrected_acc, list) else corrected_acc
+                # 如果有corrector，保存两个值；否则只保存model acc
+                if output_corrector is not None:
+                    trial_accs.append((model_acc, corrected_acc))
+                else:
+                    trial_accs.append(model_acc)
+            elif isinstance(result, list):
+                # Old format: single list
+                trial_accs.append(result[0])
+            else:
+                # Single value
+                trial_accs.append(result)
             
             # Disable fault injection
             injector.disable()
             
-            logger_info(logger, f"    Trial {trial_idx + 1}: Accuracy={acc_with_fault:.2f}%")
+            # Print flip statistics for this trial (only for the last trial to avoid too much output)
+            if trial_idx == len(seed_list) - 1:
+                logger_info(logger, f"\n故障注入统计 (BER={ber:.2e}, Trial {trial_idx + 1}):")
+                injector.print_flip_statistics(verbose=False)  # Use verbose=False to reduce output
+            
+            # 打印trial结果
+            if isinstance(trial_accs[-1], tuple):
+                model_acc_trial, corrected_acc_trial = trial_accs[-1]
+                logger_info(logger, f"    Trial {trial_idx + 1}: Model={model_acc_trial:.2f}%, With Corrector={corrected_acc_trial:.2f}%, Gain={corrected_acc_trial - model_acc_trial:+.2f}%")
+            else:
+                logger_info(logger, f"    Trial {trial_idx + 1}: Accuracy={trial_accs[-1]:.2f}%")
         
         # Calculate average accuracy across trials
-        avg_acc = sum(trial_accs) / len(trial_accs)
-        std_acc = (sum((x - avg_acc) ** 2 for x in trial_accs) / len(trial_accs)) ** 0.5 if len(trial_accs) > 1 else 0.0
-        
-        # Calculate accuracy drop
-        acc_drop = baseline_acc - avg_acc
-        results.append((ber, avg_acc, acc_drop, std_acc, trial_accs))
-        
-        logger_info(logger, f"\nBER={ber:.1e}: Average Accuracy={avg_acc:.2f}% ± {std_acc:.2f}% (over {args.num_trials} trials)")
-        logger_info(logger, f"  Individual trials: {[f'{acc:.2f}' for acc in trial_accs]}")
-        logger_info(logger, f"  Drop from baseline: {acc_drop:.2f}%")
+        if output_corrector is not None and isinstance(trial_accs[0], tuple):
+            # 有corrector：分别计算model和corrected的平均值
+            model_accs = [acc[0] for acc in trial_accs]
+            corrected_accs = [acc[1] for acc in trial_accs]
+            avg_model_acc = sum(model_accs) / len(model_accs)
+            avg_corrected_acc = sum(corrected_accs) / len(corrected_accs)
+            std_model_acc = (sum((x - avg_model_acc) ** 2 for x in model_accs) / len(model_accs)) ** 0.5 if len(model_accs) > 1 else 0.0
+            std_corrected_acc = (sum((x - avg_corrected_acc) ** 2 for x in corrected_accs) / len(corrected_accs)) ** 0.5 if len(corrected_accs) > 1 else 0.0
+            acc_drop_model = baseline_acc - avg_model_acc
+            acc_drop_corrected = baseline_acc_corrected - avg_corrected_acc
+            results.append((ber, avg_model_acc, avg_corrected_acc, acc_drop_model, acc_drop_corrected, std_model_acc, std_corrected_acc, trial_accs))
+            
+            logger_info(logger, f"\nBER={ber:.1e}:")
+            logger_info(logger, f"  Model Accuracy:     {avg_model_acc:.2f}% ± {std_model_acc:.2f}% (drop: {acc_drop_model:.2f}%)")
+            logger_info(logger, f"  With Corrector:     {avg_corrected_acc:.2f}% ± {std_corrected_acc:.2f}% (drop: {acc_drop_corrected:.2f}%)")
+            logger_info(logger, f"  Corrector Gain:     +{avg_corrected_acc - avg_model_acc:.2f}%")
+        else:
+            # 没有corrector：原有逻辑
+            avg_acc = sum(trial_accs) / len(trial_accs)
+            std_acc = (sum((x - avg_acc) ** 2 for x in trial_accs) / len(trial_accs)) ** 0.5 if len(trial_accs) > 1 else 0.0
+            acc_drop = baseline_acc - avg_acc
+            results.append((ber, avg_acc, acc_drop, std_acc, trial_accs))
+            
+            logger_info(logger, f"\nBER={ber:.1e}: Average Accuracy={avg_acc:.2f}% ± {std_acc:.2f}% (over {args.num_trials} trials)")
+            logger_info(logger, f"  Individual trials: {[f'{acc:.2f}' for acc in trial_accs]}")
+            logger_info(logger, f"  Drop from baseline: {acc_drop:.2f}%")
     
     # Extract checkpoint name from path
     checkpoint_path = args.resume_path if args.resume_path else getattr(configs.resume, 'path', 'Unknown')
@@ -366,7 +445,11 @@ def main():
     logger_info(logger, "-"*80)
     logger_info(logger, f"{'Baseline':<12} {baseline_acc:<18.2f} {'-':<10} {'0.00':<12}")
     for result in results:
-        if len(result) == 5:  # New format with std and trials
+        if len(result) == 8:  # With corrector: (ber, avg_model, avg_corrected, drop_model, drop_corrected, std_model, std_corrected, trials)
+            ber, avg_model, avg_corrected, drop_model, drop_corrected, std_model, std_corrected, trial_accs = result
+            logger_info(logger, f"{ber:<12.1e} {avg_model:<18.2f} {std_model:<10.2f} {drop_model:<12.2f} (Model)")
+            logger_info(logger, f"{'':12} {avg_corrected:<18.2f} {std_corrected:<10.2f} {drop_corrected:<12.2f} (With Corrector, Gain: +{avg_corrected - avg_model:.2f}%)")
+        elif len(result) == 5:  # Without corrector: (ber, avg_acc, drop, std_acc, trial_accs)
             ber, avg_acc, drop, std_acc, trial_accs = result
             logger_info(logger, f"{ber:<12.1e} {avg_acc:<18.2f} {std_acc:<10.2f} {drop:<12.2f}")
         else:  # Old format (backward compatibility)

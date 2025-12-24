@@ -1,0 +1,139 @@
+name: alexnet_cifar10_sensitive_stage2_rl_enhanced
+output_dir: training
+save_path: training  # Path for saving sensitive channels and baseline stats (same as output_dir/log_dir)
+training_device: gpu
+
+num_random_path: 3
+target_bits: [6, 5, 4, 3, 2]
+post_training_batchnorm_calibration: true
+information_distortion_mitigation: false
+enable_dynamic_bit_training: true
+kd: false
+
+# Dataset loader
+dataloader:
+  dataset: cifar10
+  num_classes: 10
+  path: /root/autodl-tmp/retraining-free-quantization/data/cifar10  # Absolute path to dataset
+  batch_size: 128
+  workers: 4
+  deterministic: true
+
+resume:
+  path:
+  lean: false
+
+log:
+  num_best_scores: 3
+  print_freq: 20
+
+arch: alexnet
+pre_trained: false
+
+quan:
+  act:
+    mode: lsq
+    bit: 2
+    per_channel: false
+    symmetric: false
+    all_positive: true
+  weight:
+    mode: lsq
+    bit: 2
+    per_channel: false
+    symmetric: false
+    all_positive: false
+  excepts:
+    excepts_bits_width: 8
+    classifier.1: __delete__
+    features.0.0: __delete__
+    features.0.1: __delete__
+    features.0:
+      act:
+        bit:
+        all_positive: false
+      weight:
+        bit:
+    classifier.6:
+      act:
+        bit:
+        all_positive: false
+      weight:
+        bit:
+
+eval: false
+epochs: 0 # Main model training is already done in Stage 1
+smoothing: 0.0
+scale_gradient: false
+
+opt: adam
+lr: 0.0001
+momentum: 0.9
+weight_decay: 0.0001
+adaptive_region_weight_decay: 0
+
+sched: plateau
+min_lr: 0.0
+decay_rate: 0.1
+warmup_epochs: 0
+warmup_lr: 0.0
+decay_epochs: 30
+cooldown_epochs: 0
+
+ema_decay: 0.9997
+
+fault_aware_training:
+  enabled: false
+
+sensitive_restorer:
+  stage1_epochs: 0
+  stage2_epochs: 200  # Total training epochs
+  
+  # RL Restorer Configuration
+  use_rl_restorer: true  # Enable RL Restorer
+  use_enhanced_features: true  # Use enhanced feature extraction (recommended for high BER)
+  use_rl_intermediate: false  # 暂时禁用：先让基础RL Restorer稳定工作，后续再添加
+  
+  # RL Restorer Architecture
+  rl_state_dim: 128
+  rl_hidden_dim: 256
+  rl_max_steps: 3
+  rl_intermediate_max_steps: 2  # Max steps for intermediate layer restoration per layer
+  
+  # RL Trainer Configuration
+  rl_actor_lr: 1e-4  # Reduced learning rate for more stable training
+  rl_critic_lr: 1e-4  # Reduced learning rate for more stable training
+  rl_gamma: 0.99
+  rl_lambda: 0.95
+  rl_entropy_coef: 0.01
+  rl_value_coef: 0.5
+  rl_use_ppo: true
+  
+  # Feature Collection
+  topk_per_layer: 12
+  sensitivity_batches: 50
+  baseline_batches: 50
+  
+  # BER Configuration
+  stage2_ber: 4e-2
+  stage2_seed: 42
+  use_fixed_ber: false  # Use progressive BER (curriculum learning, recommended)
+  use_progressive_ber: true  # Enable progressive BER scheduling (借鉴对抗训练)
+  fixed_ber: 4e-2  # Fixed BER value (only used if use_fixed_ber=true)
+  ber_min: 2e-2  # Minimum BER (at least 2e-2 to have noticeable impact)
+  ber_max: 1e-1  # Maximum BER
+  beta_alpha: 2.0  # Beta distribution shape (中间胖，两头瘦, only used if use_progressive_ber=false)
+  beta_beta: 2.0
+  # Progressive BER scheduling (curriculum learning)
+  progressive_schedule_type: cosine  # 'linear', 'cosine', 'exponential', 'step'
+  progressive_warmup_epochs: 10  # Warmup epochs with ber_min
+  
+  # Training Stability
+  max_grad_norm: 0.5  # Tighter gradient clipping for more stable training
+  skip_first_last: false
+  
+  # Hard Sample Mining (optional, for high BER)
+  use_hard_sample_mining: false
+  hard_sample_ratio: 1.0
+  hard_sample_mse_weight: 0.3
+

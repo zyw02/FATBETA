@@ -94,7 +94,7 @@ def filter_optimizer_state(optimizer, optimizer_state, model):
     return filtered_state
 
 @master_only
-def save_checkpoint(epoch, arch, model, target_model, optimizer, extras=None, is_best=None, name=None, output_dir='.', lr_scheduler=None, lr_scheduler_q=None, optimizer_q=None, output_corrector=None, corrector_optimizer=None, sensitive_restorer=None, sensitive_optimizer=None, sensitive_lr_scheduler=None):
+def save_checkpoint(epoch, arch, model, target_model, optimizer, extras=None, is_best=None, name=None, output_dir='.', lr_scheduler=None, lr_scheduler_q=None, optimizer_q=None, output_corrector=None, corrector_optimizer=None, sensitive_restorer=None, sensitive_optimizer=None, sensitive_lr_scheduler=None, learnable_olm_manager=None, olm_optimizer=None, search_olm_manager=None):
     """Save a pyTorch training checkpoint
     Args:
         epoch: current epoch number
@@ -149,6 +149,25 @@ def save_checkpoint(epoch, arch, model, target_model, optimizer, extras=None, is
         checkpoint['sensitive_optimizer'] = sensitive_optimizer.state_dict()
     if sensitive_lr_scheduler is not None:
         checkpoint['sensitive_lr_scheduler'] = sensitive_lr_scheduler.state_dict()
+    
+    # 保存Learnable OLM编码器状态
+    if learnable_olm_manager is not None:
+        learnable_olm_state = {}
+        for layer_name, encoder in learnable_olm_manager.encoders.items():
+            learnable_olm_state[layer_name] = encoder.state_dict()
+        checkpoint['learnable_olm_state'] = learnable_olm_state
+        logger.info(f"Saved learnable OLM state for {len(learnable_olm_state)} layers")
+    
+    # 保存OLM优化器状态
+    if olm_optimizer is not None:
+        checkpoint['olm_optimizer'] = olm_optimizer.state_dict()
+        logger.info("Saved OLM optimizer state")
+    
+    # 保存SearchOLMManager的OLM映射
+    if search_olm_manager is not None:
+        checkpoint['search_olm_mappings'] = search_olm_manager.get_olm_mappings()
+        checkpoint['search_olm_code_to_value'] = search_olm_manager.get_olm_code_to_value()
+        logger.info(f"Saved search OLM mappings for {len(checkpoint['search_olm_mappings'])} layers")
 
     msg = '([%d] Epoch) Saving checkpoint to:\n' % epoch
     msg += '             Current: %s\n' % filepath
@@ -159,7 +178,7 @@ def save_checkpoint(epoch, arch, model, target_model, optimizer, extras=None, is
     logger.info(msg)
 
 
-def load_checkpoint(model:nn.Module, chkp_file, model_device=None, strict=True, lean=False, optimizer=None, override_optim=False, lr_scheduler=None, lr_scheduler_q=None, optimizer_q=None, output_corrector=None, corrector_optimizer=None, sensitive_restorer=None, sensitive_optimizer=None):
+def load_checkpoint(model:nn.Module, chkp_file, model_device=None, strict=True, lean=False, optimizer=None, override_optim=False, lr_scheduler=None, lr_scheduler_q=None, optimizer_q=None, output_corrector=None, corrector_optimizer=None, sensitive_restorer=None, sensitive_optimizer=None, learnable_olm_manager=None, olm_optimizer=None, search_olm_manager=None):
     """Load a pyTorch training checkpoint.
     Args:
         model: the pyTorch model to which we will load the parameters.  You can
@@ -321,6 +340,28 @@ def load_checkpoint(model:nn.Module, chkp_file, model_device=None, strict=True, 
             logger.info("Loaded sensitive optimizer state from checkpoint")
         except Exception as e:
             logger.warning(f"Failed to load sensitive optimizer state: {e}. Continuing with fresh optimizer state.")
+
+    # 加载Learnable OLM编码器状态
+    if learnable_olm_manager is not None and 'learnable_olm_state' in checkpoint:
+        try:
+            learnable_olm_state = checkpoint['learnable_olm_state']
+            loaded_layers = 0
+            for layer_name, layer_state in learnable_olm_state.items():
+                if layer_name in learnable_olm_manager.encoders:
+                    encoder = learnable_olm_manager.encoders[layer_name]
+                    encoder.load_state_dict(layer_state, strict=False)
+                    loaded_layers += 1
+            logger.info(f"Loaded learnable OLM state for {loaded_layers} layers from checkpoint")
+        except Exception as e:
+            logger.warning(f"Failed to load learnable OLM state: {e}. Continuing with fresh OLM state.")
+    
+    # 加载OLM优化器状态
+    if olm_optimizer is not None and 'olm_optimizer' in checkpoint and not override_optim:
+        try:
+            olm_optimizer.load_state_dict(checkpoint['olm_optimizer'])
+            logger.info("Loaded OLM optimizer state from checkpoint")
+        except Exception as e:
+            logger.warning(f"Failed to load OLM optimizer state: {e}. Continuing with fresh optimizer state.")
 
     if lean:
         logger.info("Loaded checkpoint %s model (next epoch %d) from %s", arch, 0, chkp_file)

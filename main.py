@@ -503,10 +503,9 @@ def main():
                             False, configs.name, log_dir, lr_scheduler=lr_scheduler, lr_scheduler_q=lr_scheduler_q, optimizer_q=optimizer_q,
                             output_corrector=output_corrector, corrector_optimizer=corrector_optimizer)
 
-            if epoch % 20 == 0:
-                save_checkpoint(epoch, configs.arch, model, target_model, optimizer, {
-                    'top1': v_top1, 'top5': v_top5}, False, f'epoch_{str(epoch)}_checkpoint.pth.tar', log_dir, lr_scheduler=lr_scheduler, lr_scheduler_q=lr_scheduler_q, optimizer_q=optimizer_q,
-                    output_corrector=output_corrector, corrector_optimizer=corrector_optimizer)
+            # NOTE: Disabled periodic extra checkpoint saving to reduce disk usage.
+            # We keep only the rolling checkpoint: `{configs.name}_checkpoint.pth.tar` (overwritten each epoch),
+            # which is sufficient for evaluation and sweep scripts.
     
     # 训练结束后打印seed使用统计
     if fault_injector is not None and hasattr(fault_injector, 'print_seed_usage_stats'):

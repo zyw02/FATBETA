@@ -1,14 +1,14 @@
-# Experiment name - Single GPU version for 11GB 2080Ti with CIFAR10
-name: resnet18_cifar10_single_gpu
+# Experiment name - Basic quantization training ResNet18 on CIFAR10 (with nr_random_sample, no FAT)
+name: resnet18_cifar10_BFAT_ce_0.01_bn_train_cagrad
 
 # Name of output directory. Checkpoints and logs will be saved at `pwd`/output_dir
 output_dir: training
 training_device: gpu
 
-num_random_path: 3
+# Basic quantization training with nr_random_sample settings
+num_random_path: 3  # Number of random paths for nr_random_sample during training
 target_bits: [6, 5, 4, 3, 2]
 post_training_batchnorm_calibration: true
-# Disable information_distortion_mitigation to save GPU memory
 information_distortion_mitigation: false
 enable_dynamic_bit_training: true
 kd: false
@@ -40,26 +40,26 @@ pre_trained: false  # No pre-trained weights for CIFAR ResNet18
 
 # (default for all layers)
 quan:
-  act: 
+  act:
     mode: lsq
     bit: 2
     per_channel: false
     symmetric: false
     all_positive: true
 
-  weight: 
+  weight:
     mode: lsq
     bit: 2
     per_channel: false
     symmetric: false
     all_positive: false
-  
+
   excepts:
     excepts_bits_width: 8
     # Specify quantized bit width for some layers, like this:
     conv1:
       act:
-        bit: 
+        bit:
         all_positive: false
       weight:
         bit:
@@ -76,9 +76,10 @@ quan:
 
 #============================ Training / Evaluation ============================
 
+# Set to true if you want to evaluate trained model with nr_random_sample
 eval: false
 
-epochs: 200
+epochs: 100
 smoothing: 0.0
 scale_gradient: false
 
@@ -98,5 +99,19 @@ decay_epochs: 30
 cooldown_epochs: 0
 
 ema_decay: 0.9997
-
-
+# ============================ BFAT 关键发现============================================
+# 目前基本可以确认，limit_norm是有害的，freeze_bn也有害
+# ============================ BFAT 关键发现============================================
+bfat:
+  enabled: true
+  dual_bit: false
+  ber: 0.01
+  ber_msb: 0.005               # MSB 故障注入率
+  ber_secondary_msb: 0.01      # Secondary MSB 故障注入率
+  loss_weight: 1.0
+  loss_type: "direct_ce"
+  projection_base: "combined"
+  limit_norm: false
+  norm_ratio: 1.0
+  freeze_bn: false
+  projection_mode: "cagrad" # orthogonal: 强行正交，direction: 方向修正，cagrad: 寻找最佳妥协方向

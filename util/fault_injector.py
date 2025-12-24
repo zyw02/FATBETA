@@ -80,6 +80,13 @@ class FaultInjector:
         whitelist_layer: Optional[str] = None,  # 仅针对特定层进行故障注入（用于敏感度分析）
         gray_code_layers: Optional[List[str]] = None,  # 使用格雷码编码的层列表（None表示不使用格雷码）
         olm_layers: Optional[Dict[str, Dict[int, int]]] = None,  # 使用OLM编码的层映射 {layer_name: {value: code}}
+        exclude_layers: Optional[List[str]] = None,  # 排除的层列表（不进行故障注入）
+        skip_msb: bool = False,  # 是否跳过MSB位（最高有效位）的故障注入
+        only_msb: bool = False,  # 是否仅对MSB位进行故障注入
+        bfat_bit_index: Optional[int] = None,  # BFAT专用：仅翻转指定位索引（None表示使用skip_msb/only_msb控制）
+        bfat_dual_bit: bool = False,  # 是否启用双位翻转模式（MSB + Secondary MSB）
+        ber_msb: Optional[float] = None,  # 双位模式下的MSB故障率
+        ber_secondary_msb: Optional[float] = None,  # 双位模式下的Secondary MSB故障率
     ) -> None:
         self.model = model
         self.mode = mode
@@ -110,6 +117,13 @@ class FaultInjector:
         self.whitelist_layer = whitelist_layer  # 白名单层
         self.gray_code_layers = set(gray_code_layers) if gray_code_layers else set()  # 使用格雷码的层集合
         self.olm_layers = olm_layers if olm_layers else {}  # 使用OLM编码的层映射 {layer_name: {value: code}}
+        self.exclude_layers = set(exclude_layers) if exclude_layers else set()  # 排除的层集合
+        self.skip_msb = skip_msb  # 是否跳过MSB位
+        self.only_msb = only_msb  # 是否仅对MSB位注入
+        self.bfat_bit_index = bfat_bit_index  # BFAT专用位索引
+        self.bfat_dual_bit = bfat_dual_bit  # 双位翻转模式
+        self.ber_msb = float(ber_msb) if ber_msb is not None else None
+        self.ber_secondary_msb = float(ber_secondary_msb) if ber_secondary_msb is not None else None
         # 为OLM创建反向映射（code -> value）以加速查找
         self.olm_code_to_value: Dict[str, Dict[int, int]] = {}
         for layer_name, value_to_code in self.olm_layers.items():
@@ -515,6 +529,10 @@ class FaultInjector:
             if self.whitelist_layer is not None:
                 if name != self.whitelist_layer:
                     continue
+            
+            # Skip excluded layers
+            if name in self.exclude_layers:
+                continue
 
             # Count layer types for debugging
             if hasattr(module, 'fixed_bits') and module.fixed_bits is not None:
@@ -1126,6 +1144,32 @@ class FaultInjector:
                 mask_flat = hash_tensor < p
                 mask = mask_flat.reshape(N, k)
                 
+                # Apply bit filtering if requested
+                # Priority: bfat_dual_bit > bfat_bit_index > only_msb > skip_msb
+                # Note: bit index k-1 is MSB (most significant bit)
+                if self.bfat_dual_bit:
+                    # Dual bit mode: MSB (k-1) and Secondary MSB (k-2) with independent BERs
+                    p_msb = self.ber_msb if self.ber_msb is not None else p
+                    p_secondary = self.ber_secondary_msb if self.ber_secondary_msb is not None else p
+                    
+                    # Use the reshaped hash_tensor to maintain position-dependency for each bit
+                    hash_grid = hash_tensor.reshape(N, k)
+                    mask.zero_()
+                    mask[:, k-1] = hash_grid[:, k-1] < p_msb
+                    mask[:, k-2] = hash_grid[:, k-2] < p_secondary
+                elif self.bfat_bit_index is not None:
+                    # BFAT mode: only flip the specified bit index
+                    target_idx = min(self.bfat_bit_index, k - 1)  # 防止越界
+                    mask_single = mask[:, target_idx].clone()
+                    mask.zero_()  # 清空所有位
+                    mask[:, target_idx] = mask_single  # 只保留目标位
+                elif self.skip_msb:
+                    # Skip MSB: set the last column (MSB) to False
+                    mask[:, k-1] = False
+                elif self.only_msb:
+                    # Only MSB: set all columns except the last one (MSB) to False
+                    mask[:, :k-1] = False
+                
                 return mask
             else:
                 # Generate random mask using seed_to_use
@@ -1133,11 +1177,47 @@ class FaultInjector:
                     # Use generator with specific seed for reproducibility
                     generator = torch.Generator(device=device)
                     generator.manual_seed(seed_to_use)
-                    return torch.rand((N, k), generator=generator, device=device) < p
+                    mask = torch.rand((N, k), generator=generator, device=device) < p
                 else:
                     # Original behavior: generate random mask each time (no seed)
                     # GPU-accelerated: generate all random values at once
-                    return torch.rand((N, k), device=device) < p
+                    mask = torch.rand((N, k), device=device) < p
+                
+                # Apply bit filtering if requested
+                # Priority: bfat_dual_bit > bfat_bit_index > only_msb > skip_msb
+                # Note: bit index k-1 is MSB (most significant bit)
+                if self.bfat_dual_bit:
+                    # Dual bit mode: MSB (k-1) and Secondary MSB (k-2) with independent BERs
+                    p_msb = self.ber_msb if self.ber_msb is not None else p
+                    p_secondary = self.ber_secondary_msb if self.ber_secondary_msb is not None else p
+                    
+                    mask.zero_()
+                    if seed_to_use is not None:
+                        generator = torch.Generator(device=device)
+                        generator.manual_seed(seed_to_use)
+                        # We generate two random tensors to maintain independence if desired, 
+                        # or just slice from a larger one. For simplicity and consistency with BER mode:
+                        rand_tensor = torch.rand((N, k), generator=generator, device=device)
+                        mask[:, k-1] = rand_tensor[:, k-1] < p_msb
+                        mask[:, k-2] = rand_tensor[:, k-2] < p_secondary
+                    else:
+                        rand_tensor = torch.rand((N, k), device=device)
+                        mask[:, k-1] = rand_tensor[:, k-1] < p_msb
+                        mask[:, k-2] = rand_tensor[:, k-2] < p_secondary
+                elif self.bfat_bit_index is not None:
+                    # BFAT mode: only flip the specified bit index
+                    target_idx = min(self.bfat_bit_index, k - 1)  # 防止越界
+                    mask_single = mask[:, target_idx].clone()
+                    mask.zero_()  # 清空所有位
+                    mask[:, target_idx] = mask_single  # 只保留目标位
+                elif self.skip_msb:
+                    # Skip MSB: set the last column (MSB) to False
+                    mask[:, k-1] = False
+                elif self.only_msb:
+                    # Only MSB: set all columns except the last one (MSB) to False
+                    mask[:, :k-1] = False
+                
+                return mask
         else:
             raise ValueError(f"Unsupported mode: {self.mode}")
 

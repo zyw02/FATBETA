@@ -1,0 +1,96 @@
+# Experiment name - Fault tolerance test for ResNet18 SR-QAT model
+# Test different BER values: 1e-4, 1e-3, 1e-2, 2e-2, 3e-2, 5e-2, 1e-1
+# Control: highest bit per layer not injected, other bits flattened and injected by BER
+name: resnet18_cifar10_fault_tolerance_test
+
+# Name of output directory. Checkpoints and logs will be saved at `pwd`/output_dir
+output_dir: eval
+training_device: gpu
+
+# Quantization settings for evaluation
+target_bits: [6, 5, 4, 3, 2]
+post_training_batchnorm_calibration: false
+information_distortion_mitigation: false
+enable_dynamic_bit_training: true
+
+# Dataset loader
+dataloader:
+  dataset: cifar10
+  num_classes: 10
+  path: ./data/cifar10
+  batch_size: 128
+  workers: 4
+  deterministic: true
+
+resume:
+  # Path to the trained SR-QAT model
+  path: ./training/resnet18_cifar10_nude_srqat_ls0/resnet18_cifar10_nude_srqat_ls0_checkpoint.pth.tar
+  lean: false
+
+log:
+  num_best_scores: 3
+  print_freq: 20
+
+#============================ Model ============================================
+
+arch: resnet18
+pre_trained: false
+
+#============================ Quantization =====================================
+# Keep quantization config to load quantized model correctly
+quan:
+  act:
+    mode: lsq
+    bit: 2
+    per_channel: false
+    symmetric: false
+    all_positive: true
+
+  weight:
+    mode: lsq
+    bit: 2
+    per_channel: false
+    symmetric: false
+    all_positive: false
+
+  excepts:
+    excepts_bits_width: 8
+    conv1:
+      act:
+        bit:
+        all_positive: false
+      weight:
+        bit:
+    bn1:
+      act:
+        bit:
+      weight:
+        bit:
+    fc:
+      act:
+        bit:
+      weight:
+        bit:
+
+#============================ Evaluation ============================
+
+eval: true
+
+# Use a dummy bit width config that contains only one configuration
+bit_width_config_path: /tmp/dummy_config.json
+
+#============================ Fault Injection Test ============================
+# Enable fault-aware evaluation for fault tolerance testing
+fault_aware_training:
+  enabled: true
+  # Test different BER values: 1e-4, 1e-3, 1e-2, 2e-2, 3e-2, 5e-2, 1e-1
+  ber: 1e-4  # Default value, will be overridden by script for different tests
+  trades:
+    # Disable TRADES loss (only use for injection testing)
+    use_kl: false
+    alpha: 0.6
+    beta: 1.0
+  # Skip MSB (highest bit) injection per layer
+  # skip_msb: true
+  # Only inject faults on MSB (highest bit) per layer
+  only_msb: true
