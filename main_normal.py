@@ -227,41 +227,34 @@ def main():
                      wbit=target_bit_width, abits=target_bit_width)
     logger_info(logger, '[DEBUG] EMA model bit width switched')
 
-    # 初始化故障注入器（仅在训练模式且启用故障感知训练时）
+    # 初始化故障注入器（支持 FAT 和 BFAT）
     fault_injector = None
     if not configs.eval and not configs.search:
-        fault_aware_training_config = getattr(configs, 'fault_aware_training', None)
-        if fault_aware_training_config is not None and getattr(fault_aware_training_config, 'enabled', False):
-            # 获取BER值（支持渐进式调度）
-            # 确保ber是浮点数（YAML可能解析为字符串，如"1e-2"）
-            ber_raw = getattr(fault_aware_training_config, 'ber', 1e-2)
-            ber = float(ber_raw)  # float()可以处理字符串和数字
-            trades_config = getattr(fault_aware_training_config, 'trades', {})
-            use_kl = getattr(trades_config, 'use_kl', False)
-            alpha = getattr(trades_config, 'alpha', 0.6)
-            beta = getattr(trades_config, 'beta', 1.0)
-            
-            # 获取训练用的模型（用于故障注入）
-            # 注意：故障注入器应该作用于训练时的模型，而不是EMA模型
+        fat_cfg = getattr(configs, 'fault_aware_training', None)
+        bfat_cfg = getattr(configs, 'bfat', None)
+        
+        fat_enabled = fat_cfg is not None and getattr(fat_cfg, 'enabled', False)
+        bfat_enabled = bfat_cfg is not None and getattr(bfat_cfg, 'enabled', False)
+
+        if fat_enabled or bfat_enabled:
+            # 获取 BER（优先从 FAT 配置获取，否则从 BFAT 获取）
+            if fat_enabled:
+                ber = float(getattr(fat_cfg, 'ber', 1e-2))
+            else:
+                ber = float(getattr(bfat_cfg, 'ber', 1e-2))
+                
             training_model = model.module if configs.distributed else model
             
-            # 获取seed_list配置（可选）
-            seed_list = getattr(fault_aware_training_config, 'seed_list', None)
+            seed_list = getattr(fat_cfg, 'seed_list', None) if fat_enabled else None
             if seed_list is not None:
-                # 确保seed_list是列表格式
                 if isinstance(seed_list, (list, tuple)):
                     seed_list = list(seed_list)
                 else:
-                    # 如果是单个值，转换为列表
                     seed_list = [int(seed_list)]
             
-            # Get skip_msb, only_msb and bfat settings from config
-            skip_msb = getattr(fault_aware_training_config, 'skip_msb', False)
-            only_msb = getattr(fault_aware_training_config, 'only_msb', False)
-            
-            # BFAT config (can be part of fault_aware_training or a separate block)
-            bfat_cfg = getattr(configs, 'bfat', None)
-            bfat_bit_index = getattr(bfat_cfg, 'bit_index', None) if bfat_cfg else None
+            skip_msb = getattr(fat_cfg, 'skip_msb', False) if fat_enabled else False
+            only_msb = getattr(fat_cfg, 'only_msb', False) if fat_enabled else False
+            bfat_bit_index = getattr(bfat_cfg, 'bit_index', None) if bfat_enabled else None
 
             fault_injector = FaultInjector(
                 model=training_model,
@@ -270,37 +263,24 @@ def main():
                 enable_in_training=True,
                 enable_in_inference=False,
                 seed=getattr(configs, 'seed', 42),
-                seed_list=seed_list,  # 传递seed_list（如果提供）
-                skip_msb=skip_msb,  # 跳过MSB设置
-                only_msb=only_msb,  # 只反转MSB设置
-                bfat_bit_index=bfat_bit_index  # BFAT 专用位索引
+                seed_list=seed_list,
+                skip_msb=skip_msb,
+                only_msb=only_msb,
+                bfat_bit_index=bfat_bit_index
             )
-            # 醒目的日志输出
+            
             logger_info(logger, '=' * 80)
-            logger_info(logger, '🚀 FAULT-AWARE TRAINING (FAT) - ENABLED')
-            logger_info(logger, '=' * 80)
-            logger_info(logger, f'  ✅ FaultInjector initialized')
-            logger_info(logger, f'  ✅ BER (Bit-Error-Rate): {ber}')
-            logger_info(logger, f'  ✅ TRADES Loss Method: {"KL Divergence" if use_kl else "Simple Combination"}')
-            if not use_kl:
-                logger_info(logger, f'  ✅ TRADES Weights: alpha={alpha}, beta={beta}')
-            else:
-                logger_info(logger, f'  ✅ TRADES KL Weight: beta={beta}')
-            logger_info(logger, f'  ✅ Training mode: Enabled (Inference mode: Disabled)')
-            if seed_list is not None:
-                logger_info(logger, f'  ✅ Seed List: {seed_list} (训练时每次forward随机选择，验证时从中采样)')
-            else:
-                logger_info(logger, f'  ✅ Seed: {getattr(configs, "seed", 42)} (固定seed)')
+            logger_info(logger, f'🚀 FAULT INJECTOR - INITIALIZED (FAT: {fat_enabled}, BFAT: {bfat_enabled})')
+            logger_info(logger, f'  ✅ Initial BER: {ber}')
             logger_info(logger, '=' * 80)
         else:
             logger_info(logger, '=' * 80)
-            logger_info(logger, '⚠️  FAULT-AWARE TRAINING (FAT) - DISABLED')
+            logger_info(logger, '⚠️  FAULT INJECTION - DISABLED')
             logger_info(logger, '=' * 80)
-            if fault_aware_training_config is None:
-                logger_info(logger, '  Reason: fault_aware_training config not found in YAML')
+            if fat_cfg is None and bfat_cfg is None:
+                logger_info(logger, '  Reason: No fault configuration found in YAML')
             else:
-                enabled_status = getattr(fault_aware_training_config, 'enabled', False)
-                logger_info(logger, f'  Reason: fault_aware_training.enabled = {enabled_status}')
+                logger_info(logger, f'  Reason: fat.enabled={fat_enabled}, bfat.enabled={bfat_enabled}')
             logger_info(logger, '=' * 80)
 
     logger_info(logger, f'[DEBUG] Creating annealing schedule (train_loader length: {len(train_loader)})...')

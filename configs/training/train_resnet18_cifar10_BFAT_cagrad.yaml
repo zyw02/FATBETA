@@ -1,5 +1,5 @@
-# Experiment name - Basic quantization training ResNet18 on CIFAR10 (with nr_random_sample, no FAT)
-name: resnet18_cifar10_BFAT_ce_0.01_bn_train_combined
+# Experiment name - BFAT with CAGrad projection
+name: resnet18_cifar10_BFAT_cagrad
 
 # Name of output directory. Checkpoints and logs will be saved at `pwd`/output_dir
 output_dir: training
@@ -107,8 +107,8 @@ bfat:
   per_sample_injection: false
   restore_max_bits: true
   dual_bit: false
-  ber: 0.02
-  ber_msb: 0.005               # MSB 故障注入率
+  ber: 0.01
+  bes_msb: 0.005               # MSB 故障注入率
   ber_secondary_msb: 0.01      # Secondary MSB 故障注入率
   loss_weight: 1.0
   loss_type: "direct_ce"
@@ -116,5 +116,5 @@ bfat:
   limit_norm: false
   norm_ratio: 1.0
   freeze_bn: false
-  projection_mode: "orthogonal" # orthogonal: 强行正交，direction: 方向修正，cagrad: 寻找最佳妥协方向
-  # cagrad基本是无用的, norm也基本是无用的
+  projection_mode: "cagrad" # 修改为 cagrad
+
