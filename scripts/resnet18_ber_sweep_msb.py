@@ -7,8 +7,8 @@ parser.add_argument('--bits', type=int, default=6, help='Dynamic bits (4 or 6)')
 args = parser.parse_args()
 
 bits = args.bits
-bers = [1e-4, 1e-3, 1e-2, 2e-2, 3e-2, 4e-2, 5e-2, 6e-2, 7e-2, 8e-2, 9e-2, 1e-1]
-ckpt = "/root/autodl-tmp/FATBETA/training/resnet18_cifar10_BFAT_ber_0.02_best_res/resnet18_cifar10_BFAT_ber_0.02_checkpoint.pth.tar"
+bers = [0.0,1e-6,1e-5,1e-4, 1e-3, 1e-2, 2e-2, 3e-2, 4e-2, 5e-2, 6e-2, 7e-2, 8e-2, 9e-2, 1e-1]
+ckpt = "/root/autodl-tmp/FATBETA/training/resnet18_cifar10_BFAT_0.02_nr_2/resnet18_cifar10_BFAT_0.02_nr_2_checkpoint.pth.tar"
 config = "configs/training/train_resnet18_cifar10_single_gpu.yaml"
 
 print(f"ResNet18 W{bits}A{bits} BER Sweep - Baseline Checkpoint")
