@@ -2,8 +2,9 @@ import logging
 import time
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 
-from quan.func import QuanConv2d, QuanLinear
+from quan.func import QuanConv2d, QuanLinear, SwithableBatchNorm
 from quan.quantizer.lsq import LsqQuan
 from util import AverageMeter
 from util.utils import accuracy, update_meter, set_global_seed
@@ -150,6 +151,78 @@ def _get_meters(mode: str = "training"):
     }
 
 
+class FeatureHook:
+    """Simple hook to capture features from a target layer."""
+    def __init__(self, module):
+        self.handle = module.register_forward_hook(self.hook_fn)
+        self.feature = None
+
+    def hook_fn(self, module, input, output):
+        self.feature = output
+
+    def remove(self):
+        self.handle.remove()
+
+
+def project_bfat_gradients(clean_grads, bfat_grads, limit_norm=False, norm_ratio=0.5, projection_mode="direction"):
+    """
+    BFAT gradient processing logic:
+    1. projection_mode:
+       - "direction": Project only if angle > 90 deg, removing harmful component.
+       - "orthogonal": Always project, forcing strict orthogonality to base gradient.
+       - "cagrad": Conflict-Averse Gradient Descent.
+    2. limit_norm: Ensure projected gradient magnitude doesn't exceed base gradient * ratio.
+    """
+    projected_bfat_grads = {}
+    for p, g_b in bfat_grads.items():
+        if p in clean_grads:
+            g_c = clean_grads[p]
+            
+            # --- 1. Directional / Space Processing ---
+            dot_product = torch.sum(g_c * g_b)
+            norm_sq_c = torch.sum(g_c * g_c) + 1e-8
+            norm_sq_b = torch.sum(g_b * g_b) + 1e-8
+            
+            if projection_mode == "orthogonal":
+                # Strict orthogonality
+                projection = (dot_product / norm_sq_c) * g_c
+                g_b_cleaned = g_b - projection
+            elif projection_mode == "cagrad":
+                # CAGrad mode
+                numerator = norm_sq_b - dot_product
+                denominator = norm_sq_c + norm_sq_b - 2 * dot_product + 1e-8
+                alpha = torch.clamp(numerator / denominator, 0.0, 1.0)
+                g_target = alpha * g_c + (1.0 - alpha) * g_b
+                g_b_cleaned = g_target - g_c
+            else:
+                # "direction" mode
+                if dot_product < 0:
+                    projection = (dot_product / norm_sq_c) * g_c
+                    g_b_cleaned = g_b - projection
+                else:
+                    g_b_cleaned = g_b
+            
+            # --- 2. Magnitude Limiting ---
+            if limit_norm:
+                norm_c = torch.norm(g_c)
+                norm_b_final = torch.norm(g_b_cleaned)
+                target_norm = norm_c * norm_ratio
+                
+                if norm_b_final > target_norm:
+                    scale = target_norm / (norm_b_final + 1e-8)
+                    g_b_final = g_b_cleaned * scale
+                else:
+                    g_b_final = g_b_cleaned
+                
+                projected_bfat_grads[p] = g_b_final
+            else:
+                projected_bfat_grads[p] = g_b_cleaned
+        else:
+            projected_bfat_grads[p] = g_b
+            
+    return projected_bfat_grads
+
+
 @master_only
 def _update_monitors(monitors, meters, epoch, batch_idx, steps_per_epoch, optimizer, mode="training"):
     if monitors is None:
@@ -208,6 +281,34 @@ def train(
     max_bit = _force_max_bitwidth(model, configs)
     logger_info(logger, f"[NUDE] Epoch {epoch}: force max bit-width W/A = {max_bit}")
 
+    # --- [NUDE] BFAT Setup ---
+    bfat_cfg = getattr(configs, 'bfat', None)
+    bfat_start_epoch = getattr(bfat_cfg, 'start_epoch', 0)
+    use_bfat = bfat_cfg is not None and getattr(bfat_cfg, 'enabled', False) and epoch >= bfat_start_epoch
+    bfat_hook = None
+    if use_bfat:
+        bfat_loss_type = getattr(bfat_cfg, 'loss_type', 'feature_sim')
+        if bfat_loss_type == 'feature_sim':
+            target_layer_name = getattr(bfat_cfg, 'target_layer', 'avgpool')
+            target_module = None
+            for n, m in model.named_modules():
+                if n == target_layer_name:
+                    target_module = m
+                    break
+            if target_module is not None:
+                bfat_hook = FeatureHook(target_module)
+            else:
+                logger_info(logger, f'⚠️ [NUDE] BFAT WARNING: Target layer {target_layer_name} not found for feature_sim!')
+                use_bfat = False
+
+        # Config Logging
+        logger_info(logger, '=' * 80)
+        logger_info(logger, f'🔥 [NUDE] BFAT ACTIVE')
+        logger_info(logger, f'   Loss Type: {bfat_loss_type}')
+        logger_info(logger, f'   Proj Mode: {getattr(bfat_cfg, "projection_mode", "direction")}')
+        logger_info(logger, f'   Injection: {"Dual Bit" if getattr(bfat_cfg, "dual_bit", False) else ("Only MSB" if getattr(bfat_cfg, "only_msb", False) else ("All Bits" if getattr(bfat_cfg, "all_bits", False) else "Standard"))}')
+        logger_info(logger, '=' * 80)
+
     meters = _get_meters(mode=mode)
     end = time.time()
     steps_per_epoch = len(train_loader)
@@ -223,11 +324,139 @@ def train(
         # Ensure bits are kept at max for dynamic layers
         _force_max_bitwidth(model, configs)
 
+        # 1. Clean forward pass
         outputs = model(inputs)
+        
+        # Capture clean feature if needed
+        clean_feature = None
+        if use_bfat and bfat_hook is not None:
+            clean_feature = bfat_hook.feature.clone().detach()
+
         ce_loss = criterion(outputs, targets)
         srqat_loss = _compute_srqat_scale_penalty(outputs, targets, model, configs, epoch)
         loss = ce_loss + srqat_loss
-        loss.backward()
+        
+        proj_mode = getattr(bfat_cfg, 'projection_mode', 'direction') if use_bfat else "direction"
+
+        # 2. Clean backward pass
+        # 如果 proj_mode 为 "none"，则跳过此处的独立反传，后续与 BFAT loss 合并
+        if not (use_bfat and proj_mode == "none"):
+            loss.backward()
+
+        # 3. BFAT Logic
+        if use_bfat and fault_injector is not None:
+            # --- 只有在需要投影时才捕获 clean 梯度 ---
+            clean_grads = {}
+            if proj_mode != "none":
+                for p in model.parameters():
+                    if p.requires_grad and p.grad is not None:
+                        clean_grads[p] = p.grad.clone()
+                
+                optimizer.zero_grad()
+                if optimizer_q is not None:
+                    optimizer_q.zero_grad()
+
+            # BFAT Forward Pass with Fault Injection
+            bfat_freeze_bn = getattr(bfat_cfg, 'freeze_bn', False)
+            if bfat_freeze_bn:
+                for m in model.modules():
+                    if isinstance(m, (nn.BatchNorm2d, nn.BatchNorm1d, SwithableBatchNorm)):
+                        m.eval()
+
+            # Backup and set BFAT-specific injector state
+            old_only_msb = fault_injector.only_msb
+            old_skip_msb = fault_injector.skip_msb
+            old_all_bits = getattr(fault_injector, 'all_bits', False)
+            old_bfat_idx = getattr(fault_injector, 'bfat_bit_index', None)
+            old_bfat_dual = getattr(fault_injector, 'bfat_dual_bit', False)
+            old_ber_msb = getattr(fault_injector, 'ber_msb', None)
+            old_ber_secondary = getattr(fault_injector, 'ber_secondary_msb', None)
+            old_ber = fault_injector.ber
+
+            # Apply BFAT settings from config
+            fault_injector.bfat_dual_bit = getattr(bfat_cfg, 'dual_bit', False)
+            fault_injector.only_msb = getattr(bfat_cfg, 'only_msb', False)
+            fault_injector.skip_msb = getattr(bfat_cfg, 'skip_msb', False)
+            fault_injector.all_bits = getattr(bfat_cfg, 'all_bits', False)
+            fault_injector.bfat_bit_index = getattr(bfat_cfg, 'bit_index', None)
+            
+            if fault_injector.bfat_dual_bit:
+                fault_injector.ber_msb = getattr(bfat_cfg, 'ber_msb', 0.01)
+                fault_injector.ber_secondary_msb = getattr(bfat_cfg, 'ber_secondary_msb', 0.01)
+            else:
+                fault_injector.ber = getattr(bfat_cfg, 'ber', 0.01)
+
+            fault_injector.enable()
+            fault_injector.reset_forward_seed()
+            
+            outputs_bfat = model(inputs)
+            
+            # Compute BFAT Loss
+            bfat_loss_type = getattr(bfat_cfg, 'loss_type', 'feature_sim')
+            if bfat_loss_type == 'direct_ce':
+                loss_bfat = criterion(outputs_bfat, targets) * getattr(bfat_cfg, 'loss_weight', 1.0)
+            else:
+                # feature_sim
+                f_c = clean_feature.view(clean_feature.size(0), -1)
+                f_f = bfat_hook.feature.view(bfat_hook.feature.size(0), -1)
+                sim = F.cosine_similarity(f_c, f_f, dim=1).mean()
+                loss_bfat = (1 - sim) * getattr(bfat_cfg, 'loss_weight', 1.0)
+
+            if proj_mode == "none":
+                # [叠加模式] 直接将两个 loss 相加后进行一次反向传播
+                (loss + loss_bfat).backward()
+            else:
+                # [投影模式] 独立反传 BFAT loss 以便捕获其梯度
+                loss_bfat.backward()
+
+            # Capture BFAT Gradients (仅在非叠加模式下需要)
+            bfat_grads = {}
+            if proj_mode != "none":
+                for p in model.parameters():
+                    if p.requires_grad and p.grad is not None:
+                        bfat_grads[p] = p.grad.clone()
+
+            # Restore injector state
+            fault_injector.disable()
+            fault_injector.only_msb = old_only_msb
+            fault_injector.skip_msb = old_skip_msb
+            fault_injector.all_bits = old_all_bits
+            fault_injector.bfat_bit_index = old_bfat_idx
+            fault_injector.bfat_dual_bit = old_bfat_dual
+            fault_injector.ber_msb = old_ber_msb
+            fault_injector.ber_secondary_msb = old_ber_secondary
+            fault_injector.ber = old_ber
+
+            if bfat_freeze_bn:
+                for m in model.modules():
+                    if isinstance(m, (nn.BatchNorm2d, nn.BatchNorm1d, SwithableBatchNorm)):
+                        m.train()
+
+            # 4. Projection and Merge
+            # 如果是叠加模式，梯度已经在 p.grad 中了，不需要再处理
+            if proj_mode != "none":
+                limit_norm = getattr(bfat_cfg, 'limit_norm', False)
+                norm_ratio = getattr(bfat_cfg, 'norm_ratio', 0.5)
+                
+                projected_bfat = project_bfat_gradients(
+                    clean_grads, bfat_grads, 
+                    limit_norm=limit_norm, 
+                    norm_ratio=norm_ratio, 
+                    projection_mode=proj_mode
+                )
+
+                for p in model.parameters():
+                    if p.requires_grad:
+                        g_c = clean_grads.get(p, None)
+                        g_b_proj = projected_bfat.get(p, None)
+                        
+                        g_final = None
+                        if g_c is not None:
+                            g_final = g_c
+                        if g_b_proj is not None:
+                            g_final = g_final + g_b_proj if g_final is not None else g_b_proj
+                        
+                        p.grad = g_final
 
         nn.utils.clip_grad_value_(model.parameters(), 1.0)
 
@@ -266,6 +495,9 @@ def train(
             except Exception:
                 pass
             _update_monitors(monitors, meters, epoch, batch_idx, steps_per_epoch, optimizer, mode=mode)
+
+    if bfat_hook is not None:
+        bfat_hook.remove()
 
     return meters["top1"].avg, meters["top5"].avg, meters["loss"].avg
 

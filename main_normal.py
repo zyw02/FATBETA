@@ -233,28 +233,21 @@ def main():
         fat_cfg = getattr(configs, 'fault_aware_training', None)
         bfat_cfg = getattr(configs, 'bfat', None)
         
-        fat_enabled = fat_cfg is not None and getattr(fat_cfg, 'enabled', False)
-        bfat_enabled = bfat_cfg is not None and getattr(bfat_cfg, 'enabled', False)
+        use_fat = fat_cfg is not None and getattr(fat_cfg, 'enabled', False)
+        use_bfat = bfat_cfg is not None and getattr(bfat_cfg, 'enabled', False)
 
-        if fat_enabled or bfat_enabled:
-            # 获取 BER（优先从 FAT 配置获取，否则从 BFAT 获取）
-            if fat_enabled:
-                ber = float(getattr(fat_cfg, 'ber', 1e-2))
-            else:
-                ber = float(getattr(bfat_cfg, 'ber', 1e-2))
-                
+        if use_fat or use_bfat:
+            main_cfg = bfat_cfg if (use_bfat and bfat_cfg) else fat_cfg
+            ber = float(getattr(main_cfg, 'ber', 1e-2))
             training_model = model.module if configs.distributed else model
-            
-            seed_list = getattr(fat_cfg, 'seed_list', None) if fat_enabled else None
-            if seed_list is not None:
-                if isinstance(seed_list, (list, tuple)):
-                    seed_list = list(seed_list)
-                else:
-                    seed_list = [int(seed_list)]
-            
-            skip_msb = getattr(fat_cfg, 'skip_msb', False) if fat_enabled else False
-            only_msb = getattr(fat_cfg, 'only_msb', False) if fat_enabled else False
-            bfat_bit_index = getattr(bfat_cfg, 'bit_index', None) if bfat_enabled else None
+            seed_list = getattr(main_cfg, 'seed_list', None)
+            exclude_layers = getattr(main_cfg, 'exclude_layers', None)
+            skip_msb = getattr(main_cfg, 'skip_msb', False)
+            only_msb = getattr(main_cfg, 'only_msb', False)
+            bfat_bit_index = getattr(bfat_cfg, 'bit_index', None) if bfat_cfg else None
+            bfat_dual_bit = getattr(bfat_cfg, 'dual_bit', False) if bfat_cfg else False
+            ber_msb = getattr(bfat_cfg, 'ber_msb', None) if bfat_cfg else None
+            ber_secondary_msb = getattr(bfat_cfg, 'ber_secondary_msb', None) if bfat_cfg else None
 
             fault_injector = FaultInjector(
                 model=training_model,
@@ -264,23 +257,27 @@ def main():
                 enable_in_inference=False,
                 seed=getattr(configs, 'seed', 42),
                 seed_list=seed_list,
+                exclude_layers=exclude_layers,
                 skip_msb=skip_msb,
                 only_msb=only_msb,
-                bfat_bit_index=bfat_bit_index
+                bfat_bit_index=bfat_bit_index,
+                bfat_dual_bit=bfat_dual_bit,
+                ber_msb=ber_msb,
+                ber_secondary_msb=ber_secondary_msb
             )
             
             logger_info(logger, '=' * 80)
-            logger_info(logger, f'🚀 FAULT INJECTOR - INITIALIZED (FAT: {fat_enabled}, BFAT: {bfat_enabled})')
-            logger_info(logger, f'  ✅ Initial BER: {ber}')
+            logger_info(logger, f'🚀 FAULT INJECTION TRAINING - ENABLED (FAT: {use_fat}, BFAT: {use_bfat})')
+            logger_info(logger, '=' * 80)
+            logger_info(logger, f'  ✅ FaultInjector initialized')
+            logger_info(logger, f'  ✅ Base BER: {ber}')
+            if use_bfat:
+                logger_info(logger, f'  ✅ BFAT Mode: dual_bit={bfat_dual_bit}, ber_msb={ber_msb}, ber_secondary_msb={ber_secondary_msb}')
             logger_info(logger, '=' * 80)
         else:
+            fault_injector = None
             logger_info(logger, '=' * 80)
-            logger_info(logger, '⚠️  FAULT INJECTION - DISABLED')
-            logger_info(logger, '=' * 80)
-            if fat_cfg is None and bfat_cfg is None:
-                logger_info(logger, '  Reason: No fault configuration found in YAML')
-            else:
-                logger_info(logger, f'  Reason: fat.enabled={fat_enabled}, bfat.enabled={bfat_enabled}')
+            logger_info(logger, '⚠️  FAULT INJECTION TRAINING - DISABLED')
             logger_info(logger, '=' * 80)
 
     logger_info(logger, f'[DEBUG] Creating annealing schedule (train_loader length: {len(train_loader)})...')
@@ -520,4 +517,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

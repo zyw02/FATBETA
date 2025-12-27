@@ -22,6 +22,7 @@ from util import (
 from util.utils import copy_code, create_optimizer_and_lr_scheduler
 from util.dist import logger_info, is_master, init_dist_nccl_backend
 from util.model_ema import ModelEma
+from util.fault_injector import FaultInjector
 from quan import find_modules_to_quantize, replace_module_by_names
 from util.mpq import switch_bit_width
 from process_nude import train, validate, PerformanceScoreboard
@@ -89,11 +90,51 @@ def main():
     if hasattr(configs, "fault_aware_training"):
         configs.fault_aware_training.enabled = False
 
+    bfat_cfg = getattr(configs, 'bfat', None)
+    use_bfat = bfat_cfg is not None and getattr(bfat_cfg, 'enabled', False)
+
     model = create_model(configs.arch, dataset=configs.dataloader.dataset, pre_trained=configs.pre_trained)
     model = preprocess_model(model, configs)
     model = replace_module_by_names(model, find_modules_to_quantize(model, configs))
     model.eval()
 
+    # FaultInjector Setup for BFAT
+    fault_injector = None
+    if use_bfat:
+        ber_raw = getattr(bfat_cfg, 'ber', 1e-2)
+        ber_msb = getattr(bfat_cfg, 'ber_msb', None)
+        ber_secondary_msb = getattr(bfat_cfg, 'ber_secondary_msb', None)
+        skip_msb = getattr(bfat_cfg, 'skip_msb', False)
+        only_msb = getattr(bfat_cfg, 'only_msb', False)
+        all_bits = getattr(bfat_cfg, 'all_bits', False)
+        bfat_bit_index = getattr(bfat_cfg, 'bit_index', None)
+        bfat_dual_bit = getattr(bfat_cfg, 'dual_bit', False)
+        exclude_layers = getattr(bfat_cfg, 'exclude_layers', None)
+
+        ber = float(ber_raw)
+        training_model = model.module if configs.distributed else model
+        
+        fault_injector = FaultInjector(
+            model=training_model,
+            mode="ber",
+            ber=ber,
+            enable_in_training=True,
+            enable_in_inference=False,
+            seed=getattr(configs, 'seed', 42),
+            exclude_layers=exclude_layers,
+            skip_msb=skip_msb,
+            only_msb=only_msb,
+            all_bits=all_bits,
+            bfat_bit_index=bfat_bit_index,
+            bfat_dual_bit=bfat_dual_bit,
+            ber_msb=ber_msb,
+            ber_secondary_msb=ber_secondary_msb
+        )
+        logger_info(logger, '=' * 80)
+        logger_info(logger, f'🚀 [NUDE] BFAT ENABLED')
+        logger_info(logger, '=' * 80)
+        logger_info(logger, f'  ✅ FaultInjector initialized for BFAT')
+    
     # DDP if distributed
     if configs.distributed:
         model = DistributedDataParallel(model.cuda(), device_ids=[configs.local_rank], find_unused_parameters=True)
@@ -139,9 +180,22 @@ def main():
         logger_info(logger, f"[NUDE][EVAL] Top1: {acc:.3f}")
         return
 
+    # 训练时间预估相关变量
+    import time
+    from datetime import datetime, timedelta
+    epoch_times = []  # 记录每个epoch的时间
+    training_start_time = time.time()  # 训练开始时间
+
     for epoch in range(start_epoch, configs.epochs):
+        epoch_start_time = time.time()  # 当前epoch开始时间
         if configs.distributed and train_sampler is not None:
             train_sampler.set_epoch(epoch)
+
+        # 旋转故障注入器的种子，增加训练多样性 (同步 main_normal.py 的做法)
+        if fault_injector is not None:
+            initial_seed = getattr(configs, 'seed', 42)
+            fault_injector.seed = initial_seed + epoch
+            logger_info(logger, f'🎲 Epoch {epoch}: FaultInjector seed rotated to {fault_injector.seed}')
 
         t_top1, t_top5, t_loss = train(
             train_loader,
@@ -154,11 +208,42 @@ def main():
             model_ema=target_model,
             nr_random_sample=0,
             optimizer_q=optimizer_q,
+            fault_injector=fault_injector,
         )
 
         # Validate on EMA model
         v_top1 = validate(test_loader, target_model.ema, criterion, epoch, monitors, configs, nr_random_sample=0)
         perf.update(v_top1, 0.0, epoch)
+
+        # 计算epoch时间并记录
+        epoch_end_time = time.time()
+        epoch_time = epoch_end_time - epoch_start_time
+        epoch_times.append(epoch_time)
+
+        # 计算平均epoch时间（使用最近5个epoch的平均值）
+        recent_epochs = min(5, len(epoch_times))
+        avg_epoch_time = sum(epoch_times[-recent_epochs:]) / recent_epochs
+
+        # 计算剩余epoch数和预估完成时间
+        remaining_epochs = configs.epochs - epoch - 1
+        estimated_remaining_time = avg_epoch_time * remaining_epochs
+
+        def format_time(seconds):
+            """将秒数格式化为易读的时间字符串"""
+            if seconds < 60:
+                return f"{seconds:.1f}秒"
+            elif seconds < 3600:
+                minutes = int(seconds // 60)
+                secs = int(seconds % 60)
+                return f"{minutes}分{secs}秒"
+            else:
+                hours = int(seconds // 3600)
+                minutes = int((seconds % 3600) // 60)
+                secs = int(seconds % 60)
+                return f"{hours}小时{minutes}分{secs}秒"
+
+        estimated_completion_time = datetime.now() + timedelta(seconds=estimated_remaining_time)
+        estimated_completion_str = estimated_completion_time.strftime("%Y-%m-%d %H:%M:%S")
 
         logger_info(
             logger,
@@ -166,6 +251,11 @@ def main():
             f"Train: Top1={t_top1:.2f} Top5={t_top5:.2f} Loss={t_loss:.4f} | "
             f"Val(EMA): Top1={v_top1:.2f}",
         )
+        logger_info(logger, f'  ⏱️  本Epoch耗时: {format_time(epoch_time)} | 平均Epoch耗时: {format_time(avg_epoch_time)} | 剩余Epoch数: {remaining_epochs}')
+        if remaining_epochs > 0:
+            logger_info(logger, f'  📅 预估剩余时间: {format_time(estimated_remaining_time)} | 预估完成时间: {estimated_completion_str}')
+        else:
+            logger_info(logger, f'  ✅ 训练完成！总耗时: {format_time(time.time() - training_start_time)}')
 
         # Save only ONE checkpoint (overwrite) to save disk space.
         # Use repo's canonical save_checkpoint() signature (util/checkpoint.py).

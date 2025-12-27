@@ -83,6 +83,7 @@ class FaultInjector:
         exclude_layers: Optional[List[str]] = None,  # 排除的层列表（不进行故障注入）
         skip_msb: bool = False,  # 是否跳过MSB位（最高有效位）的故障注入
         only_msb: bool = False,  # 是否仅对MSB位进行故障注入
+        all_bits: bool = False,  # 是否对所有位进行故障注入（全位注入）
         bfat_bit_index: Optional[int] = None,  # BFAT专用：仅翻转指定位索引（None表示使用skip_msb/only_msb控制）
         bfat_dual_bit: bool = False,  # 是否启用双位翻转模式（MSB + Secondary MSB）
         ber_msb: Optional[float] = None,  # 双位模式下的MSB故障率
@@ -120,6 +121,7 @@ class FaultInjector:
         self.exclude_layers = set(exclude_layers) if exclude_layers else set()  # 排除的层集合
         self.skip_msb = skip_msb  # 是否跳过MSB位
         self.only_msb = only_msb  # 是否仅对MSB位注入
+        self.all_bits = all_bits  # 是否全位注入
         self.bfat_bit_index = bfat_bit_index  # BFAT专用位索引
         self.bfat_dual_bit = bfat_dual_bit  # 双位翻转模式
         self.ber_msb = float(ber_msb) if ber_msb is not None else None
@@ -1145,7 +1147,7 @@ class FaultInjector:
                 mask = mask_flat.reshape(N, k)
                 
                 # Apply bit filtering if requested
-                # Priority: bfat_dual_bit > bfat_bit_index > only_msb > skip_msb
+                # Priority: bfat_dual_bit > bfat_bit_index > only_msb > skip_msb > all_bits
                 # Note: bit index k-1 is MSB (most significant bit)
                 if self.bfat_dual_bit:
                     # Dual bit mode: MSB (k-1) and Secondary MSB (k-2) with independent BERs
@@ -1163,12 +1165,15 @@ class FaultInjector:
                     mask_single = mask[:, target_idx].clone()
                     mask.zero_()  # 清空所有位
                     mask[:, target_idx] = mask_single  # 只保留目标位
-                elif self.skip_msb:
-                    # Skip MSB: set the last column (MSB) to False
-                    mask[:, k-1] = False
                 elif self.only_msb:
                     # Only MSB: set all columns except the last one (MSB) to False
                     mask[:, :k-1] = False
+                elif self.skip_msb:
+                    # Skip MSB: set the last column (MSB) to False
+                    mask[:, k-1] = False
+                elif self.all_bits:
+                    # All bits: already generated correctly by hash_tensor < p
+                    pass
                 
                 return mask
             else:
@@ -1184,7 +1189,7 @@ class FaultInjector:
                     mask = torch.rand((N, k), device=device) < p
                 
                 # Apply bit filtering if requested
-                # Priority: bfat_dual_bit > bfat_bit_index > only_msb > skip_msb
+                # Priority: bfat_dual_bit > bfat_bit_index > only_msb > skip_msb > all_bits
                 # Note: bit index k-1 is MSB (most significant bit)
                 if self.bfat_dual_bit:
                     # Dual bit mode: MSB (k-1) and Secondary MSB (k-2) with independent BERs
@@ -1210,12 +1215,15 @@ class FaultInjector:
                     mask_single = mask[:, target_idx].clone()
                     mask.zero_()  # 清空所有位
                     mask[:, target_idx] = mask_single  # 只保留目标位
-                elif self.skip_msb:
-                    # Skip MSB: set the last column (MSB) to False
-                    mask[:, k-1] = False
                 elif self.only_msb:
                     # Only MSB: set all columns except the last one (MSB) to False
                     mask[:, :k-1] = False
+                elif self.skip_msb:
+                    # Skip MSB: set the last column (MSB) to False
+                    mask[:, k-1] = False
+                elif self.all_bits:
+                    # All bits: already generated correctly by torch.rand < p
+                    pass
                 
                 return mask
         else:
