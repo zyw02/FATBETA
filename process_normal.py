@@ -921,8 +921,18 @@ def train(train_loader, model, criterion, optimizer, epoch, monitors, configs, m
                 fault_injector.ber_secondary_msb = getattr(bfat_cfg, 'ber_secondary_msb', 0.01)
             else:
                 fault_injector.bfat_dual_bit = False
-                fault_injector.only_msb = True
-                fault_injector.skip_msb = False
+                if getattr(bfat_cfg, 'only_msb', False):
+                    fault_injector.only_msb = True
+                    fault_injector.skip_msb = False
+                elif getattr(bfat_cfg, 'skip_msb', False):
+                    fault_injector.only_msb = False
+                    fault_injector.skip_msb = True
+                elif getattr(bfat_cfg, 'all_bits', False):
+                    fault_injector.only_msb = False
+                    fault_injector.skip_msb = False
+                else:
+                    fault_injector.only_msb = True
+                    fault_injector.skip_msb = False
                 fault_injector.bfat_bit_index = None
                 fault_injector.ber = getattr(bfat_cfg, 'ber', 0.01)
             
@@ -1185,22 +1195,30 @@ def train(train_loader, model, criterion, optimizer, epoch, monitors, configs, m
                 old_ber = fault_injector.ber
                 
                 # 设置 BFAT 专用参数
-                bfat_dual_bit_val = getattr(bfat_cfg, 'dual_bit', False)
-                if bfat_dual_bit_val:
-                    # 双位翻转模式：MSB + Secondary MSB
-                    fault_injector.bfat_dual_bit = True
-                    fault_injector.only_msb = False
-                    fault_injector.skip_msb = False
-                    fault_injector.bfat_bit_index = None
-                    fault_injector.ber_msb = getattr(bfat_cfg, 'ber_msb', 0.01)
-                    fault_injector.ber_secondary_msb = getattr(bfat_cfg, 'ber_secondary_msb', 0.01)
-                else:
-                    # 默认：仅翻转 MSB
-                    fault_injector.bfat_dual_bit = False
+            bfat_dual_bit_val = getattr(bfat_cfg, 'dual_bit', False)
+            if bfat_dual_bit_val:
+                fault_injector.bfat_dual_bit = True
+                fault_injector.only_msb = False
+                fault_injector.skip_msb = False
+                fault_injector.bfat_bit_index = None
+                fault_injector.ber_msb = getattr(bfat_cfg, 'ber_msb', 0.01)
+                fault_injector.ber_secondary_msb = getattr(bfat_cfg, 'ber_secondary_msb', 0.01)
+            else:
+                fault_injector.bfat_dual_bit = False
+                if getattr(bfat_cfg, 'only_msb', False):
                     fault_injector.only_msb = True
                     fault_injector.skip_msb = False
-                    fault_injector.bfat_bit_index = None
-                    fault_injector.ber = getattr(bfat_cfg, 'ber', 0.01)
+                elif getattr(bfat_cfg, 'skip_msb', False):
+                    fault_injector.only_msb = False
+                    fault_injector.skip_msb = True
+                elif getattr(bfat_cfg, 'all_bits', False):
+                    fault_injector.only_msb = False
+                    fault_injector.skip_msb = False
+                else:
+                    fault_injector.only_msb = True
+                    fault_injector.skip_msb = False
+                fault_injector.bfat_bit_index = None
+                fault_injector.ber = getattr(bfat_cfg, 'ber', 0.01)
                 
                 fault_injector.enable()
                 # 确保 BFAT forward 使用的 seed 与 clean forward 保持某种联系或独立，
