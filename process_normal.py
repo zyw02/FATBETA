@@ -406,68 +406,72 @@ class FeatureHook:
         self.handle.remove()
 
 
-def project_bfat_gradients(clean_grads, bfat_grads, limit_norm=False, norm_ratio=0.5, projection_mode="direction"):
+def project_bfat_gradients(clean_grads, bfat_grads, limit_norm=False, norm_ratio=0.5, projection_mode="direction",
+                           weight_relative_limit=False, weight_limit_ratio=0.01):
     """
-    BFAT 梯度处理逻辑：
-    1. 投影模式 (projection_mode):
-       - "direction": 仅在夹角 > 90度时进行投影，剔除有害分量。
-       - "orthogonal": 严格正交，无论夹角如何，始终剔除在基准梯度方向上的分量。
-       - "cagrad": 冲突规避梯度下降，寻找两个任务的最佳妥协方向（共赢方向）。
-    2. 模长限制 (limit_norm): 确保处理后的梯度模长不超过基准梯度的一定比例。
+    梯度投影逻辑：
+    1. direction: 仅在冲突时（dot < 0）剔除投影分量。
+    2. orthogonal: 始终剔除投影分量，只留正交分量。
+    3. cagrad: 冲突规避搜索。
+    4. none: 完全关闭投影，保留原始 BFAT 梯度。
+    5. weight_relative_limit: 以权重模长为基准进行梯度裁剪。
     """
     projected_bfat_grads = {}
-    for p, g_b in bfat_grads.items():
-        if p in clean_grads:
-            g_c = clean_grads[p]
-            
-            # --- 1. 方向/空间处理 ---
-            dot_product = torch.sum(g_c * g_b)
-            norm_sq_c = torch.sum(g_c * g_c) + 1e-8
-            norm_sq_b = torch.sum(g_b * g_b) + 1e-8
-            
-            if projection_mode == "orthogonal":
-                # 严格正交模式
-                projection = (dot_product / norm_sq_c) * g_c
-                g_b_cleaned = g_b - projection
-            elif projection_mode == "cagrad":
-                # CAGrad 模式：寻找最佳妥协方向
-                # 求解目标：max min(g_final^T g_c, g_final^T g_b)
-                # 对于双任务，g_final = alpha * g_c + (1 - alpha) * g_b
-                # alpha_opt = (g_b^T g_b - g_c^T g_b) / (g_c^T g_c + g_b^T g_b - 2 * g_c^T g_b)
-                numerator = norm_sq_b - dot_product
-                denominator = norm_sq_c + norm_sq_b - 2 * dot_product + 1e-8
-                alpha = torch.clamp(numerator / denominator, 0.0, 1.0)
+    
+    # 显式支持 none 模式，直接返回原始梯度
+    if projection_mode == "none":
+        for p, g_b in bfat_grads.items():
+            projected_bfat_grads[p] = g_b.clone()
+    else:
+        for p, g_b in bfat_grads.items():
+            if p in clean_grads:
+                g_c = clean_grads[p]
+                dot_product = torch.sum(g_c * g_b)
+                norm_sq_c = torch.sum(g_c * g_c) + 1e-8
                 
-                g_target = alpha * g_c + (1.0 - alpha) * g_b
-                # 为了适配后续的累加逻辑 (p.grad = g_c + g_b_ret)，
-                # 我们返回一个修正后的 g_b_ret，使得 g_c + g_b_ret = g_target
-                g_b_cleaned = g_target - g_c
-            else:
-                # 方向修正模式 (direction)
-                if dot_product < 0:
-                    projection = (dot_product / norm_sq_c) * g_c
+                # 显式计算投影向量
+                projection = (dot_product / norm_sq_c) * g_c
+                
+                if projection_mode == "orthogonal":
+                    # 严格正交：删除投影分量，只保留正交分量
                     g_b_cleaned = g_b - projection
+                elif projection_mode == "direction":
+                    if dot_product < 0:
+                        # 冲突：删除反向投影分量，保留剩余（正交）分量
+                        g_b_cleaned = g_b - projection
+                    else:
+                        # 同向：保留原始梯度
+                        g_b_cleaned = g_b
+                elif projection_mode == "cagrad":
+                    norm_sq_b = torch.sum(g_b * g_b) + 1e-8
+                    numerator = norm_sq_b - dot_product
+                    denominator = norm_sq_c + norm_sq_b - 2 * dot_product + 1e-8
+                    alpha = torch.clamp(numerator / denominator, 0.0, 1.0)
+                    g_target = alpha * g_c + (1.0 - alpha) * g_b
+                    g_b_cleaned = g_target - g_c
                 else:
                     g_b_cleaned = g_b
-            
-            # --- 2. 模长限制 ---
-            if limit_norm:
-                norm_c = torch.norm(g_c)
-                norm_b_final = torch.norm(g_b_cleaned)
-                target_norm = norm_c * norm_ratio
-                
-                if norm_b_final > target_norm:
-                    scale = target_norm / (norm_b_final + 1e-8)
-                    g_b_final = g_b_cleaned * scale
-                else:
-                    g_b_final = g_b_cleaned
-                
-                projected_bfat_grads[p] = g_b_final
-            else:
                 projected_bfat_grads[p] = g_b_cleaned
+            else:
+                projected_bfat_grads[p] = g_b
+
+    if limit_norm:
+        if weight_relative_limit:
+            # 基准为参数自身的模长
+            total_norm_base = torch.sqrt(sum(torch.sum(p**2) for p in bfat_grads.keys()) + 1e-8)
+            target_global_norm = total_norm_base * weight_limit_ratio
         else:
-            projected_bfat_grads[p] = g_b
+            # 基准为分类梯度的模长
+            total_norm_base = torch.sqrt(sum(torch.sum(g**2) for g in clean_grads.values()) + 1e-8)
+            target_global_norm = total_norm_base * norm_ratio
             
+        total_norm_b = torch.sqrt(sum(torch.sum(g**2) for g in projected_bfat_grads.values()) + 1e-8)
+        
+        if total_norm_b > target_global_norm:
+            scale = target_global_norm / total_norm_b
+            for p in projected_bfat_grads:
+                projected_bfat_grads[p] = projected_bfat_grads[p] * scale
+                
     return projected_bfat_grads
 
 def get_meters(mode, target_bits, nr_random_sample, sample_current_max, sample_current_min):
@@ -852,6 +856,14 @@ def train(train_loader, model, criterion, optimizer, epoch, monitors, configs, m
             logger_info(logger, f'   BN Stats: Frozen during BFAT (Eval Mode)')
         else:
             logger_info(logger, f'   BN Stats: Active during BFAT (Train Mode)')
+        
+        # 新增：是否恢复到最大位宽
+        bfat_restore_max = getattr(bfat_cfg, 'restore_max_bits', True)
+        logger_info(logger, f'   Restore Max Bits: {bfat_restore_max}')
+        
+        # 新增：是否按样本进行 BFAT
+        bfat_per_sample = getattr(bfat_cfg, 'per_sample_injection', False)
+        logger_info(logger, f'   Per-sample Injection: {bfat_per_sample}')
             
         if projection_base == 'combined':
             logger_info(logger, f'     → BFAT 梯度将与 (clean + nr_random) 综合梯度进行投影')
@@ -876,6 +888,92 @@ def train(train_loader, model, criterion, optimizer, epoch, monitors, configs, m
         nr_grads = {}
         bfat_grads = {}
         clean_feature = None
+
+        # 辅助函数：执行单次 BFAT 注入并累积梯度
+        def _do_bfat_step(accum_dict):
+            # 1. 根据配置决定是否恢复到最大位宽
+            bfat_restore_max_inner = getattr(bfat_cfg, 'restore_max_bits', True)
+            if bfat_restore_max_inner:
+                sample_max_cands(model, configs)
+            
+            # 2. 冻结 BN (可选)
+            bfat_freeze_bn_inner = getattr(bfat_cfg, 'freeze_bn', False)
+            if bfat_freeze_bn_inner:
+                for m in model.modules():
+                    if isinstance(m, (nn.BatchNorm2d, nn.BatchNorm1d, SwithableBatchNorm)):
+                        m.eval()
+
+            # 3. 设置故障注入器参数
+            old_only_msb = fault_injector.only_msb
+            old_skip_msb = fault_injector.skip_msb
+            old_bfat_idx = getattr(fault_injector, 'bfat_bit_index', None)
+            old_bfat_dual = getattr(fault_injector, 'bfat_dual_bit', False)
+            old_ber_msb = getattr(fault_injector, 'ber_msb', None)
+            old_ber_secondary = getattr(fault_injector, 'ber_secondary_msb', None)
+            old_ber = fault_injector.ber
+            
+            if getattr(bfat_cfg, 'dual_bit', False):
+                fault_injector.bfat_dual_bit = True
+                fault_injector.only_msb = False
+                fault_injector.skip_msb = False
+                fault_injector.bfat_bit_index = None
+                fault_injector.ber_msb = getattr(bfat_cfg, 'ber_msb', 0.01)
+                fault_injector.ber_secondary_msb = getattr(bfat_cfg, 'ber_secondary_msb', 0.01)
+            else:
+                fault_injector.bfat_dual_bit = False
+                if getattr(bfat_cfg, 'only_msb', False):
+                    fault_injector.only_msb = True
+                    fault_injector.skip_msb = False
+                elif getattr(bfat_cfg, 'skip_msb', False):
+                    fault_injector.only_msb = False
+                    fault_injector.skip_msb = True
+                elif getattr(bfat_cfg, 'all_bits', False):
+                    fault_injector.only_msb = False
+                    fault_injector.skip_msb = False
+                else:
+                    fault_injector.only_msb = True
+                    fault_injector.skip_msb = False
+                fault_injector.bfat_bit_index = None
+                fault_injector.ber = getattr(bfat_cfg, 'ber', 0.01)
+            
+            fault_injector.enable()
+            fault_injector.reset_forward_seed()
+            
+            # 4. 前向传播与损失计算
+            outputs_bfat = model(inputs)
+            bfat_loss_type_inner = getattr(bfat_cfg, 'loss_type', 'feature_sim')
+            
+            if bfat_loss_type_inner == 'direct_ce':
+                loss_bfat = criterion(outputs_bfat, targets) * getattr(bfat_cfg, 'loss_weight', 1.0)
+            else:
+                faulted_feature = bfat_hook.feature
+                f_c = clean_feature.view(clean_feature.size(0), -1)
+                f_f = faulted_feature.view(faulted_feature.size(0), -1)
+                sim = F.cosine_similarity(f_c, f_f, dim=1).mean()
+                loss_bfat = (1 - sim) * getattr(bfat_cfg, 'loss_weight', 1.0)
+            
+            # 5. 反向传播
+            loss_bfat.backward()
+            
+            # 6. 累积梯度
+            for p in model.parameters():
+                if p.requires_grad and p.grad is not None:
+                    accum_dict[p] = accum_dict.get(p, 0) + p.grad.clone()
+            
+            # 7. 恢复注入器状态
+            fault_injector.disable()
+            fault_injector.only_msb = old_only_msb
+            fault_injector.skip_msb = old_skip_msb
+            fault_injector.bfat_bit_index = old_bfat_idx
+            fault_injector.bfat_dual_bit = old_bfat_dual
+            fault_injector.ber_msb = old_ber_msb
+            fault_injector.ber_secondary_msb = old_ber_secondary
+            fault_injector.ber = old_ber
+            
+            if bfat_freeze_bn_inner:
+                for m in model.modules():
+                    if isinstance(m, (nn.BatchNorm2d, nn.BatchNorm1d, SwithableBatchNorm)):
+                        m.train()
 
         # DISABLED: Distribution Loss disabled for fault tolerance study
         # external_teacher_outputs is not used in loss_forward anymore
@@ -1026,45 +1124,79 @@ def train(train_loader, model, criterion, optimizer, epoch, monitors, configs, m
             update_meter(meters[iter_idx+num_fixed_sample], loss, QE_loss, dist_loss, IDM_loss, 
                         acc1, acc5, inputs.size(0), time.time() - start_time, configs.world_size)
 
-        # BFAT 阶段：在所有 NR 样本完成后进行
+            # --- BFAT 内部循环注入逻辑 (Per-Sample) ---
+            if use_bfat and getattr(bfat_cfg, 'per_sample_injection', False):
+                if fault_injector is None:
+                    if batch_idx == 0 and iter_idx == 0:
+                        logger_info(logger, '⚠️  WARNING: bfat.per_sample_injection is enabled but fault_injector is None. Skipping.')
+                else:
+                    # 记录并清除当前 NR 梯度
+                    for p in model.parameters():
+                        if p.requires_grad and p.grad is not None:
+                            nr_grads[p] = nr_grads.get(p, 0) + p.grad.clone()
+                    optimizer.zero_grad()
+                    if optimizer_q is not None:
+                        optimizer_q.zero_grad()
+                    
+                    # 执行 BFAT Step (注入并累积到 bfat_grads)
+                    bfat_loss_type_check = getattr(bfat_cfg, 'loss_type', 'feature_sim')
+                    if bfat_loss_type_check == 'direct_ce' or clean_feature is not None:
+                        _do_bfat_step(bfat_grads)
+                    
+                    # 清除 BFAT 梯度，为下一个迭代做准备
+                    optimizer.zero_grad()
+                    if optimizer_q is not None:
+                        optimizer_q.zero_grad()
+
+        # [MODIFIED] BFAT 阶段：决定是在循环后执行一次，还是已经由 per_sample_injection 完成
         # 对于 direct_ce 模式，不需要 clean_feature；对于 feature_sim 模式，需要 clean_feature
         bfat_loss_type_check = getattr(bfat_cfg, 'loss_type', 'feature_sim') if bfat_cfg else 'feature_sim'
         bfat_can_run = use_bfat and fault_injector is not None and (
             bfat_loss_type_check == 'direct_ce' or clean_feature is not None
         )
         if bfat_can_run:
-            # 记录 NR 累积的梯度并清空
-            for p in model.parameters():
-                if p.requires_grad and p.grad is not None:
-                    nr_grads[p] = p.grad.clone()
-            optimizer.zero_grad()
-            if optimizer_q is not None:
-                optimizer_q.zero_grad()
+            # 如果不是 per_sample 模式，我们需要在此处手动收集 NR 梯度并执行一次性的 BFAT
+            if not bfat_per_sample:
+                # 记录 NR 累积的梯度并清空
+                for p in model.parameters():
+                    if p.requires_grad and p.grad is not None:
+                        nr_grads[p] = p.grad.clone()
+                optimizer.zero_grad()
+                if optimizer_q is not None:
+                    optimizer_q.zero_grad()
 
-            # 配置故障注入器进行 BFAT 注入
-            # 1. 恢复到最大位宽 (max_bits)
-            sample_max_cands(model, configs)
-            
-            # --- 可选：将所有 BN 层设为 eval 模式，防止故障特征污染统计量 ---
-            bfat_freeze_bn = getattr(bfat_cfg, 'freeze_bn', False)
-            if bfat_freeze_bn:
-                for m in model.modules():
-                    if isinstance(m, (nn.BatchNorm2d, nn.BatchNorm1d, SwithableBatchNorm)):
-                        m.eval()
+                # 配置故障注入器进行 BFAT 注入
+                # 1. 根据配置决定是否恢复到最大位宽 (max_bits)
+                # bfat_restore_max: 如果为 True (默认)，则在 BFAT 之前恢复到 max_bits
+                # 如果为 False，则在当前 NR 采样后的位宽状态下进行 BFAT
+                bfat_restore_max_val = getattr(bfat_cfg, 'restore_max_bits', True)
+                if bfat_restore_max_val:
+                    sample_max_cands(model, configs)
+                    if batch_idx == 0:
+                        logger_info(logger, '   [BFAT] Restored to max_bits for fault injection')
+                else:
+                    if batch_idx == 0:
+                        logger_info(logger, '   [BFAT] Running on current sampled bits (NO restoration to max_bits)')
+                
+                # --- 可选：将所有 BN 层设为 eval 模式，防止故障特征污染统计量 ---
+                bfat_freeze_bn_val = getattr(bfat_cfg, 'freeze_bn', False)
+                if bfat_freeze_bn_val:
+                    for m in model.modules():
+                        if isinstance(m, (nn.BatchNorm2d, nn.BatchNorm1d, SwithableBatchNorm)):
+                            m.eval()
 
-            # 2. 临时备份并设置 BFAT 注入参数
-            old_only_msb = fault_injector.only_msb
-            old_skip_msb = fault_injector.skip_msb
-            old_bfat_idx = getattr(fault_injector, 'bfat_bit_index', None)
-            old_bfat_dual = getattr(fault_injector, 'bfat_dual_bit', False)
-            old_ber_msb = getattr(fault_injector, 'ber_msb', None)
-            old_ber_secondary = getattr(fault_injector, 'ber_secondary_msb', None)
-            old_ber = fault_injector.ber
-            
-            # 设置 BFAT 专用参数
-            bfat_dual_bit = getattr(bfat_cfg, 'dual_bit', False)
-            if bfat_dual_bit:
-                # 双位翻转模式：MSB + Secondary MSB
+                # 2. 临时备份并设置 BFAT 注入参数
+                old_only_msb = fault_injector.only_msb
+                old_skip_msb = fault_injector.skip_msb
+                old_bfat_idx = getattr(fault_injector, 'bfat_bit_index', None)
+                old_bfat_dual = getattr(fault_injector, 'bfat_dual_bit', False)
+                old_ber_msb = getattr(fault_injector, 'ber_msb', None)
+                old_ber_secondary = getattr(fault_injector, 'ber_secondary_msb', None)
+                old_ber = fault_injector.ber
+                
+                # 设置 BFAT 专用参数
+            bfat_dual_bit_val = getattr(bfat_cfg, 'dual_bit', False)
+            if bfat_dual_bit_val:
                 fault_injector.bfat_dual_bit = True
                 fault_injector.only_msb = False
                 fault_injector.skip_msb = False
@@ -1072,59 +1204,68 @@ def train(train_loader, model, criterion, optimizer, epoch, monitors, configs, m
                 fault_injector.ber_msb = getattr(bfat_cfg, 'ber_msb', 0.01)
                 fault_injector.ber_secondary_msb = getattr(bfat_cfg, 'ber_secondary_msb', 0.01)
             else:
-                # 默认：仅翻转 MSB
                 fault_injector.bfat_dual_bit = False
-                fault_injector.only_msb = True
-                fault_injector.skip_msb = False
+                if getattr(bfat_cfg, 'only_msb', False):
+                    fault_injector.only_msb = True
+                    fault_injector.skip_msb = False
+                elif getattr(bfat_cfg, 'skip_msb', False):
+                    fault_injector.only_msb = False
+                    fault_injector.skip_msb = True
+                elif getattr(bfat_cfg, 'all_bits', False):
+                    fault_injector.only_msb = False
+                    fault_injector.skip_msb = False
+                else:
+                    fault_injector.only_msb = True
+                    fault_injector.skip_msb = False
                 fault_injector.bfat_bit_index = None
                 fault_injector.ber = getattr(bfat_cfg, 'ber', 0.01)
+                
+                fault_injector.enable()
+                # 确保 BFAT forward 使用的 seed 与 clean forward 保持某种联系或独立，
+                # 这里重置 seed 确保注入发生
+                fault_injector.reset_forward_seed()
+                
+                outputs_bfat = model(inputs)
+                
+                # 3. 计算 BFAT 损失
+                # loss_type: "feature_sim" - 使用 feature 相似度损失 (1 - cos_sim)
+                #            "direct_ce"   - 直接使用 CE loss
+                bfat_loss_type_val = getattr(bfat_cfg, 'loss_type', 'feature_sim')
+                
+                if bfat_loss_type_val == 'direct_ce':
+                    # Direct CE 模式：直接计算故障注入后的 CE loss
+                    loss_bfat = criterion(outputs_bfat, targets) * getattr(bfat_cfg, 'loss_weight', 1.0)
+                else:
+                    # Feature Similarity 模式（默认）：计算 feature 相似度损失
+                    faulted_feature = bfat_hook.feature
+                    f_c = clean_feature.view(clean_feature.size(0), -1)
+                    f_f = faulted_feature.view(faulted_feature.size(0), -1)
+                    sim = F.cosine_similarity(f_c, f_f, dim=1).mean()
+                    loss_bfat = (1 - sim) * getattr(bfat_cfg, 'loss_weight', 1.0)
+                
+                loss_bfat.backward()
+                
+                # 4. 记录 BFAT 梯度并恢复注入器状态
+                for p in model.parameters():
+                    if p.requires_grad and p.grad is not None:
+                        bfat_grads[p] = p.grad.clone()
+                
+                fault_injector.disable()
+                fault_injector.only_msb = old_only_msb
+                fault_injector.skip_msb = old_skip_msb
+                fault_injector.bfat_bit_index = old_bfat_idx
+                fault_injector.bfat_dual_bit = old_bfat_dual
+                fault_injector.ber_msb = old_ber_msb
+                fault_injector.ber_secondary_msb = old_ber_secondary
+                fault_injector.ber = old_ber
+                
+                # --- 恢复：如果之前锁定了 BN，现在恢复为 train 模式 ---
+                if getattr(bfat_cfg, 'freeze_bn', False):
+                    for m in model.modules():
+                        if isinstance(m, (nn.BatchNorm2d, nn.BatchNorm1d, SwithableBatchNorm)):
+                            m.train()
             
-            fault_injector.enable()
-            # 确保 BFAT forward 使用的 seed 与 clean forward 保持某种联系或独立，
-            # 这里重置 seed 确保注入发生
-            fault_injector.reset_forward_seed()
-            
-            outputs_bfat = model(inputs)
-            
-            # 3. 计算 BFAT 损失
-            # loss_type: "feature_sim" - 使用 feature 相似度损失 (1 - cos_sim)
-            #            "direct_ce"   - 直接使用 CE loss
-            bfat_loss_type = getattr(bfat_cfg, 'loss_type', 'feature_sim')
-            
-            if bfat_loss_type == 'direct_ce':
-                # Direct CE 模式：直接计算故障注入后的 CE loss
-                loss_bfat = criterion(outputs_bfat, targets) * getattr(bfat_cfg, 'loss_weight', 1.0)
-            else:
-                # Feature Similarity 模式（默认）：计算 feature 相似度损失
-                faulted_feature = bfat_hook.feature
-                f_c = clean_feature.view(clean_feature.size(0), -1)
-                f_f = faulted_feature.view(faulted_feature.size(0), -1)
-                sim = F.cosine_similarity(f_c, f_f, dim=1).mean()
-                loss_bfat = (1 - sim) * getattr(bfat_cfg, 'loss_weight', 1.0)
-            
-            loss_bfat.backward()
-            
-            # 4. 记录 BFAT 梯度并恢复注入器状态
-            for p in model.parameters():
-                if p.requires_grad and p.grad is not None:
-                    bfat_grads[p] = p.grad.clone()
-            
-            fault_injector.disable()
-            fault_injector.only_msb = old_only_msb
-            fault_injector.skip_msb = old_skip_msb
-            fault_injector.bfat_bit_index = old_bfat_idx
-            fault_injector.bfat_dual_bit = old_bfat_dual
-            fault_injector.ber_msb = old_ber_msb
-            fault_injector.ber_secondary_msb = old_ber_secondary
-            fault_injector.ber = old_ber
-            
-            # --- 恢复：如果之前锁定了 BN，现在恢复为 train 模式 ---
-            if getattr(bfat_cfg, 'freeze_bn', False):
-                for m in model.modules():
-                    if isinstance(m, (nn.BatchNorm2d, nn.BatchNorm1d, SwithableBatchNorm)):
-                        m.train()
-            
-            # --- 梯度投影与合并 ---
+            # --- 梯度投影与合并 (无论哪种注入模式，最后都要汇总投影) ---
             # 根据配置选择投影基准梯度
             # projection_base: "clean" 仅使用 max_bits 的 clean 梯度
             #                  "combined" 使用 clean + nr_random 的综合梯度
@@ -1132,6 +1273,8 @@ def train(train_loader, model, criterion, optimizer, epoch, monitors, configs, m
             limit_norm = getattr(bfat_cfg, 'limit_norm', False)
             norm_ratio = getattr(bfat_cfg, 'norm_ratio', 0.5)
             proj_mode = getattr(bfat_cfg, 'projection_mode', 'direction')
+            weight_rel_limit = getattr(bfat_cfg, 'weight_relative_limit', False)
+            weight_limit_ratio = getattr(bfat_cfg, 'weight_limit_ratio', 0.01)
             
             if projection_base == 'combined':
                 # 使用综合梯度作为投影基准：clean_grads + nr_grads
@@ -1146,27 +1289,36 @@ def train(train_loader, model, criterion, optimizer, epoch, monitors, configs, m
                             base_grads[p] = g_clean
                         elif g_nr is not None:
                             base_grads[p] = g_nr
-                projected_bfat = project_bfat_gradients(base_grads, bfat_grads, limit_norm=limit_norm, norm_ratio=norm_ratio, projection_mode=proj_mode)
+                projected_bfat = project_bfat_gradients(
+                    base_grads, bfat_grads, 
+                    limit_norm=limit_norm, norm_ratio=norm_ratio, projection_mode=proj_mode,
+                    weight_relative_limit=weight_rel_limit, weight_limit_ratio=weight_limit_ratio
+                )
             else:
                 # 默认：仅使用 clean_grads 作为投影基准
-                projected_bfat = project_bfat_gradients(clean_grads, bfat_grads, limit_norm=limit_norm, norm_ratio=norm_ratio, projection_mode=proj_mode)
+                projected_bfat = project_bfat_gradients(
+                    clean_grads, bfat_grads, 
+                    limit_norm=limit_norm, norm_ratio=norm_ratio, projection_mode=proj_mode,
+                    weight_relative_limit=weight_rel_limit, weight_limit_ratio=weight_limit_ratio
+                )
             
-            for p in model.parameters():
+                for p in model.parameters():
                 if p.requires_grad:
-                    # 合并三部分梯度：Clean (max) + NR Random + Projected BFAT
-                    g_clean = clean_grads.get(p, None)
-                    g_nr = nr_grads.get(p, None)
-                    g_bfat = projected_bfat.get(p, None)
-                    
-                    g_final = None
-                    for g in [g_clean, g_nr, g_bfat]:
+                    # 合并三部分梯度：Clean (max) + NR Random Mean + Projected BFAT Mean
+                    # 确保只有存在 Tensor 时才进行相加，否则保持 None
+                    g_list = []
+                    for g_dict in [clean_grads, nr_grads, projected_bfat]:
+                        g = g_dict.get(p)
                         if g is not None:
-                            if g_final is None:
-                                g_final = g.clone()
-                            else:
-                                g_final += g
+                            g_list.append(g)
                     
-                    p.grad = g_final
+                    if len(g_list) > 0:
+                        g_final = g_list[0]
+                        for i in range(1, len(g_list)):
+                            g_final = g_final + g_list[i]
+                        p.grad = g_final
+                    else:
+                        p.grad = None
         
         elif not use_bfat:
             # 如果不使用 BFAT，梯度已经由 max_sample 和 nr_random_sample 累积在 p.grad 中
@@ -1291,4 +1443,3 @@ class PerformanceScoreboard:
 
     def is_best(self, epoch):
         return self.board[0]['epoch'] == epoch
-

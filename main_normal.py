@@ -227,7 +227,7 @@ def main():
                      wbit=target_bit_width, abits=target_bit_width)
     logger_info(logger, '[DEBUG] EMA model bit width switched')
 
-    # 初始化故障注入器 (FAT 或 BFAT 开启时都需要)
+    # 初始化故障注入器（支持 FAT 和 BFAT）
     fault_injector = None
     if not configs.eval and not configs.search:
         fat_cfg = getattr(configs, 'fault_aware_training', None)
@@ -237,23 +237,13 @@ def main():
         use_bfat = bfat_cfg is not None and getattr(bfat_cfg, 'enabled', False)
 
         if use_fat or use_bfat:
-            # 确定主要的配置来源 (优先看 BFAT，如果 BFAT 没开启则看 FAT)
             main_cfg = bfat_cfg if (use_bfat and bfat_cfg) else fat_cfg
-            
-            # 获取 BER 值
-            ber_raw = getattr(main_cfg, 'ber', 1e-2)
-            ber = float(ber_raw)
-            
-            # 获取训练用的模型
+            ber = float(getattr(main_cfg, 'ber', 1e-2))
             training_model = model.module if configs.distributed else model
-            
-            # 获取其他通用参数
             seed_list = getattr(main_cfg, 'seed_list', None)
             exclude_layers = getattr(main_cfg, 'exclude_layers', None)
             skip_msb = getattr(main_cfg, 'skip_msb', False)
             only_msb = getattr(main_cfg, 'only_msb', False)
-            
-            # BFAT 特有参数
             bfat_bit_index = getattr(bfat_cfg, 'bit_index', None) if bfat_cfg else None
             bfat_dual_bit = getattr(bfat_cfg, 'dual_bit', False) if bfat_cfg else False
             ber_msb = getattr(bfat_cfg, 'ber_msb', None) if bfat_cfg else None
@@ -275,7 +265,7 @@ def main():
                 ber_msb=ber_msb,
                 ber_secondary_msb=ber_secondary_msb
             )
-            # 醒目的日志输出
+            
             logger_info(logger, '=' * 80)
             logger_info(logger, f'🚀 FAULT INJECTION TRAINING - ENABLED (FAT: {use_fat}, BFAT: {use_bfat})')
             logger_info(logger, '=' * 80)
@@ -527,4 +517,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

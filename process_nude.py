@@ -164,7 +164,8 @@ class FeatureHook:
         self.handle.remove()
 
 
-def project_bfat_gradients(clean_grads, bfat_grads, limit_norm=False, norm_ratio=0.5, projection_mode="direction"):
+def project_bfat_gradients(clean_grads, bfat_grads, limit_norm=False, norm_ratio=0.5, projection_mode="direction",
+                           weight_relative_limit=False, weight_limit_ratio=0.01):
     """
     BFAT gradient processing logic:
     1. projection_mode:
@@ -172,8 +173,16 @@ def project_bfat_gradients(clean_grads, bfat_grads, limit_norm=False, norm_ratio
        - "orthogonal": Always project, forcing strict orthogonality to base gradient.
        - "cagrad": Conflict-Averse Gradient Descent.
     2. limit_norm: Ensure projected gradient magnitude doesn't exceed base gradient * ratio.
+    3. weight_relative_limit: If True, limit_norm uses weight magnitude as base instead of gradient magnitude.
     """
     projected_bfat_grads = {}
+    
+    # 显式支持 none 模式，直接返回原始梯度
+    if projection_mode == "none":
+        for p, g_b in bfat_grads.items():
+            projected_bfat_grads[p] = g_b.clone()
+        return projected_bfat_grads
+
     for p, g_b in bfat_grads.items():
         if p in clean_grads:
             g_c = clean_grads[p]
@@ -181,14 +190,16 @@ def project_bfat_gradients(clean_grads, bfat_grads, limit_norm=False, norm_ratio
             # --- 1. Directional / Space Processing ---
             dot_product = torch.sum(g_c * g_b)
             norm_sq_c = torch.sum(g_c * g_c) + 1e-8
-            norm_sq_b = torch.sum(g_b * g_b) + 1e-8
             
+            # 显式计算投影向量
+            projection = (dot_product / norm_sq_c) * g_c
+
             if projection_mode == "orthogonal":
                 # Strict orthogonality
-                projection = (dot_product / norm_sq_c) * g_c
                 g_b_cleaned = g_b - projection
             elif projection_mode == "cagrad":
                 # CAGrad mode
+                norm_sq_b = torch.sum(g_b * g_b) + 1e-8
                 numerator = norm_sq_b - dot_product
                 denominator = norm_sq_c + norm_sq_b - 2 * dot_product + 1e-8
                 alpha = torch.clamp(numerator / denominator, 0.0, 1.0)
@@ -197,29 +208,32 @@ def project_bfat_gradients(clean_grads, bfat_grads, limit_norm=False, norm_ratio
             else:
                 # "direction" mode
                 if dot_product < 0:
-                    projection = (dot_product / norm_sq_c) * g_c
                     g_b_cleaned = g_b - projection
                 else:
                     g_b_cleaned = g_b
             
-            # --- 2. Magnitude Limiting ---
-            if limit_norm:
-                norm_c = torch.norm(g_c)
-                norm_b_final = torch.norm(g_b_cleaned)
-                target_norm = norm_c * norm_ratio
-                
-                if norm_b_final > target_norm:
-                    scale = target_norm / (norm_b_final + 1e-8)
-                    g_b_final = g_b_cleaned * scale
-                else:
-                    g_b_final = g_b_cleaned
-                
-                projected_bfat_grads[p] = g_b_final
-            else:
-                projected_bfat_grads[p] = g_b_cleaned
+            projected_bfat_grads[p] = g_b_cleaned
         else:
             projected_bfat_grads[p] = g_b
             
+    # --- 2. Magnitude Limiting ---
+    if limit_norm:
+        if weight_relative_limit:
+            # Base is weight magnitude
+            total_norm_base = torch.sqrt(sum(torch.sum(p**2) for p in bfat_grads.keys()) + 1e-8)
+            target_global_norm = total_norm_base * weight_limit_ratio
+        else:
+            # Base is clean gradient magnitude
+            total_norm_base = torch.sqrt(sum(torch.sum(g**2) for g in clean_grads.values()) + 1e-8)
+            target_global_norm = total_norm_base * norm_ratio
+            
+        total_norm_b = torch.sqrt(sum(torch.sum(g**2) for g in projected_bfat_grads.values()) + 1e-8)
+        
+        if total_norm_b > target_global_norm:
+            scale = target_global_norm / total_norm_b
+            for p in projected_bfat_grads:
+                projected_bfat_grads[p] = projected_bfat_grads[p] * scale
+
     return projected_bfat_grads
 
 
@@ -437,12 +451,16 @@ def train(
             if proj_mode != "none":
                 limit_norm = getattr(bfat_cfg, 'limit_norm', False)
                 norm_ratio = getattr(bfat_cfg, 'norm_ratio', 0.5)
+                weight_rel_limit = getattr(bfat_cfg, 'weight_relative_limit', False)
+                weight_limit_ratio = getattr(bfat_cfg, 'weight_limit_ratio', 0.01)
                 
                 projected_bfat = project_bfat_gradients(
                     clean_grads, bfat_grads, 
                     limit_norm=limit_norm, 
                     norm_ratio=norm_ratio, 
-                    projection_mode=proj_mode
+                    projection_mode=proj_mode,
+                    weight_relative_limit=weight_rel_limit,
+                    weight_limit_ratio=weight_limit_ratio
                 )
 
                 for p in model.parameters():
