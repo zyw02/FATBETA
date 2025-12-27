@@ -10,7 +10,8 @@ def switch_bit_width_bn(model, wbit, abits):
             module.switch_bn((wbit, abits))
             count += 1
     if count > 0:
-        print(f'[DEBUG] Switched {count} BN layers')
+        # print(f'[DEBUG] Switched {count} BN layers')
+        pass
 
 def switch_bit_width(model, quan_scheduler, wbit, abits):
     for name, module in unwrap_model(model).named_modules():

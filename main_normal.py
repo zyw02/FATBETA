@@ -227,41 +227,37 @@ def main():
                      wbit=target_bit_width, abits=target_bit_width)
     logger_info(logger, '[DEBUG] EMA model bit width switched')
 
-    # 初始化故障注入器（仅在训练模式且启用故障感知训练时）
+    # 初始化故障注入器 (FAT 或 BFAT 开启时都需要)
     fault_injector = None
     if not configs.eval and not configs.search:
-        fault_aware_training_config = getattr(configs, 'fault_aware_training', None)
-        if fault_aware_training_config is not None and getattr(fault_aware_training_config, 'enabled', False):
-            # 获取BER值（支持渐进式调度）
-            # 确保ber是浮点数（YAML可能解析为字符串，如"1e-2"）
-            ber_raw = getattr(fault_aware_training_config, 'ber', 1e-2)
-            ber = float(ber_raw)  # float()可以处理字符串和数字
-            trades_config = getattr(fault_aware_training_config, 'trades', {})
-            use_kl = getattr(trades_config, 'use_kl', False)
-            alpha = getattr(trades_config, 'alpha', 0.6)
-            beta = getattr(trades_config, 'beta', 1.0)
+        fat_cfg = getattr(configs, 'fault_aware_training', None)
+        bfat_cfg = getattr(configs, 'bfat', None)
+        
+        use_fat = fat_cfg is not None and getattr(fat_cfg, 'enabled', False)
+        use_bfat = bfat_cfg is not None and getattr(bfat_cfg, 'enabled', False)
+
+        if use_fat or use_bfat:
+            # 确定主要的配置来源 (优先看 BFAT，如果 BFAT 没开启则看 FAT)
+            main_cfg = bfat_cfg if (use_bfat and bfat_cfg) else fat_cfg
             
-            # 获取训练用的模型（用于故障注入）
-            # 注意：故障注入器应该作用于训练时的模型，而不是EMA模型
+            # 获取 BER 值
+            ber_raw = getattr(main_cfg, 'ber', 1e-2)
+            ber = float(ber_raw)
+            
+            # 获取训练用的模型
             training_model = model.module if configs.distributed else model
             
-            # 获取seed_list配置（可选）
-            seed_list = getattr(fault_aware_training_config, 'seed_list', None)
-            if seed_list is not None:
-                # 确保seed_list是列表格式
-                if isinstance(seed_list, (list, tuple)):
-                    seed_list = list(seed_list)
-                else:
-                    # 如果是单个值，转换为列表
-                    seed_list = [int(seed_list)]
+            # 获取其他通用参数
+            seed_list = getattr(main_cfg, 'seed_list', None)
+            exclude_layers = getattr(main_cfg, 'exclude_layers', None)
+            skip_msb = getattr(main_cfg, 'skip_msb', False)
+            only_msb = getattr(main_cfg, 'only_msb', False)
             
-            # Get skip_msb, only_msb and bfat settings from config
-            skip_msb = getattr(fault_aware_training_config, 'skip_msb', False)
-            only_msb = getattr(fault_aware_training_config, 'only_msb', False)
-            
-            # BFAT config (can be part of fault_aware_training or a separate block)
-            bfat_cfg = getattr(configs, 'bfat', None)
+            # BFAT 特有参数
             bfat_bit_index = getattr(bfat_cfg, 'bit_index', None) if bfat_cfg else None
+            bfat_dual_bit = getattr(bfat_cfg, 'dual_bit', False) if bfat_cfg else False
+            ber_msb = getattr(bfat_cfg, 'ber_msb', None) if bfat_cfg else None
+            ber_secondary_msb = getattr(bfat_cfg, 'ber_secondary_msb', None) if bfat_cfg else None
 
             fault_injector = FaultInjector(
                 model=training_model,
@@ -270,37 +266,28 @@ def main():
                 enable_in_training=True,
                 enable_in_inference=False,
                 seed=getattr(configs, 'seed', 42),
-                seed_list=seed_list,  # 传递seed_list（如果提供）
-                skip_msb=skip_msb,  # 跳过MSB设置
-                only_msb=only_msb,  # 只反转MSB设置
-                bfat_bit_index=bfat_bit_index  # BFAT 专用位索引
+                seed_list=seed_list,
+                exclude_layers=exclude_layers,
+                skip_msb=skip_msb,
+                only_msb=only_msb,
+                bfat_bit_index=bfat_bit_index,
+                bfat_dual_bit=bfat_dual_bit,
+                ber_msb=ber_msb,
+                ber_secondary_msb=ber_secondary_msb
             )
             # 醒目的日志输出
             logger_info(logger, '=' * 80)
-            logger_info(logger, '🚀 FAULT-AWARE TRAINING (FAT) - ENABLED')
+            logger_info(logger, f'🚀 FAULT INJECTION TRAINING - ENABLED (FAT: {use_fat}, BFAT: {use_bfat})')
             logger_info(logger, '=' * 80)
             logger_info(logger, f'  ✅ FaultInjector initialized')
-            logger_info(logger, f'  ✅ BER (Bit-Error-Rate): {ber}')
-            logger_info(logger, f'  ✅ TRADES Loss Method: {"KL Divergence" if use_kl else "Simple Combination"}')
-            if not use_kl:
-                logger_info(logger, f'  ✅ TRADES Weights: alpha={alpha}, beta={beta}')
-            else:
-                logger_info(logger, f'  ✅ TRADES KL Weight: beta={beta}')
-            logger_info(logger, f'  ✅ Training mode: Enabled (Inference mode: Disabled)')
-            if seed_list is not None:
-                logger_info(logger, f'  ✅ Seed List: {seed_list} (训练时每次forward随机选择，验证时从中采样)')
-            else:
-                logger_info(logger, f'  ✅ Seed: {getattr(configs, "seed", 42)} (固定seed)')
+            logger_info(logger, f'  ✅ Base BER: {ber}')
+            if use_bfat:
+                logger_info(logger, f'  ✅ BFAT Mode: dual_bit={bfat_dual_bit}, ber_msb={ber_msb}, ber_secondary_msb={ber_secondary_msb}')
             logger_info(logger, '=' * 80)
         else:
+            fault_injector = None
             logger_info(logger, '=' * 80)
-            logger_info(logger, '⚠️  FAULT-AWARE TRAINING (FAT) - DISABLED')
-            logger_info(logger, '=' * 80)
-            if fault_aware_training_config is None:
-                logger_info(logger, '  Reason: fault_aware_training config not found in YAML')
-            else:
-                enabled_status = getattr(fault_aware_training_config, 'enabled', False)
-                logger_info(logger, f'  Reason: fault_aware_training.enabled = {enabled_status}')
+            logger_info(logger, '⚠️  FAULT INJECTION TRAINING - DISABLED')
             logger_info(logger, '=' * 80)
 
     logger_info(logger, f'[DEBUG] Creating annealing schedule (train_loader length: {len(train_loader)})...')

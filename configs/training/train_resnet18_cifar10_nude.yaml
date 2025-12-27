@@ -1,5 +1,5 @@
 # Experiment name - Basic quantization training ResNet18 on CIFAR10 (with nr_random_sample, no FAT)
-name: resnet18_cifar10_BFAT_ce_0.03_0.005_bn_train_direction
+name: resnet18_nude_0.02_direction_proj
 
 # Name of output directory. Checkpoints and logs will be saved at `pwd`/output_dir
 output_dir: training
@@ -104,9 +104,9 @@ ema_decay: 0.9997
 # ============================ BFAT 关键发现============================================
 bfat:
   enabled: true
-  dual_bit: true
-  all_bits: false              # 全位注入：如果为 true，则对参数的所有位注入故障
-  ber: 0.01
+  dual_bit: false
+  all_bits: true              # 全位注入：如果为 true，则对参数的所有位注入故障
+  ber: 0.02
   ber_msb: 0.03               # MSB 故障注入率
   ber_secondary_msb: 0.005      # Secondary MSB 故障注入率
   loss_weight: 1.0
@@ -115,4 +115,4 @@ bfat:
   limit_norm: false
   norm_ratio: 1.0
   freeze_bn: false
-  projection_mode: "direction" # orthogonal: 强行正交，direction: 方向修正，cagrad: 寻找最佳妥协方向
+  projection_mode: "direction" # orthogonal: 强行正交，direction: 方向修正，cagrad: 寻找最佳妥协方向，none: 不进行投影

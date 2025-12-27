@@ -9,3 +9,5 @@ python3 main_normal.py "$CONFIG"
 
 
 
+
+

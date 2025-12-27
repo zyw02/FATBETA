@@ -1154,7 +1154,18 @@ def train(train_loader, model, criterion, optimizer, epoch, monitors, configs, m
             for p in model.parameters():
                 if p.requires_grad:
                     # 合并三部分梯度：Clean (max) + NR Random + Projected BFAT
-                    g_final = clean_grads.get(p, 0) + nr_grads.get(p, 0) + projected_bfat.get(p, 0)
+                    g_clean = clean_grads.get(p, None)
+                    g_nr = nr_grads.get(p, None)
+                    g_bfat = projected_bfat.get(p, None)
+                    
+                    g_final = None
+                    for g in [g_clean, g_nr, g_bfat]:
+                        if g is not None:
+                            if g_final is None:
+                                g_final = g.clone()
+                            else:
+                                g_final += g
+                    
                     p.grad = g_final
         
         elif not use_bfat:

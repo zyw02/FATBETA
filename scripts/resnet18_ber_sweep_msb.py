@@ -8,7 +8,7 @@ args = parser.parse_args()
 
 bits = args.bits
 bers = [1e-4, 1e-3, 1e-2, 2e-2, 3e-2, 4e-2, 5e-2, 6e-2, 7e-2, 8e-2, 9e-2, 1e-1]
-ckpt = "/root/autodl-tmp/retraining-free-quantization/training/resnet18_cifar10_BFAT_ce_0.01_bn_train_force_orthogonal/resnet18_cifar10_BFAT_ce_0.01_bn_train_force_orthogonal_checkpoint.pth.tar"
+ckpt = "/root/autodl-tmp/retraining-free-quantization/training/resnet18_nude_0.02_direction_proj/resnet18_nude_0.02_direction_proj_checkpoint.pth.tar"
 config = "configs/training/train_resnet18_cifar10_single_gpu.yaml"
 
 print(f"ResNet18 W{bits}A{bits} BER Sweep - Baseline Checkpoint")
