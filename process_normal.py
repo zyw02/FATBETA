@@ -1302,7 +1302,7 @@ def train(train_loader, model, criterion, optimizer, epoch, monitors, configs, m
                     weight_relative_limit=weight_rel_limit, weight_limit_ratio=weight_limit_ratio
                 )
             
-                for p in model.parameters():
+            for p in model.parameters():
                 if p.requires_grad:
                     # 合并三部分梯度：Clean (max) + NR Random Mean + Projected BFAT Mean
                     # 确保只有存在 Tensor 时才进行相加，否则保持 None

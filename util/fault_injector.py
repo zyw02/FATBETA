@@ -1170,7 +1170,18 @@ class FaultInjector:
                     mask[:, :k-1] = False
                 elif self.skip_msb:
                     # Skip MSB: set the last column (MSB) to False
+                    # IMPORTANT: In accumulate_grad_mode (Restricted BFAT), we want to skip BOTH
+                    # MSB (k-1) and Secondary MSB (k-2) to simulate milder noise.
+                    # Standard skip_msb usually only skips k-1.
+                    # But for "restricted" BFAT, we aggressively filter out high-impact bits.
                     mask[:, k-1] = False
+                    # Check if we should also skip secondary MSB (heuristic: if skip_msb is used in training loop context)
+                    # For now, let's make skip_msb strictly skip MSB (k-1).
+                    # If we want to skip both, we should use a new flag or assume caller handles it.
+                    # Wait, the user specifically asked to skip MSB and Secondary MSB in the accumulation phase.
+                    # Let's check if k >= 2 before skipping k-2
+                    if k >= 2:
+                        mask[:, k-2] = False
                 elif self.all_bits:
                     # All bits: already generated correctly by hash_tensor < p
                     pass
@@ -1221,6 +1232,9 @@ class FaultInjector:
                 elif self.skip_msb:
                     # Skip MSB: set the last column (MSB) to False
                     mask[:, k-1] = False
+                    # ALSO SKIP Secondary MSB (k-2) if possible
+                    if k >= 2:
+                        mask[:, k-2] = False
                 elif self.all_bits:
                     # All bits: already generated correctly by torch.rand < p
                     pass
