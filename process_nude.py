@@ -385,12 +385,17 @@ def train(
                 # Backup and set BFAT-specific injector state
                 old_only_msb = fault_injector.only_msb
                 old_skip_msb = fault_injector.skip_msb
+                old_skip_msbn = getattr(fault_injector, 'skip_msbn', False)
                 old_all_bits = getattr(fault_injector, 'all_bits', False)
                 old_bfat_idx = getattr(fault_injector, 'bfat_bit_index', None)
                 old_bfat_dual = getattr(fault_injector, 'bfat_dual_bit', False)
                 old_ber_msb = getattr(fault_injector, 'ber_msb', None)
                 old_ber_secondary = getattr(fault_injector, 'ber_secondary_msb', None)
                 old_ber = fault_injector.ber
+                # Backup seed list to ensure manual seed control works
+                old_seed_list = fault_injector.seed_list
+                # Temporarily disable seed_list to force usage of fault_injector.seed
+                fault_injector.seed_list = None
 
                 bfat_freeze_bn = getattr(bfat_cfg, 'freeze_bn', False)
                 if bfat_freeze_bn:
@@ -403,18 +408,26 @@ def train(
                     # === 模式 A: 模拟 Normal 组的梯度累积 (Max + 3*Restricted + 1*OnlyMSB) ===
                     
                     # 1. 累积 3 次排除 MSB/SecMSB 的 BFAT 梯度 (作为 "Clean" 的补充)
-                    # 设置为 restricted 模式 (Skip MSB)
+                    # 设置为 restricted 模式 (Skip MSBN: 忽略最高两位)
                     fault_injector.bfat_dual_bit = False
                     fault_injector.only_msb = False
-                    fault_injector.skip_msb = True # 关键：排除 MSB，模拟比较温和的噪声环境
+                    fault_injector.skip_msb = False
+                    fault_injector.skip_msbn = True # Skip highest 2 bits (MSB & SecMSB)
                     fault_injector.all_bits = False
                     fault_injector.bfat_bit_index = None
-                    fault_injector.ber = getattr(bfat_cfg, 'ber', 0.01) # 使用标准 BER
+                    # 使用 restricted 专用 BER，如果未定义则回退到全局 BER
+                    fault_injector.ber = getattr(bfat_cfg, 'ber_restricted', getattr(bfat_cfg, 'ber', 0.01))
 
                     avg_restricted_loss = 0.0
-                    for _ in range(3):
+                    for i in range(3):
                         fault_injector.enable()
+                        # Manually set a varying seed for each accumulation step
+                        # Base seed: num_updates (epoch * len(loader)) + batch_idx * 10 + i
+                        # This ensures uniqueness across batches and steps
+                        current_iter_seed = num_updates + batch_idx * 10 + i
+                        fault_injector.seed = current_iter_seed
                         fault_injector.reset_forward_seed()
+                        
                         outputs_restricted = model(inputs)
                         
                         # 计算 restricted loss (直接使用 CE，视为一种数据增强)
@@ -446,11 +459,15 @@ def train(
                     fault_injector.bfat_dual_bit = False
                     fault_injector.only_msb = True # 关键：Only MSB，最强攻击
                     fault_injector.skip_msb = False
+                    fault_injector.skip_msbn = False
                     fault_injector.all_bits = False
                     fault_injector.bfat_bit_index = None
                     fault_injector.ber = getattr(bfat_cfg, 'ber', 0.01)
 
                     fault_injector.enable()
+                    # Also vary seed for Only MSB step to be distinct from restricted steps
+                    current_msb_seed = num_updates + batch_idx * 10 + 99 # offset 99 to avoid collision
+                    fault_injector.seed = current_msb_seed
                     fault_injector.reset_forward_seed()
                     outputs_bfat = model(inputs)
                     
@@ -486,6 +503,7 @@ def train(
                     fault_injector.bfat_dual_bit = getattr(bfat_cfg, 'dual_bit', False)
                     fault_injector.only_msb = getattr(bfat_cfg, 'only_msb', False)
                     fault_injector.skip_msb = getattr(bfat_cfg, 'skip_msb', False)
+                    fault_injector.skip_msbn = getattr(bfat_cfg, 'skip_msbn', False)
                     fault_injector.all_bits = getattr(bfat_cfg, 'all_bits', False)
                     fault_injector.bfat_bit_index = getattr(bfat_cfg, 'bit_index', None)
                     
@@ -529,12 +547,14 @@ def train(
             fault_injector.disable()
             fault_injector.only_msb = old_only_msb
             fault_injector.skip_msb = old_skip_msb
+            fault_injector.skip_msbn = old_skip_msbn
             fault_injector.all_bits = old_all_bits
             fault_injector.bfat_bit_index = old_bfat_idx
             fault_injector.bfat_dual_bit = old_bfat_dual
             fault_injector.ber_msb = old_ber_msb
             fault_injector.ber_secondary_msb = old_ber_secondary
             fault_injector.ber = old_ber
+            fault_injector.seed_list = old_seed_list
 
             if bfat_freeze_bn:
                 for m in model.modules():
