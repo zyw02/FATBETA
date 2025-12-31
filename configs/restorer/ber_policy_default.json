@@ -1,0 +1,30 @@
+{
+  "default": {
+    "mode": "repair",
+    "z_thresh": 3.0,
+    "std_ratio_bounds": [0.5, 2.0],
+    "clip_margin": 1.25
+  },
+  "1e-03": {
+    "mode": "monitor"
+  },
+  "1e-02": {
+    "mode": "monitor",
+    "z_thresh": 4.0
+  },
+  "5e-02": {
+    "mode": "repair",
+    "z_thresh": 3.0,
+    "std_ratio_bounds": [0.5, 2.2],
+    "clip_margin": 1.0
+  },
+  "1e-01": {
+    "mode": "repair",
+    "z_thresh": 2.5,
+    "std_ratio_bounds": [0.4, 2.5],
+    "clip_margin": 1.5,
+    "fault_alpha": 1.0
+  }
+}
+
+

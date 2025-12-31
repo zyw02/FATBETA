@@ -1,0 +1,75 @@
+[features.0] Epoch 1/50, Loss=8.167564
+[features.0] Epoch 2/50, Loss=3.463540
+[features.0] Epoch 3/50, Loss=3.135861
+[features.0] Epoch 4/50, Loss=3.050498
+[features.0] Epoch 5/50, Loss=3.008168
+[features.0] Epoch 6/50, Loss=3.043742
+[features.0] Epoch 7/50, Loss=3.015296
+[features.0] Epoch 8/50, Loss=2.940151
+[features.0] Epoch 9/50, Loss=2.992658
+[features.0] Epoch 10/50, Loss=2.925091
+[features.0] Epoch 11/50, Loss=2.911823
+[features.0] Epoch 12/50, Loss=2.907917
+[features.0] Epoch 13/50, Loss=2.904315
+[features.0] Epoch 14/50, Loss=2.899409
+[features.0] Epoch 15/50, Loss=2.892917
+[features.0] Epoch 16/50, Loss=2.890707
+[features.0] Epoch 17/50, Loss=2.887367
+[features.0] Epoch 18/50, Loss=2.885956
+[features.0] Epoch 19/50, Loss=2.882809
+[features.0] Epoch 20/50, Loss=2.880509
+[features.0] Epoch 21/50, Loss=2.879281
+[features.0] Epoch 22/50, Loss=2.877249
+[features.0] Epoch 23/50, Loss=2.876797
+[features.0] Epoch 24/50, Loss=2.874830
+[features.0] Epoch 25/50, Loss=2.872015
+[features.0] Epoch 26/50, Loss=2.869886
+[features.0] Epoch 27/50, Loss=2.868969
+[features.0] Epoch 28/50, Loss=2.873832
+[features.0] Epoch 29/50, Loss=2.870064
+[features.0] Epoch 30/50, Loss=2.861825
+[features.0] Epoch 31/50, Loss=2.864559
+[features.0] Epoch 32/50, Loss=2.865198
+[features.0] Epoch 33/50, Loss=2.868184
+[features.0] Epoch 34/50, Loss=2.856703
+[features.0] Epoch 35/50, Loss=2.855126
+[features.0] Epoch 36/50, Loss=2.852270
+[features.0] Epoch 37/50, Loss=2.850931
+[features.0] Epoch 38/50, Loss=2.851223
+[features.0] Epoch 39/50, Loss=2.850440
+[features.0] Epoch 40/50, Loss=2.849784
+[features.0] Epoch 41/50, Loss=2.849350
+[features.0] Epoch 42/50, Loss=2.849602
+[features.0] Epoch 43/50, Loss=2.847831
+[features.0] Epoch 44/50, Loss=2.849964
+[features.0] Epoch 45/50, Loss=2.847260
+[features.0] Epoch 46/50, Loss=2.846844
+[features.0] Epoch 47/50, Loss=2.847113
+[features.0] Epoch 48/50, Loss=2.845969
+[features.0] Epoch 49/50, Loss=2.847654
+[features.0] Epoch 50/50, Loss=2.846303
+Traceback (most recent call last):
+  File "/root/autodl-tmp/retraining-free-quantization/tools/train_sensitive_repair_head.py", line 243, in <module>
+    main()
+  File "/root/autodl-tmp/retraining-free-quantization/tools/train_sensitive_repair_head.py", line 222, in main
+    model = train_layer_model(
+            ^^^^^^^^^^^^^^^^^^
+  File "/root/autodl-tmp/retraining-free-quantization/tools/train_sensitive_repair_head.py", line 151, in train_layer_model
+    repaired, params = model.repair(faults, snapshot, mask, return_params=True)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/autodl-tmp/retraining-free-quantization/util/sensitive_layer_restorer.py", line 376, in repair
+    residual = self.depthwise(activation)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1532, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1541, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/site-packages/torch/nn/modules/conv.py", line 460, in forward
+    return self._conv_forward(input, self.weight, self.bias)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/site-packages/torch/nn/modules/conv.py", line 456, in _conv_forward
+    return F.conv2d(input, weight, bias, self.stride,
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+RuntimeError: Expected 3D (unbatched) or 4D (batched) input to conv2d, but got input of size: [512, 4096]

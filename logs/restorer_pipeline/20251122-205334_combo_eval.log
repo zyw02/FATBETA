@@ -1,0 +1,10 @@
+[Eval] Layers=('features.0', 'classifier.1') -> log: logs/sensitive_layer_sets/combo_features-0_classifier-1.log
+[Eval] Layers=('features.0', 'classifier.1', 'features.3') -> log: logs/sensitive_layer_sets/combo_features-0_classifier-1_features-3.log
+[Eval] Layers=('features.0', 'classifier.1', 'features.3', 'features.8') -> log: logs/sensitive_layer_sets/combo_features-0_classifier-1_features-3_features-8.log
+
+=== Sensitive Layer Combination Summary ===
+Combo                                    1e-03 Δ(%)  1e-02 Δ(%)  5e-02 Δ(%)  1e-01 Δ(%)
+--------------------------------------------------------------------------------
+features.0,classifier.1                  +0.00       +0.00       -37.23      -0.02     
+features.0,classifier.1,features.3       +0.00       +0.00       -37.23      -0.02     
+features.0,classifier.1,features.3,features.8 +0.00       +0.00       -37.23      -0.02     

@@ -1,0 +1,79 @@
+
+features.0 Activation Comparison Statistics
+=============================================
+Sample Index: 0
+Shape: (64, 32, 32)
+
+Overall Statistics:
+------------------
+Clean:
+  Mean: 0.028192
+  Std:  1.387870
+  Min:  -13.752028
+  Max:  13.133519
+  
+Fault:
+  Mean: 0.035463
+  Std:  1.428535
+  Min:  -15.760888
+  Max:  12.584121
+
+Difference (Fault - Clean):
+  Mean: 0.007271
+  Std:  0.462408
+  Min:  -3.789179
+  Max:  2.688348
+  Max Abs: 3.789179
+
+Channel-wise Statistics (Top 10 channels with largest difference):
+-------------------------------------------------------------------
+Channel 56:
+  Clean: mean=-0.0913, std=3.4972
+  Fault: mean=-0.0008, std=3.5121
+  Diff:  mean=0.0905, std=1.0684, max_abs=2.6883
+
+Channel 49:
+  Clean: mean=0.3514, std=0.8784
+  Fault: mean=0.4926, std=1.3503
+  Diff:  mean=0.1412, std=0.8449, max_abs=3.7892
+
+Channel 5:
+  Clean: mean=0.1010, std=0.7342
+  Fault: mean=-0.0003, std=1.0025
+  Diff:  mean=-0.1013, std=0.8129, max_abs=2.5046
+
+Channel 47:
+  Clean: mean=-0.0811, std=0.8379
+  Fault: mean=0.1421, std=1.1626
+  Diff:  mean=0.2232, std=0.7336, max_abs=2.9918
+
+Channel 24:
+  Clean: mean=0.0044, std=0.7140
+  Fault: mean=0.2701, std=0.9846
+  Diff:  mean=0.2657, std=0.6780, max_abs=1.7872
+
+Channel 51:
+  Clean: mean=0.0082, std=0.5885
+  Fault: mean=0.1916, std=0.9401
+  Diff:  mean=0.1834, std=0.6569, max_abs=1.8786
+
+Channel 57:
+  Clean: mean=0.1044, std=1.0092
+  Fault: mean=0.1587, std=1.1669
+  Diff:  mean=0.0542, std=0.7035, max_abs=2.8545
+
+Channel 6:
+  Clean: mean=0.2209, std=1.1435
+  Fault: mean=0.0327, std=1.1568
+  Diff:  mean=-0.1882, std=0.6388, max_abs=2.4113
+
+Channel 3:
+  Clean: mean=-0.0495, std=0.7449
+  Fault: mean=-0.2002, std=1.0249
+  Diff:  mean=-0.1507, std=0.6249, max_abs=1.9564
+
+Channel 7:
+  Clean: mean=0.5467, std=5.3669
+  Fault: mean=0.3829, std=5.0415
+  Diff:  mean=-0.1639, std=0.5707, max_abs=1.5204
+

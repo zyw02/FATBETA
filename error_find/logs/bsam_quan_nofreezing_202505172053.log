@@ -1,0 +1,6 @@
+rho_max_sharp: 0.01 rho_min_sharp_max: 0.001
+Epoch 171: 100%|██████████| 1564/1564 [02:13<00:00, 11.69it/s, train_loss=0.1592, val_loss=0.6187, val_acc=84.25%]
+Epoch 176: 100%|██████████| 1564/1564 [02:14<00:00, 11.64it/s, train_loss=0.1514, val_loss=0.6223, val_acc=84.15%]
+Epoch 177: 100%|██████████| 1564/1564 [02:15<00:00, 11.54it/s, train_loss=0.1536, val_loss=0.6245, val_acc=84.15%]
+
+rho_max_sharp: 0.05 rho_min_sharp_max: 0.01 TBC

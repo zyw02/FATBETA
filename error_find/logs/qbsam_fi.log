@@ -1,0 +1,48 @@
+2025-07-09 09:39:54 - robust model alexnet_qbsam_timm_w6a6_min_sharpness_max_r_0.01_.pt, all min_sharpness_min_rho is set as 0
+
+
+2025-07-09 09:40:28 - FI Campaign Epoch [1/100] | acc_bsam_quan: 72.80, 68.24, 62.15, 10.59, 0.00 | acc_quan: 44.01, 31.68, 22.91, 10.17, 0.00%
+2025-07-09 09:41:02 - FI Campaign Epoch [2/100] | acc_bsam_quan: 70.97, 67.16, 54.52, 12.27, 0.00 | acc_quan: 47.73, 30.84, 22.04, 11.09, 0.00%
+2025-07-09 09:41:02 - 
+
+
+2025-07-09 09:42:42 - robust model alexnet_qbsam_timm_w6a6_min_sharpness_max_r_0.02_.pt, all min_sharpness_min_rho is set as 0
+
+
+2025-07-09 09:43:15 - FI Campaign Epoch [1/100] | acc_bsam_quan: 73.31, 72.74, 56.10, 18.99, 0.00 | acc_quan: 44.01, 31.68, 22.91, 10.17, 0.00%
+2025-07-09 09:43:56 - FI Campaign Epoch [2/100] | acc_bsam_quan: 72.34, 68.90, 49.30, 19.11, 0.00 | acc_quan: 47.73, 30.84, 22.04, 11.09, 0.00%
+2025-07-09 09:43:56 - 
+
+
+2025-07-09 09:45:47 - robust model alexnet_qbsam_timm_w6a6_min_sharpness_max_r_0.002_.pt, all min_sharpness_min_rho is set as 0
+
+
+2025-07-09 09:46:25 - FI Campaign Epoch [1/100] | acc_bsam_quan: 70.48, 67.62, 63.91, 15.23, 0.00 | acc_quan: 44.01, 31.68, 22.91, 10.17, 0.00%
+2025-07-09 09:46:57 - FI Campaign Epoch [2/100] | acc_bsam_quan: 71.63, 66.21, 52.06, 15.02, 0.00 | acc_quan: 47.73, 30.84, 22.04, 11.09, 0.00%
+2025-07-09 09:46:57 - 
+
+
+2025-07-09 09:49:04 - robust model alexnet_qbsam_timm_w6a6_min_sharpness_max_r_0.003_.pt, all min_sharpness_min_rho is set as 0
+
+
+2025-07-09 09:49:34 - FI Campaign Epoch [1/100] | acc_bsam_quan: 72.36, 66.75, 57.29, 15.44, 0.00 | acc_quan: 44.01, 31.68, 22.91, 10.17, 0.00%
+2025-07-09 09:50:03 - FI Campaign Epoch [2/100] | acc_bsam_quan: 72.31, 66.83, 52.53, 15.25, 0.00 | acc_quan: 47.73, 30.84, 22.04, 11.09, 0.00%
+2025-07-09 09:50:03 - 
+
+
+2025-07-09 09:51:02 - robust model alexnet_qbsam_timm_w6a6_min_sharpness_max_r_0.004_.pt, all min_sharpness_min_rho is set as 0
+
+
+2025-07-09 09:51:32 - FI Campaign Epoch [1/100] | acc_bsam_quan: 73.72, 69.01, 60.07, 15.10, 0.00 | acc_quan: 44.01, 31.68, 22.91, 10.17, 0.00%
+2025-07-09 09:52:00 - FI Campaign Epoch [2/100] | acc_bsam_quan: 72.14, 64.45, 48.86, 13.87, 0.00 | acc_quan: 47.73, 30.84, 22.04, 11.09, 0.00%
+2025-07-09 09:52:00 - 
+
+
+2025-07-09 09:53:27 - robust model alexnet_qbsam_timm_w6a6_min_sharpness_max_r_0.005_.pt, all min_sharpness_min_rho is set as 0
+
+
+2025-07-09 09:53:56 - FI Campaign Epoch [1/100] | acc_bsam_quan: 70.04, 70.35, 57.02, 13.80, 0.00 | acc_quan: 44.01, 31.68, 22.91, 10.17, 0.00%
+2025-07-09 09:54:25 - FI Campaign Epoch [2/100] | acc_bsam_quan: 71.19, 68.81, 49.76, 14.44, 0.00 | acc_quan: 47.73, 30.84, 22.04, 11.09, 0.00%
+2025-07-09 09:54:25 - 
+
+

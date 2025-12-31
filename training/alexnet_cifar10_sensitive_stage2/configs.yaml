@@ -1,0 +1,104 @@
+adaptive_region_weight_decay: 0
+arch: alexnet
+cooldown_epochs: 0
+dataloader:
+  batch_size: 128
+  dataset: cifar10
+  deterministic: true
+  num_classes: 10
+  path: ./data/cifar10
+  workers: 4
+decay_epochs: 30
+decay_rate: 0.1
+dropout: 0.0
+ema_decay: 0.9997
+enable_dynamic_bit_training: true
+epochs: 0
+eval: false
+fault_aware_training:
+  enabled: false
+information_distortion_mitigation: false
+kd: false
+local_rank: 0
+log:
+  num_best_scores: 3
+  print_freq: 20
+lr: 0.0001
+min_lr: 0.0
+momentum: 0.9
+name: alexnet_cifar10_sensitive_stage2
+num_random_path: 3
+opt: adam
+output_dir: training
+post_training_batchnorm_calibration: true
+pre_trained: false
+quan:
+  act:
+    all_positive: true
+    bit: 2
+    mode: lsq
+    per_channel: false
+    symmetric: false
+  excepts:
+    classifier.6:
+      act:
+        all_positive: false
+        bit: null
+      weight:
+        bit: null
+    excepts_bits_width: 8
+    features.0:
+      act:
+        all_positive: false
+        bit: null
+      weight:
+        bit: null
+  weight:
+    all_positive: false
+    bit: 2
+    mode: lsq
+    per_channel: false
+    symmetric: false
+resume:
+  lean: false
+  path: null
+scale_gradient: false
+sched: plateau
+search: false
+sensitive_restorer:
+  baseline_batches: 50
+  direction_weight: 0.1
+  distill_epochs: 100
+  distill_weight: 0.5
+  expert_hidden_dim: 128
+  kl_div_weight: 0.5
+  restorer_lr: 0.001
+  rl_gain: 0.7
+  rl_penalty: 0.4
+  sensitivity_batches: 50
+  skip_first_last: false
+  stage1_epochs: 0
+  stage2_ber: 4e-2
+  stage2_epochs: 200
+  stage2_mix_bers:
+  - 3e-2
+  - 4e-2
+  - 5e-2
+  - 8e-2
+  stage2_mix_prob: 0.3
+  stage2_seed: 42
+  temperature: 2.0
+  topk_per_layer: 12
+  use_rl_weighted: true
+smoothing: 0.0
+split_aw_cands: false
+target_bits:
+- 6
+- 5
+- 4
+- 3
+- 2
+training_device: gpu
+warmup_epochs: 0
+warmup_lr: 0.0
+weight_decay: 0.0001

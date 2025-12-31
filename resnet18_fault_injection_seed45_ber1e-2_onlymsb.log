@@ -1,0 +1,99 @@
+Munch({'name': 'resnet18_cifar10_BFAT_ce_0.03_0.005_bn_train_direction', 'output_dir': 'training', 'training_device': 'gpu', 'num_random_path': 3, 'target_bits': [6, 5, 4, 3, 2], 'post_training_batchnorm_calibration': True, 'information_distortion_mitigation': False, 'enable_dynamic_bit_training': True, 'kd': False, 'dataloader': Munch({'dataset': 'cifar10', 'num_classes': 10, 'path': './data/cifar10', 'batch_size': 128, 'workers': 4, 'deterministic': True}), 'resume': Munch({'path': None, 'lean': False}), 'log': Munch({'num_best_scores': 3, 'print_freq': 20}), 'arch': 'resnet18', 'pre_trained': False, 'quan': Munch({'act': Munch({'mode': 'lsq', 'bit': 2, 'per_channel': False, 'symmetric': False, 'all_positive': True}), 'weight': Munch({'mode': 'lsq', 'bit': 2, 'per_channel': False, 'symmetric': False, 'all_positive': False}), 'excepts': Munch({'excepts_bits_width': 8, 'conv1': Munch({'act': Munch({'bit': None, 'all_positive': False}), 'weight': Munch({'bit': None})}), 'bn1': Munch({'act': Munch({'bit': None}), 'weight': Munch({'bit': None})}), 'fc': Munch({'act': Munch({'bit': None}), 'weight': Munch({'bit': None})})})}), 'eval': False, 'epochs': 100, 'smoothing': 0.0, 'scale_gradient': False, 'opt': 'sgd', 'lr': 0.1, 'momentum': 0.9, 'weight_decay': 0.0001, 'adaptive_region_weight_decay': 0, 'sched': 'cosine', 'min_lr': 0.0, 'decay_rate': 0.1, 'warmup_epochs': 0, 'warmup_lr': 0.0, 'decay_epochs': 30, 'cooldown_epochs': 0, 'ema_decay': 0.9997, 'bfat': Munch({'enabled': True, 'dual_bit': True, 'all_bits': False, 'ber': 0.01, 'ber_msb': 0.03, 'ber_secondary_msb': 0.005, 'loss_weight': 1.0, 'loss_type': 'direct_ce', 'projection_base': 'combined', 'limit_norm': False, 'norm_ratio': 1.0, 'freeze_bn': False, 'projection_mode': 'direction'}), 'local_rank': 0, 'split_aw_cands': False})
+layer QuanConv2d not using splited a_w cands!
+layer QuanConv2d not using splited a_w cands!
+layer QuanConv2d not using splited a_w cands!
+layer QuanConv2d not using splited a_w cands!
+layer QuanConv2d not using splited a_w cands!
+layer QuanConv2d not using splited a_w cands!
+layer QuanConv2d not using splited a_w cands!
+layer QuanConv2d not using splited a_w cands!
+layer QuanConv2d not using splited a_w cands!
+layer QuanConv2d not using splited a_w cands!
+layer QuanConv2d not using splited a_w cands!
+layer QuanConv2d not using splited a_w cands!
+layer QuanConv2d not using splited a_w cands!
+layer QuanConv2d not using splited a_w cands!
+layer QuanConv2d not using splited a_w cands!
+layer QuanConv2d not using splited a_w cands!
+layer QuanConv2d not using splited a_w cands!
+layer QuanConv2d not using splited a_w cands!
+layer QuanConv2d not using splited a_w cands!
+layer QuanConv2d not using splited a_w cands!
+[DEBUG] Creating train_loader: batch_size=128, workers=4, sampler=None
+[DEBUG] Train loader created, length: 390
+[DEBUG] Test loader created, length: 79
+[DEBUG] Val loader created, length: 390
+初始化模型output_size...
+✅ 模型output_size初始化完成
+
+================================================================================
+自动设置位宽配置
+================================================================================
+根据配置文件设置：
+  - fixed_bits (excepts): 8-bit
+  - dynamic layers: 6-bit (target_bits最大值)
+
+  强制设置 dynamic layers 位宽为: 6-bit
+
+  正在将所有 dynamic layers 强制设置为 6-bit...
+  验证层状态:
+    - conv1: bits=None, fixed_bits=(8, 32)
+  已强制锁定 19 个 dynamic layers 的量化状态
+✅ 位宽配置完成
+
+重新初始化模型output_size（位宽已更新）...
+✅ output_size已更新
+
+================================================================================
+ResNet18 SEU容错能力测试（Baseline，无编码保护）
+================================================================================
+模型: resnet18
+数据集: cifar10
+BER: [0.01]
+验证集大小: 10000 样本
+随机种子: 45
+
+位宽配置:
+  Fixed-bits层 (8-bit): 2 层
+    - conv1: (8, 32)-bit
+    - fc: (8, 8)-bit
+  Dynamic-bits层 (6-bit): 19 层
+    - layer1.0.conv1: W6-bit, A6-bit
+    - layer1.0.conv2: W6-bit, A6-bit
+    - layer1.1.conv1: W6-bit, A6-bit
+    - layer1.1.conv2: W6-bit, A6-bit
+    - layer2.0.conv1: W6-bit, A6-bit
+    ... 还有 14 层
+
+
+========================================
+正在测试 BER = 0.01
+========================================
+Test 2: 标准二进制编码 + 故障注入 (无编码保护)
+[FaultInjector] Wrapped 21 layers for fault injection: 19 dynamic bits layers, 2 fixed_bits layers (first/last layers will use their fixed bit-width, e.g., 8-bit)
+
+故障注入器已启用，被包装的层:
+  共 21 层被包装:
+    - conv1 (fixed_bits, fixed_bits=(8, 32))
+    - layer1.0.conv1 (dynamic, bits=(6, 6))
+    - layer1.0.conv2 (dynamic, bits=(6, 6))
+    - layer1.1.conv1 (dynamic, bits=(6, 6))
+    - layer1.1.conv2 (dynamic, bits=(6, 6))
+    - layer2.0.conv1 (dynamic, bits=(6, 6))
+    - layer2.0.conv2 (dynamic, bits=(6, 6))
+    - layer2.0.downsample.0 (dynamic, bits=(6, 6))
+    - layer2.1.conv1 (dynamic, bits=(6, 6))
+    - layer2.1.conv2 (dynamic, bits=(6, 6))
+    ... 还有 11 层
+
+
+故障注入统计信息 (BER=0.01):
+  总翻转bit数: 8796808/5292984832 (0.1662%)
+  总受影响参数: 8796808/881983808 (1.00%)
+  期望BER: 0.01 (1.0000%)
+BER 0.01 故障注入后准确率: 92.75%
+
+================================================================================
+所有测试完成
+================================================================================
+================================================================================

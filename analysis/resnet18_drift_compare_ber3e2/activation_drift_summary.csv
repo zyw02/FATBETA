@@ -1,0 +1,4 @@
+Model,L2 Relative Drift,Cosine Similarity
+ResNet18 Nude (λ=0),.4f,.4f
+ResNet18 SR-QAT (λ=1e-7),.4f,.4f
+Improvement,+.1f,+.1f

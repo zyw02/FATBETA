@@ -15,7 +15,7 @@ distributed: false
 dropout: 0.0
 ema_decay: 0.9997
 enable_dynamic_bit_training: true
-epochs: 200
+epochs: 120
 eval: false
 information_distortion_mitigation: false
 kd: false

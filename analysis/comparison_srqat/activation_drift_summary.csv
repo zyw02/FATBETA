@@ -1,0 +1,4 @@
+Model,L2 Relative Drift,Cosine Similarity
+SR-QAT λ=0 (No Penalty),.4f,.4f
+SR-QAT λ=1e-6,.4f,.4f
+Improvement,+.1f,+.1f

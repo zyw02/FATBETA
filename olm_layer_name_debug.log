@@ -1,0 +1,53 @@
+Munch({'name': 'alexnet_cifar10_learnable_olm_fat_v3', 'output_dir': 'training', 'training_device': 'gpu', 'num_random_path': 3, 'target_bits': [6, 5, 4, 3, 2], 'post_training_batchnorm_calibration': True, 'information_distortion_mitigation': False, 'enable_dynamic_bit_training': True, 'kd': False, 'dataloader': Munch({'dataset': 'cifar10', 'num_classes': 10, 'path': './data/cifar10', 'batch_size': 128, 'workers': 4, 'deterministic': True}), 'resume': Munch({'path': None, 'lean': False}), 'log': Munch({'num_best_scores': 3, 'print_freq': 20}), 'arch': 'alexnet', 'pre_trained': False, 'quan': Munch({'act': Munch({'mode': 'lsq', 'bit': 2, 'per_channel': False, 'symmetric': False, 'all_positive': True}), 'weight': Munch({'mode': 'lsq', 'bit': 2, 'per_channel': False, 'symmetric': False, 'all_positive': False}), 'excepts': Munch({'excepts_bits_width': 8, 'features.0': Munch({'act': Munch({'bit': None, 'all_positive': False}), 'weight': Munch({'bit': None})}), 'classifier.6': Munch({'act': Munch({'bit': None, 'all_positive': False}), 'weight': Munch({'bit': None})})})}), 'eval': False, 'epochs': 200, 'smoothing': 0.0, 'scale_gradient': False, 'opt': 'sgd', 'lr': 0.01, 'momentum': 0.9, 'weight_decay': 0.0001, 'adaptive_region_weight_decay': 0, 'sched': 'cosine', 'min_lr': 0.0, 'decay_rate': 0.1, 'warmup_epochs': 0, 'warmup_lr': 0.0, 'decay_epochs': 30, 'cooldown_epochs': 0, 'ema_decay': 0.9997, 'fault_aware_training': Munch({'enabled': True, 'ber': '5e-2', 'schedule': Munch({'enabled': True, 'strategy': 'fixed', 'start_epoch': 80}), 'trades': Munch({'use_kl': False, 'alpha': 0.6, 'beta': 1.0}), 'search_olm': Munch({'layer_names': [], 'update_freq': 10, 'method': 'simulated_annealing', 'num_samples': -1, 'max_iterations': 3000})}), 'local_rank': 0, 'split_aw_cands': False})
+================================================================================
+加载OLM映射...
+================================================================================
+从JSON加载了 2 个层的OLM映射:
+  - features.0
+  - classifier.1
+
+将测试以下层的OLM编码: ['features.0', 'classifier.1']
+
+layer QuanConv2d not using splited a_w cands!
+layer QuanConv2d not using splited a_w cands!
+layer QuanConv2d not using splited a_w cands!
+layer QuanConv2d not using splited a_w cands!
+layer QuanConv2d not using splited a_w cands!
+未提供bit_width_config，使用target_bits的最大值: 6-bit
+[DEBUG] Creating train_loader: batch_size=128, workers=4, sampler=None
+[DEBUG] Train loader created, length: 390
+[DEBUG] Test loader created, length: 79
+[DEBUG] Val loader created, length: 390
+================================================================================
+开始测试（只处理前几个batch以查看调试信息）...
+================================================================================
+================================================================================
+FaultInjector配置检查:
+================================================================================
+olm_layers.keys() = ['features.0', 'classifier.1']
+olm_code_to_value.keys() = ['features.0', 'classifier.1']
+
+[FaultInjector] Wrapped 8 layers for fault injection: 6 dynamic bits layers, 2 fixed_bits layers (first/last layers will use their fixed bit-width, e.g., 8-bit)
+  使用layer_name进行映射查找: features.0
+  使用layer_name进行映射查找: classifier.1
+
+处理batch 1/1...
+[OLM DEBUG] OLM编码检查:
+  layer_name = features.0
+  layer_name_for_stats = features.0
+  self.olm_layers.keys() = ['features.0', 'classifier.1']
+  layer_name in self.olm_layers = True
+[OLM DEBUG] OLM编码检查:
+  layer_name = classifier.1
+  layer_name_for_stats = classifier.1
+  self.olm_layers.keys() = ['features.0', 'classifier.1']
+  layer_name in self.olm_layers = True
+
+================================================================================
+测试完成，准确率: 73.44%
+================================================================================
+
+请查看上面的[OLM DEBUG]输出，检查:
+  1. layer_name是否为None
+  2. layer_name_for_stats的值
+  3. 它们是否在olm_layers/olm_code_to_value中

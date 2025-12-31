@@ -1,0 +1,143 @@
+Munch({'name': 'alexnet_cifar10_sensitive_stage1', 'output_dir': 'training', 'training_device': 'gpu', 'num_random_path': 3, 'target_bits': [6, 5, 4, 3, 2], 'post_training_batchnorm_calibration': True, 'information_distortion_mitigation': False, 'enable_dynamic_bit_training': True, 'kd': False, 'dataloader': Munch({'dataset': 'cifar10', 'num_classes': 10, 'path': './data/cifar10', 'batch_size': 128, 'workers': 4, 'deterministic': True}), 'resume': Munch({'path': None, 'lean': False}), 'log': Munch({'num_best_scores': 3, 'print_freq': 20}), 'arch': 'alexnet', 'pre_trained': False, 'quan': Munch({'act': Munch({'mode': 'lsq', 'bit': 2, 'per_channel': False, 'symmetric': False, 'all_positive': True}), 'weight': Munch({'mode': 'lsq', 'bit': 2, 'per_channel': False, 'symmetric': False, 'all_positive': False}), 'excepts': Munch({'excepts_bits_width': 8, 'features.0': Munch({'act': Munch({'bit': None, 'all_positive': False}), 'weight': Munch({'bit': None})}), 'classifier.6': Munch({'act': Munch({'bit': None, 'all_positive': False}), 'weight': Munch({'bit': None})})})}), 'eval': False, 'search': False, 'epochs': 200, 'smoothing': 0.0, 'scale_gradient': False, 'dropout': 0.0, 'opt': 'sgd', 'lr': 0.01, 'momentum': 0.9, 'weight_decay': 0.0001, 'sched': 'cosine', 'min_lr': 0.0, 'decay_rate': 0.1, 'warmup_epochs': 0, 'warmup_lr': 0.0, 'decay_epochs': 30, 'cooldown_epochs': 0, 'ema_decay': 0.9997, 'adaptive_region_weight_decay': 0, 'fault_aware_training': Munch({'enabled': False}), 'local_rank': 0, 'split_aw_cands': False})
+droupout ->  0.0
+droupout ->  0.0
+layer QuanConv2d not using splited a_w cands!
+layer QuanConv2d not using splited a_w cands!
+layer QuanConv2d not using splited a_w cands!
+layer QuanConv2d not using splited a_w cands!
+layer QuanConv2d not using splited a_w cands!
+[DEBUG] Creating train_loader: batch_size=128, workers=4, sampler=None
+[DEBUG] Train loader created, length: 390
+[DEBUG] Test loader created, length: 79
+[DEBUG] Val loader created, length: 390
+
+================================================================================
+Multi-Bit Sensitivity Analysis (BER=1e-01)
+================================================================================
+
+Analyzing Configuration: w6a6
+----------------------------------------
+  Baseline Clean Acc: 88.40%
+[FaultInjector] Wrapped 1 layers for fault injection: 0 dynamic bits layers, 1 fixed_bits layers (first/last layers will use their fixed bit-width, e.g., 8-bit)
+  features.0           Drop: 42.30% (Acc: 46.10%)
+[FaultInjector] Wrapped 1 layers for fault injection: 1 dynamic bits layers, 0 fixed_bits layers (first/last layers will use their fixed bit-width, e.g., 8-bit)
+  features.3           Drop: 1.10% (Acc: 87.30%)
+[FaultInjector] Wrapped 1 layers for fault injection: 1 dynamic bits layers, 0 fixed_bits layers (first/last layers will use their fixed bit-width, e.g., 8-bit)
+  features.6           Drop: -0.30% (Acc: 88.70%)
+[FaultInjector] Wrapped 1 layers for fault injection: 1 dynamic bits layers, 0 fixed_bits layers (first/last layers will use their fixed bit-width, e.g., 8-bit)
+  features.8           Drop: -0.80% (Acc: 89.20%)
+[FaultInjector] Wrapped 1 layers for fault injection: 1 dynamic bits layers, 0 fixed_bits layers (first/last layers will use their fixed bit-width, e.g., 8-bit)
+  features.10          Drop: 1.20% (Acc: 87.20%)
+[FaultInjector] Wrapped 1 layers for fault injection: 1 dynamic bits layers, 0 fixed_bits layers (first/last layers will use their fixed bit-width, e.g., 8-bit)
+  classifier.1         Drop: -0.40% (Acc: 88.80%)
+[FaultInjector] Wrapped 1 layers for fault injection: 1 dynamic bits layers, 0 fixed_bits layers (first/last layers will use their fixed bit-width, e.g., 8-bit)
+  classifier.4         Drop: -0.20% (Acc: 88.60%)
+[FaultInjector] Wrapped 1 layers for fault injection: 0 dynamic bits layers, 1 fixed_bits layers (first/last layers will use their fixed bit-width, e.g., 8-bit)
+  classifier.6         Drop: 0.80% (Acc: 87.60%)
+
+Analyzing Configuration: w5a5
+----------------------------------------
+  Baseline Clean Acc: 88.90%
+[FaultInjector] Wrapped 1 layers for fault injection: 0 dynamic bits layers, 1 fixed_bits layers (first/last layers will use their fixed bit-width, e.g., 8-bit)
+  features.0           Drop: 41.20% (Acc: 47.70%)
+[FaultInjector] Wrapped 1 layers for fault injection: 1 dynamic bits layers, 0 fixed_bits layers (first/last layers will use their fixed bit-width, e.g., 8-bit)
+  features.3           Drop: 0.70% (Acc: 88.20%)
+[FaultInjector] Wrapped 1 layers for fault injection: 1 dynamic bits layers, 0 fixed_bits layers (first/last layers will use their fixed bit-width, e.g., 8-bit)
+  features.6           Drop: -0.30% (Acc: 89.20%)
+[FaultInjector] Wrapped 1 layers for fault injection: 1 dynamic bits layers, 0 fixed_bits layers (first/last layers will use their fixed bit-width, e.g., 8-bit)
+  features.8           Drop: 0.80% (Acc: 88.10%)
+[FaultInjector] Wrapped 1 layers for fault injection: 1 dynamic bits layers, 0 fixed_bits layers (first/last layers will use their fixed bit-width, e.g., 8-bit)
+  features.10          Drop: 1.20% (Acc: 87.70%)
+[FaultInjector] Wrapped 1 layers for fault injection: 1 dynamic bits layers, 0 fixed_bits layers (first/last layers will use their fixed bit-width, e.g., 8-bit)
+  classifier.1         Drop: 0.60% (Acc: 88.30%)
+[FaultInjector] Wrapped 1 layers for fault injection: 1 dynamic bits layers, 0 fixed_bits layers (first/last layers will use their fixed bit-width, e.g., 8-bit)
+  classifier.4         Drop: -0.50% (Acc: 89.40%)
+[FaultInjector] Wrapped 1 layers for fault injection: 0 dynamic bits layers, 1 fixed_bits layers (first/last layers will use their fixed bit-width, e.g., 8-bit)
+  classifier.6         Drop: 1.10% (Acc: 87.80%)
+
+Analyzing Configuration: w4a4
+----------------------------------------
+  Baseline Clean Acc: 88.60%
+[FaultInjector] Wrapped 1 layers for fault injection: 0 dynamic bits layers, 1 fixed_bits layers (first/last layers will use their fixed bit-width, e.g., 8-bit)
+  features.0           Drop: 41.30% (Acc: 47.30%)
+[FaultInjector] Wrapped 1 layers for fault injection: 1 dynamic bits layers, 0 fixed_bits layers (first/last layers will use their fixed bit-width, e.g., 8-bit)
+  features.3           Drop: 1.00% (Acc: 87.60%)
+[FaultInjector] Wrapped 1 layers for fault injection: 1 dynamic bits layers, 0 fixed_bits layers (first/last layers will use their fixed bit-width, e.g., 8-bit)
+  features.6           Drop: 0.20% (Acc: 88.40%)
+[FaultInjector] Wrapped 1 layers for fault injection: 1 dynamic bits layers, 0 fixed_bits layers (first/last layers will use their fixed bit-width, e.g., 8-bit)
+  features.8           Drop: 1.10% (Acc: 87.50%)
+[FaultInjector] Wrapped 1 layers for fault injection: 1 dynamic bits layers, 0 fixed_bits layers (first/last layers will use their fixed bit-width, e.g., 8-bit)
+  features.10          Drop: 1.60% (Acc: 87.00%)
+[FaultInjector] Wrapped 1 layers for fault injection: 1 dynamic bits layers, 0 fixed_bits layers (first/last layers will use their fixed bit-width, e.g., 8-bit)
+  classifier.1         Drop: 1.30% (Acc: 87.30%)
+[FaultInjector] Wrapped 1 layers for fault injection: 1 dynamic bits layers, 0 fixed_bits layers (first/last layers will use their fixed bit-width, e.g., 8-bit)
+  classifier.4         Drop: -0.20% (Acc: 88.80%)
+[FaultInjector] Wrapped 1 layers for fault injection: 0 dynamic bits layers, 1 fixed_bits layers (first/last layers will use their fixed bit-width, e.g., 8-bit)
+  classifier.6         Drop: 1.00% (Acc: 87.60%)
+
+Analyzing Configuration: w3a3
+----------------------------------------
+  Baseline Clean Acc: 89.30%
+[FaultInjector] Wrapped 1 layers for fault injection: 0 dynamic bits layers, 1 fixed_bits layers (first/last layers will use their fixed bit-width, e.g., 8-bit)
+  features.0           Drop: 41.20% (Acc: 48.10%)
+[FaultInjector] Wrapped 1 layers for fault injection: 1 dynamic bits layers, 0 fixed_bits layers (first/last layers will use their fixed bit-width, e.g., 8-bit)
+  features.3           Drop: 4.40% (Acc: 84.90%)
+[FaultInjector] Wrapped 1 layers for fault injection: 1 dynamic bits layers, 0 fixed_bits layers (first/last layers will use their fixed bit-width, e.g., 8-bit)
+  features.6           Drop: 1.20% (Acc: 88.10%)
+[FaultInjector] Wrapped 1 layers for fault injection: 1 dynamic bits layers, 0 fixed_bits layers (first/last layers will use their fixed bit-width, e.g., 8-bit)
+  features.8           Drop: 3.00% (Acc: 86.30%)
+[FaultInjector] Wrapped 1 layers for fault injection: 1 dynamic bits layers, 0 fixed_bits layers (first/last layers will use their fixed bit-width, e.g., 8-bit)
+  features.10          Drop: 3.10% (Acc: 86.20%)
+[FaultInjector] Wrapped 1 layers for fault injection: 1 dynamic bits layers, 0 fixed_bits layers (first/last layers will use their fixed bit-width, e.g., 8-bit)
+  classifier.1         Drop: 5.70% (Acc: 83.60%)
+[FaultInjector] Wrapped 1 layers for fault injection: 1 dynamic bits layers, 0 fixed_bits layers (first/last layers will use their fixed bit-width, e.g., 8-bit)
+  classifier.4         Drop: 0.20% (Acc: 89.10%)
+[FaultInjector] Wrapped 1 layers for fault injection: 0 dynamic bits layers, 1 fixed_bits layers (first/last layers will use their fixed bit-width, e.g., 8-bit)
+  classifier.6         Drop: 2.20% (Acc: 87.10%)
+
+Analyzing Configuration: w2a2
+----------------------------------------
+  Baseline Clean Acc: 87.40%
+[FaultInjector] Wrapped 1 layers for fault injection: 0 dynamic bits layers, 1 fixed_bits layers (first/last layers will use their fixed bit-width, e.g., 8-bit)
+  features.0           Drop: 51.80% (Acc: 35.60%)
+[FaultInjector] Wrapped 1 layers for fault injection: 1 dynamic bits layers, 0 fixed_bits layers (first/last layers will use their fixed bit-width, e.g., 8-bit)
+  features.3           Drop: 44.40% (Acc: 43.00%)
+[FaultInjector] Wrapped 1 layers for fault injection: 1 dynamic bits layers, 0 fixed_bits layers (first/last layers will use their fixed bit-width, e.g., 8-bit)
+  features.6           Drop: 10.20% (Acc: 77.20%)
+[FaultInjector] Wrapped 1 layers for fault injection: 1 dynamic bits layers, 0 fixed_bits layers (first/last layers will use their fixed bit-width, e.g., 8-bit)
+  features.8           Drop: 20.50% (Acc: 66.90%)
+[FaultInjector] Wrapped 1 layers for fault injection: 1 dynamic bits layers, 0 fixed_bits layers (first/last layers will use their fixed bit-width, e.g., 8-bit)
+  features.10          Drop: 13.60% (Acc: 73.80%)
+[FaultInjector] Wrapped 1 layers for fault injection: 1 dynamic bits layers, 0 fixed_bits layers (first/last layers will use their fixed bit-width, e.g., 8-bit)
+  classifier.1         Drop: 68.70% (Acc: 18.70%)
+[FaultInjector] Wrapped 1 layers for fault injection: 1 dynamic bits layers, 0 fixed_bits layers (first/last layers will use their fixed bit-width, e.g., 8-bit)
+  classifier.4         Drop: 2.20% (Acc: 85.20%)
+[FaultInjector] Wrapped 1 layers for fault injection: 0 dynamic bits layers, 1 fixed_bits layers (first/last layers will use their fixed bit-width, e.g., 8-bit)
+  classifier.6         Drop: 1.50% (Acc: 85.90%)
+
+================================================================================
+SENSITIVITY SUMMARY (Accuracy Drop %)
+================================================================================
+              w6a6  w5a5  w4a4  w3a3  w2a2  avg_drop
+features.0   42.30 41.20 41.30 41.20 51.80     43.56
+classifier.1 -0.40  0.60  1.30  5.70 68.70     15.18
+features.3    1.10  0.70  1.00  4.40 44.40     10.32
+features.8   -0.80  0.80  1.10  3.00 20.50      4.92
+features.10   1.20  1.20  1.60  3.10 13.60      4.14
+features.6   -0.30 -0.30  0.20  1.20 10.20      2.20
+classifier.6  0.80  1.10  1.00  2.20  1.50      1.32
+classifier.4 -0.20 -0.50 -0.20  0.20  2.20      0.30
+
+================================================================================
+SENSITIVITY RANKING (Most Sensitive -> Least Sensitive)
+================================================================================
+1. features.0 (Avg Drop: 43.56%)
+2. classifier.1 (Avg Drop: 15.18%)
+3. features.3 (Avg Drop: 10.32%)
+4. features.8 (Avg Drop: 4.92%)
+5. features.10 (Avg Drop: 4.14%)
+6. features.6 (Avg Drop: 2.20%)
+7. classifier.6 (Avg Drop: 1.32%)
+8. classifier.4 (Avg Drop: 0.30%)
+
+Saved summary to logs/restorer_pipeline/20251123-190235_sensitivity_summary.json

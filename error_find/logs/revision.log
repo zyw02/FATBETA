@@ -1,0 +1,6 @@
+2025/05/27 09:16 修改utils/utils.py第49行 原代码中使用timm的cosine scheduler，现改为使用pytorch cosine scheduler
+2025/05/27 09:16 修改utils/utils.py第49行 修改bsam的扰动半径：rho_max_sharp: 0.01, rho_min_sharp_max: 0.001 -> rho_max_sharp: 0.05, rho_min_sharp_max: 0.01
+2025/05/27 09:20 使用bsam后，暂时不再使用freezing
+
+
+2025/05/29 14:42 改回timm的cosine scheduler

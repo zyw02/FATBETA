@@ -1,0 +1,255 @@
+2025-12-31 09:46:40,695 - INFO  - Log file for this run: /root/autodl-tmp/retraining-free-quantization/training/r18_c10_nude_0.02_all_bits_orth_double/r18_c10_nude_0.02_all_bits_orth_double.log
+2025-12-31 09:46:40,701 - INFO  - TensorBoard data directory: /root/autodl-tmp/retraining-free-quantization/training/r18_c10_nude_0.02_all_bits_orth_double/tb_runs
+2025-12-31 09:46:40,701 - INFO  - Code backup completed. Code saved to: /root/autodl-tmp/retraining-free-quantization/training/r18_c10_nude_0.02_all_bits_orth_double/code/.cursor
+2025-12-31 09:46:40,701 - INFO  - Code backup completed. Code saved to: /root/autodl-tmp/retraining-free-quantization/training/r18_c10_nude_0.02_all_bits_orth_double/code/.vscode
+2025-12-31 09:46:40,701 - INFO  - Code backup completed. Code saved to: /root/autodl-tmp/retraining-free-quantization/training/r18_c10_nude_0.02_all_bits_orth_double/code/activation_dumps/denoise_restorer/clean/clean
+2025-12-31 09:46:40,701 - INFO  - Code backup completed. Code saved to: /root/autodl-tmp/retraining-free-quantization/training/r18_c10_nude_0.02_all_bits_orth_double/code/activation_dumps/denoise_restorer/clean
+2025-12-31 09:46:40,702 - INFO  - Code backup completed. Code saved to: /root/autodl-tmp/retraining-free-quantization/training/r18_c10_nude_0.02_all_bits_orth_double/code/activation_dumps/denoise_restorer/fault/fault
+2025-12-31 09:46:40,702 - INFO  - Code backup completed. Code saved to: /root/autodl-tmp/retraining-free-quantization/training/r18_c10_nude_0.02_all_bits_orth_double/code/activation_dumps/denoise_restorer/fault
+2025-12-31 09:46:40,702 - INFO  - Code backup completed. Code saved to: /root/autodl-tmp/retraining-free-quantization/training/r18_c10_nude_0.02_all_bits_orth_double/code/activation_dumps/denoise_restorer
+2025-12-31 09:46:40,702 - INFO  - Code backup completed. Code saved to: /root/autodl-tmp/retraining-free-quantization/training/r18_c10_nude_0.02_all_bits_orth_double/code/activation_dumps
+2025-12-31 09:46:40,702 - INFO  - Code backup completed. Code saved to: /root/autodl-tmp/retraining-free-quantization/training/r18_c10_nude_0.02_all_bits_orth_double/code/checkpoints
+2025-12-31 09:46:40,702 - INFO  - Code backup completed. Code saved to: /root/autodl-tmp/retraining-free-quantization/training/r18_c10_nude_0.02_all_bits_orth_double/code/configs/restorer
+2025-12-31 09:46:40,702 - INFO  - Code backup completed. Code saved to: /root/autodl-tmp/retraining-free-quantization/training/r18_c10_nude_0.02_all_bits_orth_double/code/configs
+2025-12-31 09:46:40,702 - INFO  - Code backup completed. Code saved to: /root/autodl-tmp/retraining-free-quantization/training/r18_c10_nude_0.02_all_bits_orth_double/code/docs
+2025-12-31 09:46:40,702 - INFO  - Code backup completed. Code saved to: /root/autodl-tmp/retraining-free-quantization/training/r18_c10_nude_0.02_all_bits_orth_double/code/layer_profiles
+2025-12-31 09:46:40,702 - INFO  - Code backup completed. Code saved to: /root/autodl-tmp/retraining-free-quantization/training/r18_c10_nude_0.02_all_bits_orth_double/code/learning_heads
+2025-12-31 09:46:40,703 - INFO  - Code backup completed. Code saved to: /root/autodl-tmp/retraining-free-quantization/training/r18_c10_nude_0.02_all_bits_orth_double/code/logs/restorer_pipeline
+2025-12-31 09:46:40,703 - INFO  - Code backup completed. Code saved to: /root/autodl-tmp/retraining-free-quantization/training/r18_c10_nude_0.02_all_bits_orth_double/code/logs/sensitive_layer_sets
+2025-12-31 09:46:40,703 - INFO  - Code backup completed. Code saved to: /root/autodl-tmp/retraining-free-quantization/training/r18_c10_nude_0.02_all_bits_orth_double/code/logs
+2025-12-31 09:46:40,703 - INFO  - Copied code file: __init__.py
+2025-12-31 09:46:40,703 - INFO  - Copied code file: alexnet_cifar.py
+2025-12-31 09:46:40,703 - INFO  - Copied code file: mobilenetv2.py
+2025-12-31 09:46:40,704 - INFO  - Copied code file: model.py
+2025-12-31 09:46:40,704 - INFO  - Copied code file: resnet_cifar.py
+2025-12-31 09:46:40,704 - INFO  - Code backup completed. Code saved to: /root/autodl-tmp/retraining-free-quantization/training/r18_c10_nude_0.02_all_bits_orth_double/code/model
+2025-12-31 09:46:40,704 - INFO  - Copied code file: __init__.py
+2025-12-31 09:46:40,704 - INFO  - Copied code file: lsq.py
+2025-12-31 09:46:40,705 - INFO  - Copied code file: quantizer.py
+2025-12-31 09:46:40,705 - INFO  - Code backup completed. Code saved to: /root/autodl-tmp/retraining-free-quantization/training/r18_c10_nude_0.02_all_bits_orth_double/code/quan/quantizer
+2025-12-31 09:46:40,705 - INFO  - Copied code file: __init__.py
+2025-12-31 09:46:40,705 - INFO  - Copied code file: func.py
+2025-12-31 09:46:40,706 - INFO  - Copied code file: utils.py
+2025-12-31 09:46:40,706 - INFO  - Code backup completed. Code saved to: /root/autodl-tmp/retraining-free-quantization/training/r18_c10_nude_0.02_all_bits_orth_double/code/quan
+2025-12-31 09:46:40,706 - INFO  - Code backup completed. Code saved to: /root/autodl-tmp/retraining-free-quantization/training/r18_c10_nude_0.02_all_bits_orth_double/code/sensitive_training/alexnet_cifar10_sensitive_stage2/tb_runs
+2025-12-31 09:46:40,706 - INFO  - Code backup completed. Code saved to: /root/autodl-tmp/retraining-free-quantization/training/r18_c10_nude_0.02_all_bits_orth_double/code/sensitive_training/alexnet_cifar10_sensitive_stage2
+2025-12-31 09:46:40,707 - INFO  - Code backup completed. Code saved to: /root/autodl-tmp/retraining-free-quantization/training/r18_c10_nude_0.02_all_bits_orth_double/code/sensitive_training/alexnet_cifar10_sensitive_stage2_transformer/tb_runs
+2025-12-31 09:46:40,707 - INFO  - Code backup completed. Code saved to: /root/autodl-tmp/retraining-free-quantization/training/r18_c10_nude_0.02_all_bits_orth_double/code/sensitive_training/alexnet_cifar10_sensitive_stage2_transformer
+2025-12-31 09:46:40,707 - INFO  - Code backup completed. Code saved to: /root/autodl-tmp/retraining-free-quantization/training/r18_c10_nude_0.02_all_bits_orth_double/code/sensitive_training
+2025-12-31 09:46:40,708 - INFO  - Copied code file: analyze_corrector_logits.py
+2025-12-31 09:46:40,708 - INFO  - Copied code file: analyze_fault_propagation.py
+2025-12-31 09:46:40,709 - INFO  - Copied code file: analyze_layer_sensitivity.py
+2025-12-31 09:46:40,710 - INFO  - Copied code file: test_fault_injection_baseline_resnet18.py
+2025-12-31 09:46:40,710 - INFO  - Copied code file: analyze_multi_bit_sensitivity.py
+2025-12-31 09:46:40,710 - INFO  - Copied code file: analyze_single_layer_fault_impact.py
+2025-12-31 09:46:40,710 - INFO  - Copied code file: calculate_weight_flip_probability.py
+2025-12-31 09:46:40,711 - INFO  - Copied code file: collect_layer_statistics.py
+2025-12-31 09:46:40,711 - INFO  - Copied code file: diagnose_corrector_gap.py
+2025-12-31 09:46:40,711 - INFO  - Copied code file: sweep_srqat.py
+2025-12-31 09:46:40,711 - INFO  - Copied code file: eval_gradient_statistics_restorer.py
+2025-12-31 09:46:40,712 - INFO  - Copied code file: eval_sensitive_layer_sets.py
+2025-12-31 09:46:40,712 - INFO  - Copied code file: eval_sensitive_restorer.py
+2025-12-31 09:46:40,712 - INFO  - Copied code file: eval_with_fault_injection.py
+2025-12-31 09:46:40,712 - INFO  - Copied code file: compare_lsq_scales_with_checkpoint.py
+2025-12-31 09:46:40,712 - INFO  - Copied code file: test_fault_injector.py
+2025-12-31 09:46:40,713 - INFO  - Copied code file: analyze_srqat_scale_weight_norms.py
+2025-12-31 09:46:40,713 - INFO  - Copied code file: test_gray_code_fault_injection.py
+2025-12-31 09:46:40,713 - INFO  - Copied code file: test_olm_fault_injection.py
+2025-12-31 09:46:40,713 - INFO  - Copied code file: export_srqat_penalty_stats.py
+2025-12-31 09:46:40,713 - INFO  - Copied code file: train_learning_repair_head.py
+2025-12-31 09:46:40,714 - INFO  - Copied code file: train_olm_encoder.py
+2025-12-31 09:46:40,714 - INFO  - Copied code file: plot_weight_distribution_violin.py
+2025-12-31 09:46:40,714 - INFO  - Copied code file: train_sensitive_repair_head.py
+2025-12-31 09:46:40,714 - INFO  - Copied code file: visualize_fault_activation.py
+2025-12-31 09:46:40,715 - INFO  - Copied code file: test_learnable_olm_vs_traditional_olm.py
+2025-12-31 09:46:40,715 - INFO  - Copied code file: test_fault_injection_baseline.py
+2025-12-31 09:46:40,715 - INFO  - Copied code file: analyze_olm_differences.py
+2025-12-31 09:46:40,716 - INFO  - Copied code file: test_learnable_olm_consistency.py
+2025-12-31 09:46:40,716 - INFO  - Copied code file: test_search_olm_from_checkpoint.py
+2025-12-31 09:46:40,716 - INFO  - Copied code file: test_olm_layer_name_check.py
+2025-12-31 09:46:40,716 - INFO  - Copied code file: compare_old_new_fault_injector.py
+2025-12-31 09:46:40,716 - INFO  - Copied code file: verify_dec2_fault_injector.py
+2025-12-31 09:46:40,717 - INFO  - Copied code file: verify_dec2_olm_fault_injection.py
+2025-12-31 09:46:40,717 - INFO  - Copied code file: train_olm_encoder_improved.py
+2025-12-31 09:46:40,717 - INFO  - Copied code file: train_olm_encoder_improved_v2.py
+2025-12-31 09:46:40,717 - INFO  - Copied code file: train_olm_encoder_enhanced.py
+2025-12-31 09:46:40,717 - INFO  - Copied code file: compare_olm_vs_gray_code.py
+2025-12-31 09:46:40,718 - INFO  - Copied code file: test_bit_range_fault_injection.py
+2025-12-31 09:46:40,718 - INFO  - Copied code file: train_olm_encoder_partial_bits.py
+2025-12-31 09:46:40,718 - INFO  - Copied code file: test_bit7_flip_direction.py
+2025-12-31 09:46:40,718 - INFO  - Copied code file: train_olm_encoder_hybrid.py
+2025-12-31 09:46:40,719 - INFO  - Copied code file: train_olm_encoder_hybrid_v2.py
+2025-12-31 09:46:40,719 - INFO  - Copied code file: test_hybrid_olm_fault_injection.py
+2025-12-31 09:46:40,719 - INFO  - Copied code file: analyze_layerwise_activation_drift.py
+2025-12-31 09:46:40,720 - INFO  - Copied code file: compare_models_activation_drift.py
+2025-12-31 09:46:40,720 - INFO  - Copied code file: sweep_resnet18_srqat.py
+2025-12-31 09:46:40,720 - INFO  - Copied code file: plot_activation_drift_paper.py
+2025-12-31 09:46:40,720 - INFO  - Code backup completed. Code saved to: /root/autodl-tmp/retraining-free-quantization/training/r18_c10_nude_0.02_all_bits_orth_double/code/tools
+2025-12-31 09:46:40,720 - INFO  - Copied code file: __init__.py
+2025-12-31 09:46:40,721 - INFO  - Copied code file: bsam.py
+2025-12-31 09:46:40,721 - INFO  - Copied code file: checkpoint.py
+2025-12-31 09:46:40,721 - INFO  - Copied code file: config.py
+2025-12-31 09:46:40,721 - INFO  - Copied code file: data_loader.py
+2025-12-31 09:46:40,721 - INFO  - Copied code file: dist.py
+2025-12-31 09:46:40,722 - INFO  - Copied code file: enhanced_feature_extractor.py
+2025-12-31 09:46:40,722 - INFO  - Copied code file: olm_encoder_enhanced.py
+2025-12-31 09:46:40,722 - INFO  - Copied code file: gradient_statistics_restorer.py
+2025-12-31 09:46:40,722 - INFO  - Copied code file: greedy_search.py
+2025-12-31 09:46:40,723 - INFO  - Copied code file: intermediate_layer_restorer.py
+2025-12-31 09:46:40,723 - INFO  - Copied code file: intermediate_restorer_integration.py
+2025-12-31 09:46:40,723 - INFO  - Copied code file: intermediate_restorer_trainer.py
+2025-12-31 09:46:40,723 - INFO  - Copied code file: layerwise_rl_restorer.py
+2025-12-31 09:46:40,723 - INFO  - Copied code file: loss_ops.py
+2025-12-31 09:46:40,724 - INFO  - Copied code file: lsq_sam.py
+2025-12-31 09:46:40,724 - INFO  - Copied code file: model_ema.py
+2025-12-31 09:46:40,724 - INFO  - Copied code file: monitor.py
+2025-12-31 09:46:40,724 - INFO  - Copied code file: mpq.py
+2025-12-31 09:46:40,724 - INFO  - Copied code file: olm_encoder.py
+2025-12-31 09:46:40,725 - INFO  - Copied code file: output_corrector.py
+2025-12-31 09:46:40,725 - INFO  - Copied code file: progressive_ber_scheduler.py
+2025-12-31 09:46:40,725 - INFO  - Copied code file: qat.py
+2025-12-31 09:46:40,725 - INFO  - Copied code file: random_search.py
+2025-12-31 09:46:40,725 - INFO  - Copied code file: rl_intermediate_layer_restorer.py
+2025-12-31 09:46:40,726 - INFO  - Copied code file: rl_intermediate_restorer_integration.py
+2025-12-31 09:46:40,726 - INFO  - Copied code file: rl_restorer.py
+2025-12-31 09:46:40,726 - INFO  - Copied code file: rl_restorer_integration.py
+2025-12-31 09:46:40,726 - INFO  - Copied code file: rl_restorer_lightweight.py
+2025-12-31 09:46:40,727 - INFO  - Copied code file: rl_restorer_trainer.py
+2025-12-31 09:46:40,727 - INFO  - Copied code file: searcher.py
+2025-12-31 09:46:40,727 - INFO  - Copied code file: sensitive_features.py
+2025-12-31 09:46:40,727 - INFO  - Copied code file: sensitive_layer_restorer.py
+2025-12-31 09:46:40,728 - INFO  - Copied code file: sensitive_restorer.py
+2025-12-31 09:46:40,728 - INFO  - Copied code file: sensitive_restorer_transformer.py
+2025-12-31 09:46:40,728 - INFO  - Copied code file: sensitive_restorer_v2.py
+2025-12-31 09:46:40,728 - INFO  - Copied code file: utils.py
+2025-12-31 09:46:40,728 - INFO  - Copied code file: weight_schd.py
+2025-12-31 09:46:40,729 - INFO  - Copied code file: learnable_olm.py
+2025-12-31 09:46:40,729 - INFO  - Copied code file: integer_inn_encoder.py
+2025-12-31 09:46:40,729 - INFO  - Copied code file: search_olm_manager.py
+2025-12-31 09:46:40,729 - INFO  - Copied code file: hybrid_olm_optimizer.py
+2025-12-31 09:46:40,730 - INFO  - Copied code file: efficient_hybrid_olm_optimizer.py
+2025-12-31 09:46:40,730 - INFO  - Copied code file: fault_injector_question.py
+2025-12-31 09:46:40,730 - INFO  - Copied code file: improved_olm_encoder.py
+2025-12-31 09:46:40,731 - INFO  - Copied code file: improved_olm_encoder_v2.py
+2025-12-31 09:46:40,731 - INFO  - Copied code file: improved_olm_encoder_genetic.py
+2025-12-31 09:46:40,731 - INFO  - Copied code file: fault_injector.py
+2025-12-31 09:46:40,731 - INFO  - Code backup completed. Code saved to: /root/autodl-tmp/retraining-free-quantization/training/r18_c10_nude_0.02_all_bits_orth_double/code/util
+2025-12-31 09:46:40,731 - INFO  - Code backup completed. Code saved to: /root/autodl-tmp/retraining-free-quantization/training/r18_c10_nude_0.02_all_bits_orth_double/code/visualizations/fault_activation_features_0
+2025-12-31 09:46:40,731 - INFO  - Code backup completed. Code saved to: /root/autodl-tmp/retraining-free-quantization/training/r18_c10_nude_0.02_all_bits_orth_double/code/visualizations/fault_activation_features_0_ber1e1
+2025-12-31 09:46:40,731 - INFO  - Code backup completed. Code saved to: /root/autodl-tmp/retraining-free-quantization/training/r18_c10_nude_0.02_all_bits_orth_double/code/visualizations
+2025-12-31 09:46:40,732 - INFO  - Copied code file: main.py
+2025-12-31 09:46:40,732 - INFO  - Copied code file: policy.py
+2025-12-31 09:46:40,732 - INFO  - Copied code file: compare_scripts.py
+2025-12-31 09:46:40,732 - INFO  - Code backup completed. Code saved to: /root/autodl-tmp/retraining-free-quantization/training/r18_c10_nude_0.02_all_bits_orth_double/code/chat
+2025-12-31 09:46:40,733 - INFO  - Copied code file: process_sam.py
+2025-12-31 09:46:40,733 - INFO  - Copied code file: process.py
+2025-12-31 09:46:40,733 - INFO  - Copied code file: FAULT_INJECTION_SIMPLE_EXAMPLE.py
+2025-12-31 09:46:40,733 - INFO  - Copied code file: analyze_bit_width_impact.py
+2025-12-31 09:46:40,734 - INFO  - Copied code file: evolution_search.py
+2025-12-31 09:46:40,734 - INFO  - Copied code file: analyze_w2a6_real_reason.py
+2025-12-31 09:46:40,734 - INFO  - Copied code file: analyze_w2a6_slowdown.py
+2025-12-31 09:46:40,734 - INFO  - Copied code file: debug_fault_injection_detailed.py
+2025-12-31 09:46:40,735 - INFO  - Copied code file: example_enhanced_features.py
+2025-12-31 09:46:40,735 - INFO  - Copied code file: example_rl_restorer.py
+2025-12-31 09:46:40,735 - INFO  - Copied code file: example_rl_restorer_integration.py
+2025-12-31 09:46:40,735 - INFO  - Copied code file: quick_test_gradient_restorer.py
+2025-12-31 09:46:40,736 - INFO  - Copied code file: process_olm_fat.py
+2025-12-31 09:46:40,736 - INFO  - Copied code file: process_normal.py
+2025-12-31 09:46:40,736 - INFO  - Copied code file: main_normal.py
+2025-12-31 09:46:40,737 - INFO  - Copied code file: test_ber_verification.py
+2025-12-31 09:46:40,737 - INFO  - Copied code file: test_fault_injection_debug.py
+2025-12-31 09:46:40,737 - INFO  - Copied code file: test_fault_injection_seed_logic.py
+2025-12-31 09:46:40,737 - INFO  - Copied code file: test_fault_injection_verbose.py
+2025-12-31 09:46:40,737 - INFO  - Copied code file: test_gradient_preservation.py
+2025-12-31 09:46:40,737 - INFO  - Copied code file: test_json_config_loading.py
+2025-12-31 09:46:40,738 - INFO  - Copied code file: main_olm_fat.py
+2025-12-31 09:46:40,738 - INFO  - Copied code file: train_rl_restorer_with_enhanced_features.py
+2025-12-31 09:46:40,738 - INFO  - Copied code file: train_sensitive_restorer.py
+2025-12-31 09:46:40,738 - INFO  - Copied code file: train_sensitive_restorer_distill.py
+2025-12-31 09:46:40,739 - INFO  - Code backup completed. Code saved to: /root/autodl-tmp/retraining-free-quantization/training/r18_c10_nude_0.02_all_bits_orth_double/code/analysis/clean120_drift
+2025-12-31 09:46:40,739 - INFO  - Code backup completed. Code saved to: /root/autodl-tmp/retraining-free-quantization/training/r18_c10_nude_0.02_all_bits_orth_double/code/analysis/srqat_drift
+2025-12-31 09:46:40,739 - INFO  - Code backup completed. Code saved to: /root/autodl-tmp/retraining-free-quantization/training/r18_c10_nude_0.02_all_bits_orth_double/code/analysis/comparison
+2025-12-31 09:46:40,739 - INFO  - Code backup completed. Code saved to: /root/autodl-tmp/retraining-free-quantization/training/r18_c10_nude_0.02_all_bits_orth_double/code/analysis/srqat_ls0_drift
+2025-12-31 09:46:40,739 - INFO  - Code backup completed. Code saved to: /root/autodl-tmp/retraining-free-quantization/training/r18_c10_nude_0.02_all_bits_orth_double/code/analysis/comparison_srqat
+2025-12-31 09:46:40,739 - INFO  - Code backup completed. Code saved to: /root/autodl-tmp/retraining-free-quantization/training/r18_c10_nude_0.02_all_bits_orth_double/code/analysis/paper_figs
+2025-12-31 09:46:40,739 - INFO  - Code backup completed. Code saved to: /root/autodl-tmp/retraining-free-quantization/training/r18_c10_nude_0.02_all_bits_orth_double/code/analysis/resnet18_ls0_drift_ber3e2
+2025-12-31 09:46:40,739 - INFO  - Code backup completed. Code saved to: /root/autodl-tmp/retraining-free-quantization/training/r18_c10_nude_0.02_all_bits_orth_double/code/analysis/resnet18_ls1e7_drift_ber3e2
+2025-12-31 09:46:40,739 - INFO  - Code backup completed. Code saved to: /root/autodl-tmp/retraining-free-quantization/training/r18_c10_nude_0.02_all_bits_orth_double/code/analysis/resnet18_drift_compare_ber3e2
+2025-12-31 09:46:40,739 - INFO  - Code backup completed. Code saved to: /root/autodl-tmp/retraining-free-quantization/training/r18_c10_nude_0.02_all_bits_orth_double/code/analysis/resnet18_paper_figs
+2025-12-31 09:46:40,739 - INFO  - Code backup completed. Code saved to: /root/autodl-tmp/retraining-free-quantization/training/r18_c10_nude_0.02_all_bits_orth_double/code/analysis
+2025-12-31 09:46:40,740 - INFO  - Copied code file: run_fault_tolerance_test.py
+2025-12-31 09:46:40,740 - INFO  - Copied code file: resnet18_ber_sweep_msb.py
+2025-12-31 09:46:40,740 - INFO  - Copied code file: resnet18_ber_sweep_msb-checkpoint.py
+2025-12-31 09:46:40,740 - INFO  - Code backup completed. Code saved to: /root/autodl-tmp/retraining-free-quantization/training/r18_c10_nude_0.02_all_bits_orth_double/code/scripts/.ipynb_checkpoints
+2025-12-31 09:46:40,740 - INFO  - Code backup completed. Code saved to: /root/autodl-tmp/retraining-free-quantization/training/r18_c10_nude_0.02_all_bits_orth_double/code/scripts
+2025-12-31 09:46:40,740 - INFO  - Copied code file: test_resnet18_skip_msb.py
+2025-12-31 09:46:40,741 - INFO  - Copied code file: test_baseline_fault_tolerance.py
+2025-12-31 09:46:40,741 - INFO  - Copied code file: test_baseline_fault_tolerance_simple.py
+2025-12-31 09:46:40,741 - INFO  - Copied code file: debug_baseline_test.py
+2025-12-31 09:46:40,741 - INFO  - Copied code file: evolution_search.py
+2025-12-31 09:46:40,741 - INFO  - Copied code file: fi.py
+2025-12-31 09:46:40,742 - INFO  - Copied code file: main.py
+2025-12-31 09:46:40,742 - INFO  - Copied code file: mainalex.py
+2025-12-31 09:46:40,742 - INFO  - Copied code file: policy.py
+2025-12-31 09:46:40,742 - INFO  - Copied code file: process.py
+2025-12-31 09:46:40,742 - INFO  - Code backup completed. Code saved to: /root/autodl-tmp/retraining-free-quantization/training/r18_c10_nude_0.02_all_bits_orth_double/code/error_find/.idea/inspectionProfiles
+2025-12-31 09:46:40,742 - INFO  - Code backup completed. Code saved to: /root/autodl-tmp/retraining-free-quantization/training/r18_c10_nude_0.02_all_bits_orth_double/code/error_find/.idea
+2025-12-31 09:46:40,743 - INFO  - Copied code file: bsam.py
+2025-12-31 09:46:40,743 - INFO  - Copied code file: ctl_factory.py
+2025-12-31 09:46:40,743 - INFO  - Copied code file: scheduler.py
+2025-12-31 09:46:40,743 - INFO  - Copied code file: traincube.py
+2025-12-31 09:46:40,743 - INFO  - Copied code file: __init__.py
+2025-12-31 09:46:40,744 - INFO  - Copied code file: train_bsam_quan.py
+2025-12-31 09:46:40,744 - INFO  - Copied code file: train_epoch_bsam.py
+2025-12-31 09:46:40,744 - INFO  - Code backup completed. Code saved to: /root/autodl-tmp/retraining-free-quantization/training/r18_c10_nude_0.02_all_bits_orth_double/code/error_find/bsam_quan_src
+2025-12-31 09:46:40,744 - INFO  - Code backup completed. Code saved to: /root/autodl-tmp/retraining-free-quantization/training/r18_c10_nude_0.02_all_bits_orth_double/code/error_find/configs
+2025-12-31 09:46:40,744 - INFO  - Code backup completed. Code saved to: /root/autodl-tmp/retraining-free-quantization/training/r18_c10_nude_0.02_all_bits_orth_double/code/error_find/logs
+2025-12-31 09:46:40,744 - INFO  - Copied code file: alexnet.py
+2025-12-31 09:46:40,744 - INFO  - Copied code file: mobilenetv2.py
+2025-12-31 09:46:40,745 - INFO  - Copied code file: model.py
+2025-12-31 09:46:40,745 - INFO  - Copied code file: resnet.py
+2025-12-31 09:46:40,745 - INFO  - Copied code file: __init__.py
+2025-12-31 09:46:40,745 - INFO  - Code backup completed. Code saved to: /root/autodl-tmp/retraining-free-quantization/training/r18_c10_nude_0.02_all_bits_orth_double/code/error_find/model
+2025-12-31 09:46:40,745 - INFO  - Copied code file: func.py
+2025-12-31 09:46:40,746 - INFO  - Copied code file: utils.py
+2025-12-31 09:46:40,746 - INFO  - Copied code file: __init__.py
+2025-12-31 09:46:40,746 - INFO  - Copied code file: lsq.py
+2025-12-31 09:46:40,746 - INFO  - Copied code file: __init__.py
+2025-12-31 09:46:40,746 - INFO  - Copied code file: quantizer.py
+2025-12-31 09:46:40,746 - INFO  - Code backup completed. Code saved to: /root/autodl-tmp/retraining-free-quantization/training/r18_c10_nude_0.02_all_bits_orth_double/code/error_find/quan/quantizer
+2025-12-31 09:46:40,746 - INFO  - Code backup completed. Code saved to: /root/autodl-tmp/retraining-free-quantization/training/r18_c10_nude_0.02_all_bits_orth_double/code/error_find/quan
+2025-12-31 09:46:40,747 - INFO  - Copied code file: __init__.py
+2025-12-31 09:46:40,747 - INFO  - Copied code file: cubesam.py
+2025-12-31 09:46:40,747 - INFO  - Copied code file: qbsam.py
+2025-12-31 09:46:40,747 - INFO  - Code backup completed. Code saved to: /root/autodl-tmp/retraining-free-quantization/training/r18_c10_nude_0.02_all_bits_orth_double/code/error_find/scalablewp
+2025-12-31 09:46:40,747 - INFO  - Code backup completed. Code saved to: /root/autodl-tmp/retraining-free-quantization/training/r18_c10_nude_0.02_all_bits_orth_double/code/error_find/trained_models/cube
+2025-12-31 09:46:40,747 - INFO  - Code backup completed. Code saved to: /root/autodl-tmp/retraining-free-quantization/training/r18_c10_nude_0.02_all_bits_orth_double/code/error_find/trained_models/qsam
+2025-12-31 09:46:40,747 - INFO  - Code backup completed. Code saved to: /root/autodl-tmp/retraining-free-quantization/training/r18_c10_nude_0.02_all_bits_orth_double/code/error_find/trained_models/qwsam
+2025-12-31 09:46:40,747 - INFO  - Code backup completed. Code saved to: /root/autodl-tmp/retraining-free-quantization/training/r18_c10_nude_0.02_all_bits_orth_double/code/error_find/trained_models
+2025-12-31 09:46:40,747 - INFO  - Copied code file: config.py
+2025-12-31 09:46:40,748 - INFO  - Copied code file: checkpoint.py
+2025-12-31 09:46:40,748 - INFO  - Copied code file: data_loader.py
+2025-12-31 09:46:40,748 - INFO  - Copied code file: dist.py
+2025-12-31 09:46:40,748 - INFO  - Copied code file: loss_ops.py
+2025-12-31 09:46:40,748 - INFO  - Copied code file: greedy_search.py
+2025-12-31 09:46:40,748 - INFO  - Copied code file: model_ema.py
+2025-12-31 09:46:40,749 - INFO  - Copied code file: monitor.py
+2025-12-31 09:46:40,749 - INFO  - Copied code file: mpq.py
+2025-12-31 09:46:40,749 - INFO  - Copied code file: qat.py
+2025-12-31 09:46:40,749 - INFO  - Copied code file: random_search.py
+2025-12-31 09:46:40,749 - INFO  - Copied code file: searcher.py
+2025-12-31 09:46:40,750 - INFO  - Copied code file: __init__.py
+2025-12-31 09:46:40,750 - INFO  - Copied code file: weight_schd.py
+2025-12-31 09:46:40,750 - INFO  - Copied code file: utils.py
+2025-12-31 09:46:40,750 - INFO  - Code backup completed. Code saved to: /root/autodl-tmp/retraining-free-quantization/training/r18_c10_nude_0.02_all_bits_orth_double/code/error_find/util
+2025-12-31 09:46:40,750 - INFO  - Copied code file: ver_test.py
+2025-12-31 09:46:40,750 - INFO  - Code backup completed. Code saved to: /root/autodl-tmp/retraining-free-quantization/training/r18_c10_nude_0.02_all_bits_orth_double/code/error_find
+2025-12-31 09:46:40,750 - INFO  - Copied code file: main_nude.py
+2025-12-31 09:46:40,751 - INFO  - Copied code file: process_nude.py
+2025-12-31 09:46:40,751 - INFO  - Code backup completed. Code saved to: /root/autodl-tmp/retraining-free-quantization/training/r18_c10_nude_0.02_all_bits_orth_double/code
+2025-12-31 09:46:40,963 - INFO  - Created `resnet18` model for `cifar10` dataset (num_classes=10)
+          Use pre-trained model = False
+2025-12-31 09:46:41,208 - INFO  - ================================================================================
+2025-12-31 09:46:41,209 - INFO  - 🚀 [NUDE] BFAT ENABLED
+2025-12-31 09:46:41,209 - INFO  - ================================================================================
+2025-12-31 09:46:41,209 - INFO  -   ✅ FaultInjector initialized for BFAT
