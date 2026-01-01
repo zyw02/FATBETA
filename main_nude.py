@@ -63,9 +63,14 @@ def main():
     logger, log_dir, pymonitor, tbmonitor = init_logger_and_monitor(configs, script_dir)
     monitors = [pymonitor, tbmonitor]
     setup_print(is_master=(configs.local_rank == 0))
+    try:
+        import torch.backends.cudnn as cudnn
+        cudnn.benchmark = False
+    except Exception:
+        pass
 
     # Backup code for reproducibility
-    if not configs.eval and not configs.search:
+    if is_master() and not configs.eval and not configs.search:
         code_dst = os.path.join(log_dir, "code")
         copy_code(logger, src=str(script_dir), dst=code_dst)
 
@@ -112,7 +117,8 @@ def main():
         exclude_layers = getattr(bfat_cfg, 'exclude_layers', None)
 
         ber = float(ber_raw)
-        training_model = model.module if configs.distributed else model
+        # Handle both DDP wrapped and unwrapped models
+        training_model = model.module if isinstance(model, torch.nn.parallel.DistributedDataParallel) else model
         
         fault_injector = FaultInjector(
             model=training_model,
@@ -137,12 +143,25 @@ def main():
     
     # DDP if distributed
     if configs.distributed:
-        model = DistributedDataParallel(model.cuda(), device_ids=[configs.local_rank], find_unused_parameters=True)
+        model = model.to(configs.device)
+        model = DistributedDataParallel(model, device_ids=[configs.local_rank], find_unused_parameters=True)
     else:
         model = model.cuda()
 
     # Data
     train_loader, val_loader, test_loader, train_sampler, val_sampler = init_dataloader(configs.dataloader, arch=configs.arch)
+    logger_info(logger, f'[DEBUG] Dataloaders initialized: train={len(train_loader)}, val={len(val_loader)}, test={len(test_loader)}')
+
+    # Build a master-only eval loader once to avoid per-epoch worker spawn overhead
+    eval_loader_master = test_loader
+
+    enable_linear_scaling_rule = False
+    if enable_linear_scaling_rule and configs.distributed:
+        configs.lr = configs.lr * configs.world_size * configs.dataloader.batch_size / 512
+        configs.min_lr = configs.min_lr * \
+            configs.world_size * configs.dataloader.batch_size / 512
+        configs.warmup_lr = configs.warmup_lr * \
+            configs.world_size * configs.dataloader.batch_size / 512
 
     optimizer, optimizer_q, lr_scheduler, lr_scheduler_q = create_optimizer_and_lr_scheduler(model, configs)
 
@@ -176,8 +195,14 @@ def main():
     perf = PerformanceScoreboard(configs.log.num_best_scores)
 
     if configs.eval:
-        acc = validate(test_loader, target_model.ema, criterion, -1, monitors, configs, nr_random_sample=0)
-        logger_info(logger, f"[NUDE][EVAL] Top1: {acc:.3f}")
+        eval_model = target_model.ema.module if hasattr(target_model.ema, 'module') else target_model.ema
+        acc = validate(eval_loader_master, eval_model, criterion, -1, monitors, configs, nr_random_sample=0)
+        if is_master():
+            logger_info(logger, f"[NUDE][EVAL] Top1: {acc:.3f}")
+        if configs.distributed:
+            import torch.distributed as dist
+            if dist.is_available() and dist.is_initialized():
+                dist.barrier()
         return
 
     # 训练时间预估相关变量
@@ -211,9 +236,15 @@ def main():
             fault_injector=fault_injector,
         )
 
-        # Validate on EMA model
-        v_top1 = validate(test_loader, target_model.ema, criterion, epoch, monitors, configs, nr_random_sample=0)
-        perf.update(v_top1, 0.0, epoch)
+        # Validate on EMA model (all ranks run; master updates scoreboard)
+        eval_model = target_model.ema.module if hasattr(target_model.ema, 'module') else target_model.ema
+        v_top1 = validate(eval_loader_master, eval_model, criterion, epoch, monitors, configs, nr_random_sample=0)
+        if is_master():
+            perf.update(v_top1, 0.0, epoch)
+        if configs.distributed:
+            import torch.distributed as dist
+            if dist.is_available() and dist.is_initialized():
+                dist.barrier()
 
         # 计算epoch时间并记录
         epoch_end_time = time.time()
@@ -245,12 +276,13 @@ def main():
         estimated_completion_time = datetime.now() + timedelta(seconds=estimated_remaining_time)
         estimated_completion_str = estimated_completion_time.strftime("%Y-%m-%d %H:%M:%S")
 
-        logger_info(
-            logger,
-            f"[NUDE][EPOCH] {epoch}/{configs.epochs} "
-            f"Train: Top1={t_top1:.2f} Top5={t_top5:.2f} Loss={t_loss:.4f} | "
-            f"Val(EMA): Top1={v_top1:.2f}",
-        )
+        if is_master():
+            logger_info(
+                logger,
+                f"[NUDE][EPOCH] {epoch}/{configs.epochs} "
+                f"Train: Top1={t_top1:.2f} Top5={t_top5:.2f} Loss={t_loss:.4f} | "
+                f"Val(EMA): Top1={v_top1:.2f}",
+            )
         logger_info(logger, f'  ⏱️  本Epoch耗时: {format_time(epoch_time)} | 平均Epoch耗时: {format_time(avg_epoch_time)} | 剩余Epoch数: {remaining_epochs}')
         if remaining_epochs > 0:
             logger_info(logger, f'  📅 预估剩余时间: {format_time(estimated_remaining_time)} | 预估完成时间: {estimated_completion_str}')

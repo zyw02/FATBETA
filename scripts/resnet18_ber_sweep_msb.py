@@ -1,12 +1,13 @@
 import subprocess
 import argparse
+import os
 
 # 使用 argparse 允许从命令行指定位宽
 parser = argparse.ArgumentParser()
 parser.add_argument('--bits', type=int, default=6, help='Dynamic bits (4 or 6)')
 parser.add_argument('--seed', type=int, default=None)
-parser.add_argument('--ckpt', type=str, default="/root/autodl-tmp/retraining-free-quantization/training/r18_c10_nude_0.02_all_bits_orth_best_ever_result_for_nude/r18_c10_nude_0.02_all_bits_orth_checkpoint.pth.tar")
-parser.add_argument('--config', type=str, default="configs/training/train_resnet18_cifar10_single_gpu.yaml")
+parser.add_argument('--ckpt', type=str, default="/root/autodl-tmp/FATBETA/training/r18_c10_nude_msb0022_lsb_002_orth_double_3x2080ti_rev/r18_c10_nude_msb0022_lsb_002_orth_double_3x2080ti_rev_checkpoint.pth.tar")
+parser.add_argument('--config', type=str, default="configs/training/r18_c10_nude_standard_bfat_allbits_2.yaml")
 parser.add_argument('--bers', type=str, default=None)
 args = parser.parse_args()
 
@@ -22,8 +23,17 @@ else:
 ckpt = args.ckpt
 config = args.config
 
-print(f"ResNet18 W{bits}A{bits} BER Sweep - Baseline Checkpoint")
-print(f"{'BER':<10} | {'All Bits Acc':<15} | {'Skip MSB Acc':<15} | {'Only MSB Acc':<15}")
+# colors
+C_RESET = "\033[0m"
+C_BOLD = "\033[1m"
+C_TITLE = "\033[36m"
+C_COL1 = "\033[32m"
+C_COL2 = "\033[33m"
+C_COL3 = "\033[35m"
+
+ckpt_name = os.path.basename(ckpt)
+print(f"{C_BOLD}{C_TITLE}ResNet18 W{bits}A{bits} BER Sweep - {ckpt_name}{C_RESET}")
+print(f"{'BER':<10} | {C_COL1}{'All Bits Acc':<15}{C_RESET} | {C_COL2}{'Skip MSB Acc':<15}{C_RESET} | {C_COL3}{'Only MSB Acc':<15}{C_RESET}")
 print("-" * 65)
 
 for ber in bers:
@@ -69,4 +79,4 @@ for ber in bers:
             lines = res_only.stdout.splitlines()
             print("\n".join(lines[-20:]))
         acc_only = "ERR"
-    print(f"{ber:<10} | {acc_all:<15} | {acc_skip:<15} | {acc_only:<15}")
+    print(f"{ber:<10} | {C_COL1}{acc_all:<15}{C_RESET} | {C_COL2}{acc_skip:<15}{C_RESET} | {C_COL3}{acc_only:<15}{C_RESET}")

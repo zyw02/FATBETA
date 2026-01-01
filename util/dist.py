@@ -16,8 +16,13 @@ def init_dist_nccl_backend(configs):
         configs.local_rank = 0
 
     if configs.distributed:
+        # Read LOCAL_RANK from environment if available (set by torchrun)
+        if 'LOCAL_RANK' in os.environ:
+            configs.local_rank = int(os.environ['LOCAL_RANK'])
+
+        # Don't set device here, let main script handle it
         configs.device = 'cuda:%d' % configs.local_rank
-        torch.cuda.set_device(configs.local_rank)
+        torch.cuda.set_device(configs.local_rank) 
         distributed.init_process_group(backend='nccl', init_method='env://')
         configs.world_size = distributed.get_world_size()
         configs.rank = distributed.get_rank()

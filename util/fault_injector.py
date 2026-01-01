@@ -1180,7 +1180,10 @@ class FaultInjector:
                     mask[:, k-1] = False
                 elif self.all_bits:
                     # All bits: already generated correctly by hash_tensor < p
-                    pass
+                    # NEW: Override MSB column if ber_msb is specified
+                    if self.ber_msb is not None:
+                        hash_grid = hash_tensor.reshape(N, k)
+                        mask[:, k-1] = hash_grid[:, k-1] < self.ber_msb
                 
                 return mask
             else:
@@ -1235,7 +1238,14 @@ class FaultInjector:
                     mask[:, k-1] = False
                 elif self.all_bits:
                     # All bits: already generated correctly by torch.rand < p
-                    pass
+                    # NEW: Override MSB column if ber_msb is specified
+                    if self.ber_msb is not None:
+                        if seed_to_use is not None:
+                            generator = torch.Generator(device=device)
+                            generator.manual_seed(seed_to_use + 123456)
+                            mask[:, k-1] = torch.rand((N,), generator=generator, device=device) < self.ber_msb
+                        else:
+                            mask[:, k-1] = torch.rand((N,), device=device) < self.ber_msb
                 
                 return mask
         else:
