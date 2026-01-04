@@ -14,6 +14,18 @@ data/
 *.pt
 *.h5
 *.hdf5
+*.json
+*.sh
+*.csv
+*.png
+*.log
+/tb_runs/
+/training/
+/eval/
+/search/
+/exp/
+/analysis/
+/plot_model/
 
 # Training outputs (exclude checkpoints but keep logs)
 training/*/checkpoint.pth.tar

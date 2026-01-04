@@ -164,9 +164,10 @@ def main():
                 
                 # 如果是 LSQ 量化器，同步更新其内部缓存
                 if hasattr(module, 'current_bit_cands_w'):
-                    module.current_bit_cands_w = [torch.tensor(max_target_bit).to(device)]
+                    # 修复：Buffer 必须赋值为 Tensor 而不是 List
+                    module.current_bit_cands_w.data = torch.tensor([max_target_bit], device=device).to(module.current_bit_cands_w.dtype)
                 if hasattr(module, 'current_bit_cands_a'):
-                    module.current_bit_cands_a = [torch.tensor(max_target_bit).to(device)]
+                    module.current_bit_cands_a.data = torch.tensor([max_target_bit], device=device).to(module.current_bit_cands_a.dtype)
                 
                 # 为 FaultInjector 强制开启“量化状态”
                 # 在某些版本中，quan_w_fn 可能会读取自己的属性

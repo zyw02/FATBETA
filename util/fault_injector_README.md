@@ -2,7 +2,7 @@
 
 ## 概述
 
-故障注入工具（Fault Injector）专门为 `retraining-free-quantization` 框架设计，用于研究量化模型的单粒子翻转（SEU）鲁棒性。
+故障注入工具（Fault Injector）专门用于研究量化模型的单粒子翻转（SEU）鲁棒性。
 
 ## 主要特性
 

@@ -1,0 +1,101 @@
+# Experiment name
+name: mobilenetv2_cifar10_w2to6_a2to6
+
+# Name of output directory. Checkpoints and logs will be saved at `pwd`/output_dir
+output_dir: training
+training_device: gpu
+
+num_random_path: 3
+split_aw_cands: true 
+target_bits: [6, 5, 4, 3, 2]
+post_training_batchnorm_calibration: true
+information_distortion_mitigation: false
+enable_dynamic_bit_training: true
+kd: false
+
+# Dataset loader
+dataloader:
+  dataset: cifar10
+  num_classes: 10
+  path: ./data/cifar10
+  batch_size: 128
+  workers: 4
+  deterministic: true
+
+resume:
+  path: /root/autodl-tmp/FATBETA/training/mobilenetv2_cifar10_fp32/mobilenetv2_cifar10_fp32_checkpoint.pth.tar
+  lean: true
+
+log:
+  num_best_scores: 3
+  print_freq: 20
+
+#============================ Model ============================================
+
+arch: mobilenetv2
+pre_trained: false # pre_trained是pytorch官方的权重，一般是imagenet上的
+
+#============================ Quantization =====================================
+
+# (default for all layers)
+quan:
+  act: 
+    mode: lsq
+    bit: 2
+    per_channel: false
+    symmetric: false
+    all_positive: true
+
+  weight: 
+    mode: lsq
+    bit: 2
+    per_channel: false
+    symmetric: false
+    all_positive: false
+  
+  excepts:
+    excepts_bits_width: 8
+    # Specify quantized bit width for some layers, like this:
+    features.0.0:
+      act:
+        bit: 
+        all_positive: false
+      weight:
+        bit:
+    features.0.1:
+      act:
+        bit:
+      weight:
+        bit:
+    classifier.1:
+      act:
+        bit:
+      weight:
+        bit:
+
+#============================ Training / Evaluation ============================
+
+eval: false
+
+epochs: 150
+smoothing: 0.0
+scale_gradient: false
+dropout: 0.2
+
+opt: sgd
+lr: 0.01
+momentum: 0.9
+weight_decay: 0.000025
+adaptive_region_weight_decay: 0
+
+# 强制覆盖 template.yaml 里的可能冲突
+sched: cosine
+min_lr: 0.00001
+decay_rate: 0.1
+warmup_epochs: 5
+warmup_lr: 0.00001
+decay_epochs: 30
+cooldown_epochs: 0
+
+ema_decay: 0.9997
+

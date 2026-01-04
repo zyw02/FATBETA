@@ -27,6 +27,10 @@ def quantizer(default_cfg, this_cfg=None, skip_quantization=False, remap_act=Fal
 
 
 def find_modules_to_quantize(model, configs):
+    # 如果 target_bits 只有 32，说明是纯浮点训练，直接返回空字典，不替换任何模块
+    if len(configs.target_bits) == 1 and configs.target_bits[0] >= 32:
+        return {}
+
     replaced_modules = dict()
     conv = None
     remap_act = False
@@ -83,6 +87,9 @@ def find_modules_to_quantize(model, configs):
 
 
 def replace_module_by_names(model, modules_to_replace):
+    if not modules_to_replace:
+        return model
+
     def helper(child: torch.nn.Module):
         for n, c in child.named_children():
             if type(c) in ops.keys():

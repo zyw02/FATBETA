@@ -22,7 +22,7 @@ from util.dist import logger_info, is_master, init_dist_nccl_backend, tbmonitor_
 from util.weight_schd import CosineSched
 from quan import find_modules_to_quantize, replace_module_by_names
 from policy import BITS
-from process_normal import train, validate, PerformanceScoreboard
+from process_normal_copy import train, validate, PerformanceScoreboard
 from evolution_search import EvolutionSearcher
 from util.fault_injector import FaultInjector
 from util.output_corrector import create_output_corrector
@@ -78,18 +78,8 @@ def main():
         teacher_model = create_model('resnet101', dataset=configs.dataloader.dataset)
         teacher_model.eval()
 
-    model = create_model(configs.arch, dataset=configs.dataloader.dataset, pre_trained=configs.pre_trained, dropout=getattr(configs, 'dropout', 0.2)) 
+    model = create_model(configs.arch, dataset=configs.dataloader.dataset, pre_trained=configs.pre_trained) 
     model = preprocess_model(model, configs)
-
-    # --- 新增：如果在 lean 模式下加载 FP32 模型，在量化包装前先加载权重 ---
-    if configs.resume.path and os.path.exists(configs.resume.path) and getattr(configs.resume, 'lean', False):
-        logger_info(logger, f'Lean loading pre-trained weights from {configs.resume.path} before quantization...')
-        checkpoint = torch.load(configs.resume.path, map_location='cpu')
-        state_dict = checkpoint['state_dict_ema'] if 'state_dict_ema' in checkpoint and checkpoint['state_dict_ema'] is not None else checkpoint['state_dict']
-        # 移除 'module.' 前缀
-        state_dict = {k[7:] if k.startswith('module.') else k: v for k, v in state_dict.items()}
-        model.load_state_dict(state_dict, strict=False)
-        logger_info(logger, 'Successfully loaded pre-trained weights into the floating-point model.')
 
     logger_info(logger, 'Inserted quantizers into the original model')
     model = replace_module_by_names(model, find_modules_to_quantize(model, configs))
@@ -199,12 +189,9 @@ def main():
     logger_info(logger, '[DEBUG] ModelEma created')
     
     if configs.resume.path and os.path.exists(configs.resume.path):
-        # 如果是 lean 模式，我们已经在上面量化前加载过了，这里使用 strict=False 再次同步一下剩余参数
-        is_lean = getattr(configs.resume, 'lean', False)
-        model, start_epoch, _ = load_checkpoint(model, configs.resume.path, 'cuda', lean=is_lean, optimizer=optimizer, override_optim=configs.eval,
+        model, start_epoch, _ = load_checkpoint(model, configs.resume.path, 'cuda', lean=configs.resume.lean, optimizer=optimizer, override_optim=configs.eval,
                                                 lr_scheduler=lr_scheduler, lr_scheduler_q=lr_scheduler_q, optimizer_q=optimizer_q,
-                                                output_corrector=output_corrector, corrector_optimizer=corrector_optimizer,
-                                                strict=not is_lean) # lean 模式下不强制要求 key 完全匹配
+                                                output_corrector=output_corrector, corrector_optimizer=corrector_optimizer)
         reset_bn_cands = not (getattr(configs, "eval", False) or getattr(configs, "search", False))
         
         w_cands, a_cands = target_model._load_checkpoint(configs.resume.path, )
@@ -246,21 +233,28 @@ def main():
         fat_cfg = getattr(configs, 'fault_aware_training', None)
         bfat_cfg = getattr(configs, 'bfat', None)
         
-        use_fat = fat_cfg is not None and getattr(fat_cfg, 'enabled', False)
-        use_bfat = bfat_cfg is not None and getattr(bfat_cfg, 'enabled', False)
+        fat_enabled = fat_cfg is not None and getattr(fat_cfg, 'enabled', False)
+        bfat_enabled = bfat_cfg is not None and getattr(bfat_cfg, 'enabled', False)
 
-        if use_fat or use_bfat:
-            main_cfg = bfat_cfg if (use_bfat and bfat_cfg) else fat_cfg
-            ber = float(getattr(main_cfg, 'ber', 1e-2))
+        if fat_enabled or bfat_enabled:
+            # 获取 BER（优先从 FAT 配置获取，否则从 BFAT 获取）
+            if fat_enabled:
+                ber = float(getattr(fat_cfg, 'ber', 1e-2))
+            else:
+                ber = float(getattr(bfat_cfg, 'ber', 1e-2))
+                
             training_model = model.module if configs.distributed else model
-            seed_list = getattr(main_cfg, 'seed_list', None)
-            exclude_layers = getattr(main_cfg, 'exclude_layers', None)
-            skip_msb = getattr(main_cfg, 'skip_msb', False)
-            only_msb = getattr(main_cfg, 'only_msb', False)
-            bfat_bit_index = getattr(bfat_cfg, 'bit_index', None) if bfat_cfg else None
-            bfat_dual_bit = getattr(bfat_cfg, 'dual_bit', False) if bfat_cfg else False
-            ber_msb = getattr(bfat_cfg, 'ber_msb', None) if bfat_cfg else None
-            ber_secondary_msb = getattr(bfat_cfg, 'ber_secondary_msb', None) if bfat_cfg else None
+            
+            seed_list = getattr(fat_cfg, 'seed_list', None) if fat_enabled else None
+            if seed_list is not None:
+                if isinstance(seed_list, (list, tuple)):
+                    seed_list = list(seed_list)
+                else:
+                    seed_list = [int(seed_list)]
+            
+            skip_msb = getattr(fat_cfg, 'skip_msb', False) if fat_enabled else False
+            only_msb = getattr(fat_cfg, 'only_msb', False) if fat_enabled else False
+            bfat_bit_index = getattr(bfat_cfg, 'bit_index', None) if bfat_enabled else None
 
             fault_injector = FaultInjector(
                 model=training_model,
@@ -270,27 +264,23 @@ def main():
                 enable_in_inference=False,
                 seed=getattr(configs, 'seed', 42),
                 seed_list=seed_list,
-                exclude_layers=exclude_layers,
                 skip_msb=skip_msb,
                 only_msb=only_msb,
-                bfat_bit_index=bfat_bit_index,
-                bfat_dual_bit=bfat_dual_bit,
-                ber_msb=ber_msb,
-                ber_secondary_msb=ber_secondary_msb
+                bfat_bit_index=bfat_bit_index
             )
             
             logger_info(logger, '=' * 80)
-            logger_info(logger, f'🚀 FAULT INJECTION TRAINING - ENABLED (FAT: {use_fat}, BFAT: {use_bfat})')
-            logger_info(logger, '=' * 80)
-            logger_info(logger, f'  ✅ FaultInjector initialized')
-            logger_info(logger, f'  ✅ Base BER: {ber}')
-            if use_bfat:
-                logger_info(logger, f'  ✅ BFAT Mode: dual_bit={bfat_dual_bit}, ber_msb={ber_msb}, ber_secondary_msb={ber_secondary_msb}')
+            logger_info(logger, f'🚀 FAULT INJECTOR - INITIALIZED (FAT: {fat_enabled}, BFAT: {bfat_enabled})')
+            logger_info(logger, f'  ✅ Initial BER: {ber}')
             logger_info(logger, '=' * 80)
         else:
-            fault_injector = None
             logger_info(logger, '=' * 80)
-            logger_info(logger, '⚠️  FAULT INJECTION TRAINING - DISABLED')
+            logger_info(logger, '⚠️  FAULT INJECTION - DISABLED')
+            logger_info(logger, '=' * 80)
+            if fat_cfg is None and bfat_cfg is None:
+                logger_info(logger, '  Reason: No fault configuration found in YAML')
+            else:
+                logger_info(logger, f'  Reason: fat.enabled={fat_enabled}, bfat.enabled={bfat_enabled}')
             logger_info(logger, '=' * 80)
 
     logger_info(logger, f'[DEBUG] Creating annealing schedule (train_loader length: {len(train_loader)})...')
@@ -444,12 +434,6 @@ def main():
                                            corrector_optimizer=corrector_optimizer
                                            )
             
-            # --- 添加验证步骤 ---
-            logger_info(logger, 'Evaluating...')
-            v_results = validate(test_loader, target_model.ema, criterion, epoch, monitors, configs, train_loader=train_loader)
-            v_top1 = v_results[0] if isinstance(v_results, list) else v_results
-            # -----------------
-            
             # 如果有验证阶段，也需要记录验证时间
             # 注意：这里只记录训练时间，验证时间会在validate函数中单独处理
             # 如果需要更准确的预估，可以在validate调用前后也记录时间
@@ -536,3 +520,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

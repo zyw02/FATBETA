@@ -71,17 +71,20 @@ class MobileNetV2(nn.Module):
             [1, 16, 1, 1],
             [6, 24, 2, 2],
             [6, 32, 3, 2],
-            [6, 64, 4, 2],
+            [6, 64, 4, 1], # 这里改为 1, 避免过快下采样
             [6, 96, 3, 1],
             [6, 160, 3, 2],
             [6, 320, 1, 1],
         ]
 
         # building first layer
-        assert input_size % 32 == 0
+        # For CIFAR (32x32), we use stride 1 in the first conv layer
+        # For ImageNet (224x224), we use stride 2
+        first_stride = 1 if input_size <= 32 else 2
+        
         input_channel = int(input_channel * width_mult)
         self.last_channel = int(last_channel * width_mult) if width_mult > 1.0 else last_channel
-        self.features = [conv_bn(3, input_channel, 2)]
+        self.features = [conv_bn(3, input_channel, first_stride)]
         # building inverted residual blocks
         for t, c, n, s in interverted_residual_setting:
             output_channel = int(c * width_mult)
@@ -127,11 +130,11 @@ class MobileNetV2(nn.Module):
 
 
 
-def mobilenet_v2(pretrained=False):
-    model = MobileNetV2()
+def mobilenet_v2(pretrained=False, num_classes=1000, input_size=224, dropout=0.2):
+    model = MobileNetV2(n_class=num_classes, input_size=input_size, dropout=dropout)
 
     if pretrained:
         checkpoint = torch.load('/mnt/data/pretrained_models/cnns/mobilenet/v2/checkpoint.pth', map_location='cpu')
-        model.load(checkpoint['model'])
+        model.load_state_dict(checkpoint['model'])
     
     return model

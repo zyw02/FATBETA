@@ -7,7 +7,7 @@ import torch
 import torchvision
 from torchvision.models import resnet101, resnet18
 
-def create_model(arch, dataset='imagenet', pre_trained=True):
+def create_model(arch, dataset='imagenet', pre_trained=True, dropout=0.2):
     logger = logging.getLogger()
 
     model = None
@@ -33,7 +33,7 @@ def create_model(arch, dataset='imagenet', pre_trained=True):
             if pre_trained:
                 logger.warning('Pre-trained weights for CIFAR ResNet18 are not available, using random initialization')
         elif arch == 'mobilenetv2':
-            model = mobilenet_v2(pretrained=False, num_classes=num_classes)
+            model = mobilenet_v2(pretrained=False, num_classes=num_classes, input_size=32, dropout=dropout)
             if pre_trained:
                 logger.warning('Pre-trained weights for CIFAR MobileNetV2 are not available, using random initialization')
         elif arch == 'alexnet':

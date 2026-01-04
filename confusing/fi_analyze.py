@@ -128,8 +128,6 @@ class FaultInjector:
         self.bfat_dual_bit = bfat_dual_bit  # 双位翻转模式
         self.ber_msb = float(ber_msb) if ber_msb is not None else None
         self.ber_secondary_msb = float(ber_secondary_msb) if ber_secondary_msb is not None else None
-        self.stuck_at_0_x = 0  # Stuck-at-0 故障模式：x>0 时将 bit0 到 bit{x} 置 0
-        self.stuck_at_0_random = False  # 是否启用层级随机 Stuck-at-0 (x ~ U[0, 3])
         # 为OLM创建反向映射（code -> value）以加速查找
         self.olm_code_to_value: Dict[str, Dict[int, int]] = {}
         for layer_name, value_to_code in self.olm_layers.items():
@@ -1008,54 +1006,6 @@ class FaultInjector:
         if flat_int64.device != device:
             flat_int64 = flat_int64.to(device)
         bits = ((flat_int64.unsqueeze(-1) >> bit_positions) & 1).to(torch.bool)
-        
-        # --- Stuck-at-0 Fault Injection Logic ---
-        # Determine current_x for this layer
-        if self.stuck_at_0_random:
-            # Layer-wise random x in [0, 3]
-            # Use forward_seed for reproducibility if available
-            if forward_seed is not None:
-                # Simple deterministic generation based on seed
-                # We can use a Generator or a simple hash-like operation
-                # Here using torch.randint with generator for cleaner code
-                gen = torch.Generator()
-                gen.manual_seed(forward_seed)
-                current_x = torch.randint(0, 4, (1,), generator=gen).item()
-            else:
-                current_x = torch.randint(0, 4, (1,)).item()
-        else:
-            current_x = self.stuck_at_0_x
-            
-        # Apply Stuck-at-0 mask if needed (before BER injection)
-        if current_x > 0:
-            # Mask bits 0 to current_x-1 (e.g., if x=1, mask bit 0; if x=2, mask bits 0,1)
-            # We want to force these bits to 0
-            # bits shape: [N, k]
-            # We create a mask where True means "keep" and False means "force to 0"
-            # Actually, we can just use logical AND with ~mask
-            
-            # Create a mask for bits to be zeroed out
-            # Indices < current_x should be 0
-            # bit_positions is [0, 1, ..., k-1]
-            # We want positions < current_x to be 0
-            
-            # Safety check: x shouldn't exceed k (though typically k=6, x<=3)
-            safe_x = min(current_x, k)
-            
-            # Mask logic:
-            # bits to clear: indices < safe_x
-            # We want to set bits[..., idx] = 0 where idx < safe_x
-            
-            # Construct a mask of shape [k] (broadcastable to [N, k])
-            # positions < safe_x -> True (to be cleared)
-            clear_mask = bit_positions < safe_x
-            
-            # Apply clearing: bits = bits & (~clear_mask)
-            # ~clear_mask: positions < safe_x -> False (0), others -> True (1)
-            # So ANDing will clear the LSBs
-            bits = bits & (~clear_mask)
-            
-        # Apply BER flip mask
         flipped_bits = bits ^ flip_mask
         
         # 向量化重建编码值（使用预计算的权重，避免重复位移操作）

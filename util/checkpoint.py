@@ -211,7 +211,7 @@ def load_checkpoint(model:nn.Module, chkp_file, model_device=None, strict=True, 
     #     optimizer.load_state_dict(optimizer_state)
 
     optimizer_q_state = checkpoint.get('optimizer_q', None)
-    if optimizer_q is not None and optimizer_q_state is not None and not override_optim:
+    if not lean and optimizer_q is not None and optimizer_q_state is not None and not override_optim:
         # Filter optimizer state to remove parameters with shape mismatch
         # This is necessary when model configuration changed (e.g., classifier.1 from dynamic to fixed bit)
         filtered_optimizer_q_state = filter_optimizer_state(optimizer_q, optimizer_q_state, unwrapped_model)
@@ -221,11 +221,11 @@ def load_checkpoint(model:nn.Module, chkp_file, model_device=None, strict=True, 
             logger.warning(f"Failed to load optimizer_q state: {e}. Continuing with fresh optimizer state.")
     
     lr_scheduler_state = checkpoint.get('lr_scheduler', None)
-    if lr_scheduler is not None and lr_scheduler_state is not None:
+    if not lean and lr_scheduler is not None and lr_scheduler_state is not None and not override_optim:
         lr_scheduler.load_state_dict(lr_scheduler_state)
 
     lr_scheduler_q_state = checkpoint.get('lr_scheduler_q', None)
-    if lr_scheduler_q is not None and lr_scheduler_q_state is not None:
+    if not lean and lr_scheduler_q is not None and lr_scheduler_q_state is not None and not override_optim:
         lr_scheduler_q.load_state_dict(lr_scheduler_q_state)
     
     checkpoint_epoch = checkpoint.get('epoch', None)

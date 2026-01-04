@@ -32,6 +32,10 @@ def quantize(x, s, thd_neg, thd_pos, scale_grad=False):
 
 
 def compute_thd(self, bits):
+    # BFAT Shadow Mode: if bits=1, behave exactly like max_bit (e.g. 6-bit)
+    if bits == 1:
+        bits = max(self.bit_list)
+        
     if self.all_positive:
         assert not self.symmetric, "Positive quantization cannot be symmetric"
         # unsigned activation is quantized to [0, 2^b-1]
@@ -46,14 +50,14 @@ def compute_thd(self, bits):
             # signed weight/activation is quantized to [-2^(b-1), 2^(b-1)-1]
             thd_neg = - 2 ** (bits - 1)
             thd_pos = 2 ** (bits - 1) - 1
-    
+
     if isinstance(thd_neg, torch.Tensor):
         thd_neg = int(thd_neg.cpu().item())
         thd_pos = int(thd_pos.cpu().item())
     elif isinstance(thd_neg, float):
         thd_neg = int(thd_neg)
         thd_pos = int(thd_pos)
-    
+
     return thd_neg, thd_pos
 
 
@@ -94,7 +98,9 @@ class LsqQuan(Quantizer):
                 mean = x.detach().mean() 
                 std = x.detach().std() 
                 for i, b in enumerate(self.bit_list): 
-                    s_init = torch.max((mean-3*std).abs(), (mean+3*std).abs())/2**(max(bit_list)-1) * 2 ** (max(bit_list) - b)
+                    # BFAT Shadow Mode: bit=1 should be initialized same as max_bit
+                    calc_b = max(self.bit_list) if b == 1 else b
+                    s_init = torch.max((mean-3*std).abs(), (mean+3*std).abs())/2**(max(self.bit_list)-1) * 2 ** (max(self.bit_list) - calc_b)
 
                     self.s[i].data.copy_(s_init)
                     self.init_state[i].fill_(1)

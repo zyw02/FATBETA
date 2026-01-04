@@ -297,19 +297,6 @@ def train(
     num_updates = epoch * len(train_loader)
     set_global_seed(num_updates + 1)
 
-    # --- Hardware Consistency Setup ---
-    # Disable TF32 to ensure consistent precision across Ampere/Hopper/Blackwell (5090) and Turing (2080Ti)
-    # 5090 defaults to TF32 which has lower precision than FP32 used by 2080Ti
-    torch.backends.cuda.matmul.allow_tf32 = False
-    torch.backends.cudnn.allow_tf32 = False
-    
-    # Optional: Enable deterministic CuDNN if needed (may slow down training)
-    # torch.backends.cudnn.benchmark = False
-    # torch.backends.cudnn.deterministic = True
-    
-    logger_info(logger, f"[NUDE] Hardware Setup: TF32 Disabled for consistency. Device: {torch.cuda.get_device_name(0)}")
-    # ----------------------------------
-
     model.train()
     if model_ema is not None:
         model_ema.ema.train()
@@ -321,7 +308,6 @@ def train(
     bfat_cfg = getattr(configs, 'bfat', None)
     bfat_start_epoch = getattr(bfat_cfg, 'start_epoch', 0)
     use_bfat = bfat_cfg is not None and getattr(bfat_cfg, 'enabled', False) and epoch >= bfat_start_epoch
-    bfat_freeze_bn = getattr(bfat_cfg, 'freeze_bn', False) if use_bfat else False
     bfat_hook = None
     if use_bfat:
         bfat_loss_type = getattr(bfat_cfg, 'loss_type', 'feature_sim')
@@ -387,7 +373,6 @@ def train(
             if use_bfat and fault_injector is not None:
                 # --- 只有在需要投影时才捕获 clean 梯度 ---
                 clean_grads = {}
-                projection_base_grads = None
                 if proj_mode != "none":
                     for p in model.parameters():
                         if p.requires_grad and p.grad is not None:
@@ -420,110 +405,66 @@ def train(
 
                 # --- 核心逻辑分支 ---
                 if accumulate_grad_mode:
-                    # === 模式 A: Refined Projection Base Mode ===
-                    # Step 1: Skip-MSBN 故障注入 (模拟低位宽噪声)
-                    # 目的：产生一个 "Robust Gradient"，与 Clean Gradient 合成，形成更稳健的投影基准
+                    # === 模式 A: 模拟 Normal 组的梯度累积 (Max + 3*Restricted + 1*OnlyMSB) ===
                     
-                    fault_injector.stuck_at_0_random = False # 禁用 Stuck-at-0
-                    
+                    # 1. 累积 3 次排除 MSB/SecMSB 的 BFAT 梯度 (作为 "Clean" 的补充)
+                    # 设置为 restricted 模式 (Skip MSBN: 忽略最高两位)
                     fault_injector.bfat_dual_bit = False
                     fault_injector.only_msb = False
-                    fault_injector.all_bits = False
                     fault_injector.skip_msb = False
-                    fault_injector.skip_msbn = True # 关键：开启 Skip-MSBN (只翻转低位)
+                    fault_injector.skip_msbn = True # Skip highest 2 bits (MSB & SecMSB)
+                    fault_injector.all_bits = False
                     fault_injector.bfat_bit_index = None
-                    
-                    # 使用配置中的 BER，或者一个专门的 accumulation_ber (这里暂时复用 ber)
-                    fault_injector.ber = getattr(bfat_cfg, 'ber', 0.01)
+                    # 使用 restricted 专用 BER，如果未定义则回退到全局 BER
+                    fault_injector.ber = getattr(bfat_cfg, 'ber_restricted', getattr(bfat_cfg, 'ber', 0.01))
 
-                    # Initialize accumulators for SAM-like synthesis
-                    skip_msbn_grads = {}
-
-                    avg_skip_msbn_loss = 0.0
-                    for i in range(1):
+                    avg_restricted_loss = 0.0
+                    for i in range(2):
                         fault_injector.enable()
-                        # Use Clean Mode (Shared Scale)
-                        _force_max_bitwidth(model, configs)
-
-                        # Seed Strategy: Use a distinct seed sequence for this step
+                        # Manually set a varying seed for each accumulation step
+                        # Base seed: num_updates (epoch * len(loader)) + batch_idx * 10 + i
+                        # This ensures uniqueness across batches and steps
                         current_iter_seed = num_updates + batch_idx * 10 + i
                         fault_injector.seed = current_iter_seed
                         fault_injector.reset_forward_seed()
                         
-                        outputs_skip = model(inputs)
+                        outputs_restricted = model(inputs)
                         
-                        # 计算 Loss (直接使用 CE)
-                        loss_skip = criterion(outputs_skip, targets)
-                        loss_skip.backward()
+                        # 计算 restricted loss (直接使用 CE，视为一种数据增强)
+                        loss_restricted = criterion(outputs_restricted, targets)
+                        loss_restricted.backward()
                         
                         # 记录 Loss
-                        avg_skip_msbn_loss += loss_skip.item()
+                        avg_restricted_loss += loss_restricted.item()
 
-                        # 捕获 Skip-MSBN 梯度
+                        # 累积梯度到 clean_grads
                         for p in model.parameters():
                             if p.requires_grad and p.grad is not None:
-                                if p in skip_msbn_grads:
-                                    skip_msbn_grads[p] += p.grad.clone()
+                                if p in clean_grads:
+                                    clean_grads[p] += p.grad.clone()
                                 else:
-                                    skip_msbn_grads[p] = p.grad.clone()
+                                    clean_grads[p] = p.grad.clone()
                         
                         # 清空本次反传的梯度
                         optimizer.zero_grad()
                         if optimizer_q is not None:
                             optimizer_q.zero_grad()
                             
-                    avg_skip_msbn_loss /= 1.0
-                    
-                    # 更新 sim_res_loss Meter (复用这个 meter 记录 skip_msbn loss)
+                    avg_restricted_loss /= 2.0
+                    # 更新 sim_res_loss Meter
                     if 'sim_res_loss' in meters:
-                        meters['sim_res_loss'].update(avg_skip_msbn_loss, inputs.size(0))
-                        
-                    # --- SAM-style Gradient Synthesis ---
-                    # SAM update direction: g_clean + rho * (g_perturbed - g_clean)
-                    # This effectively optimizes: L(w) + rho * (L(w+eps) - L(w))
-                    # Default rho=1.0 simplifies to g_perturbed (Standard SAM)
-                    sam_rho = getattr(bfat_cfg, 'sam_rho', 1.0)
-                    
-                    refined_clean_grads = {}
-                    for p in clean_grads.keys():
-                        g_c = clean_grads[p]
-                        g_s = skip_msbn_grads.get(p, None)
-                        if g_s is not None:
-                            # Synthesis: Clean + Sharpness Penalty
-                            sharpness_grad = g_s - g_c
-                            refined_clean_grads[p] = g_c + sharpness_grad * sam_rho
-                        else:
-                            refined_clean_grads[p] = g_c
-                            
-                    # 设定投影基准为合成后的梯度
-                    projection_base_grads = refined_clean_grads
-                    
-                    # 关键：根据您的意图，是否要将 Skip-MSBN 梯度用于最终更新？
-                    # 如果这只是为了"寻找投影方向"，则不应累加回 clean_grads。
-                    # 如果这是 "Accumulation Mode" (意味着这也是训练的一部分)，则应该累加。
-                    # 鉴于之前的 Stuck-at-0 您选择移除，这里 Skip-MSBN 既然是用来做 SAM 合成的，
-                    # 且您提到 "accumulation"，通常意味着这部分梯度也要参与更新。
-                    # 这里我先保留累加逻辑，如果您不需要 Skip-MSBN 参与最终更新，请告知。
-                    for p, g_s in skip_msbn_grads.items():
-                         if p in clean_grads:
-                             clean_grads[p] += g_s 
-                         else:
-                             clean_grads[p] = g_s
- 
-                    # 2. 执行一次 BFAT (配置可控: Only MSB 或 All Bits)
-                    fault_injector.bfat_dual_bit = getattr(bfat_cfg, 'dual_bit', False)
-                    fault_injector.only_msb = getattr(bfat_cfg, 'only_msb', False)
-                    fault_injector.all_bits = getattr(bfat_cfg, 'all_bits', False)
-                    fault_injector.skip_msb = getattr(bfat_cfg, 'skip_msb', False)
-                    fault_injector.skip_msbn = getattr(bfat_cfg, 'skip_msbn', False)
-                    fault_injector.bfat_bit_index = getattr(bfat_cfg, 'bit_index', None)
-                    
+                        meters['sim_res_loss'].update(avg_restricted_loss, inputs.size(0))
+
+                    # 2. 执行一次 Only MSB 的 BFAT (作为 "Robust" 攻击梯度)
+                    fault_injector.bfat_dual_bit = False
+                    fault_injector.only_msb = True # 关键：Only MSB，最强攻击
+                    fault_injector.skip_msb = False
+                    fault_injector.skip_msbn = False
+                    fault_injector.all_bits = False
+                    fault_injector.bfat_bit_index = None
                     fault_injector.ber = getattr(bfat_cfg, 'ber', 0.01)
 
                     fault_injector.enable()
-                    # Switch to Clean Mode (Shared Scale) for BFAT
-                    _force_max_bitwidth(model, configs)
-
                     # Also vary seed for Only MSB step to be distinct from restricted steps
                     current_msb_seed = num_updates + batch_idx * 10 + 99 # offset 99 to avoid collision
                     fault_injector.seed = current_msb_seed
@@ -534,13 +475,13 @@ def train(
                     bfat_loss_type = getattr(bfat_cfg, 'loss_type', 'feature_sim')
                     loss_bfat_val = 0.0
                     if bfat_loss_type == 'direct_ce':
-                        loss_bfat = criterion(outputs_bfat, targets)
+                        loss_bfat = criterion(outputs_bfat, targets) * getattr(bfat_cfg, 'loss_weight', 1.0)
                         loss_bfat_val = loss_bfat.item()
                     else:
                         f_c = clean_feature.view(clean_feature.size(0), -1)
                         f_f = bfat_hook.feature.view(bfat_hook.feature.size(0), -1)
                         sim = F.cosine_similarity(f_c, f_f, dim=1).mean()
-                        loss_bfat = (1 - sim)
+                        loss_bfat = (1 - sim) * getattr(bfat_cfg, 'loss_weight', 1.0)
                         loss_bfat_val = loss_bfat.item()
                     
                     # 更新 sim_bfat_loss Meter
@@ -550,17 +491,13 @@ def train(
                     loss_bfat.backward()
                     
                     # Capture Only MSB Gradients
-                    # Manually scale up the attack gradient to counter-balance the clean/restricted gradients
-                    # Note: loss_weight is already applied in loss calculation, so p.grad already contains the weight.
                     bfat_grads = {}
                     for p in model.parameters():
                         if p.requires_grad and p.grad is not None:
                             bfat_grads[p] = p.grad.clone()
                             
                 else:
-                    # === Mode B: Standard Logic (Standard Nude BFAT) ===
-                    # In Standard Mode, we project onto the original clean gradients
-                    projection_base_grads = clean_grads
+                    # === 模式 B: 原有逻辑 (标准 Nude BFAT) ===
                     
                     # Apply BFAT settings from config
                     fault_injector.bfat_dual_bit = getattr(bfat_cfg, 'dual_bit', False)
@@ -576,10 +513,8 @@ def train(
                     else:
                         fault_injector.ber = getattr(bfat_cfg, 'ber', 0.01)
 
+                    fault_injector.seed = num_updates + batch_idx * 10 + 7
                     fault_injector.enable()
-                    # Enable Clean Mode (Shared Scale) for Standard BFAT as well
-                    _force_max_bitwidth(model, configs)
-                    
                     fault_injector.reset_forward_seed()
                     
                     outputs_bfat = model(inputs)
@@ -587,13 +522,13 @@ def train(
                     # Compute BFAT Loss
                     bfat_loss_type = getattr(bfat_cfg, 'loss_type', 'feature_sim')
                     if bfat_loss_type == 'direct_ce':
-                        loss_bfat = criterion(outputs_bfat, targets)
+                        loss_bfat = criterion(outputs_bfat, targets) * getattr(bfat_cfg, 'loss_weight', 1.0)
                     else:
                         # feature_sim
                         f_c = clean_feature.view(clean_feature.size(0), -1)
                         f_f = bfat_hook.feature.view(bfat_hook.feature.size(0), -1)
                         sim = F.cosine_similarity(f_c, f_f, dim=1).mean()
-                        loss_bfat = (1 - sim)
+                        loss_bfat = (1 - sim) * getattr(bfat_cfg, 'loss_weight', 1.0)
 
                     if proj_mode == "none":
                         # [叠加模式] 直接将两个 loss 相加后进行一次反向传播
@@ -610,23 +545,17 @@ def train(
                                 bfat_grads[p] = p.grad.clone()
 
             # Restore injector state
-            if fault_injector is not None:
-                fault_injector.disable()
-            
-            # Important: Restore Max Bitwidth (Clean Mode) after BFAT
-            _force_max_bitwidth(model, configs)
-            
-            if fault_injector is not None:
-                fault_injector.only_msb = old_only_msb
-                fault_injector.skip_msb = old_skip_msb
-                fault_injector.skip_msbn = old_skip_msbn
-                fault_injector.all_bits = old_all_bits
-                fault_injector.bfat_bit_index = old_bfat_idx
-                fault_injector.bfat_dual_bit = old_bfat_dual
-                fault_injector.ber_msb = old_ber_msb
-                fault_injector.ber_secondary_msb = old_ber_secondary
-                fault_injector.ber = old_ber
-                fault_injector.seed_list = old_seed_list
+            fault_injector.disable()
+            fault_injector.only_msb = old_only_msb
+            fault_injector.skip_msb = old_skip_msb
+            fault_injector.skip_msbn = old_skip_msbn
+            fault_injector.all_bits = old_all_bits
+            fault_injector.bfat_bit_index = old_bfat_idx
+            fault_injector.bfat_dual_bit = old_bfat_dual
+            fault_injector.ber_msb = old_ber_msb
+            fault_injector.ber_secondary_msb = old_ber_secondary
+            fault_injector.ber = old_ber
+            fault_injector.seed_list = old_seed_list
 
             if bfat_freeze_bn:
                 for m in model.modules():
@@ -635,14 +564,14 @@ def train(
 
             # 4. Projection and Merge
             # 如果是叠加模式，梯度已经在 p.grad 中了，不需要再处理
-            if proj_mode != "none" and use_bfat and fault_injector is not None:
+            if proj_mode != "none":
                 limit_norm = getattr(bfat_cfg, 'limit_norm', False)
                 norm_ratio = getattr(bfat_cfg, 'norm_ratio', 0.5)
                 weight_rel_limit = getattr(bfat_cfg, 'weight_relative_limit', False)
                 weight_limit_ratio = getattr(bfat_cfg, 'weight_limit_ratio', 0.01)
                 
                 projected_bfat = project_bfat_gradients(
-                    projection_base_grads, bfat_grads,  # 使用 projection_base_grads (Refined or Clean)
+                    clean_grads, bfat_grads, 
                     limit_norm=limit_norm, 
                     norm_ratio=norm_ratio, 
                     projection_mode=proj_mode,
@@ -652,7 +581,7 @@ def train(
 
                 for p in model.parameters():
                     if p.requires_grad:
-                        g_c = clean_grads.get(p, None) # g_c 依然包含所有累积的梯度 (Clean + Stuck)
+                        g_c = clean_grads.get(p, None)
                         g_b_proj = projected_bfat.get(p, None)
                         
                         g_final = None
@@ -784,5 +713,3 @@ class PerformanceScoreboard:
         if len(self.board) == 0:
             return True
         return top1 >= max([x[0] for x in self.board])
-
-
