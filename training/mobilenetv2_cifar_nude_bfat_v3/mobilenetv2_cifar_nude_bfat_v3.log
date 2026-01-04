@@ -1,0 +1,295 @@
+2026-01-04 07:10:21,599 - INFO  - Log file for this run: /workspace/FATBETA/training/mobilenetv2_cifar_nude_bfat_v3/mobilenetv2_cifar_nude_bfat_v3.log
+2026-01-04 07:10:21,765 - INFO  - TensorBoard data directory: /workspace/FATBETA/training/mobilenetv2_cifar_nude_bfat_v3/tb_runs
+2026-01-04 07:10:21,766 - INFO  - Copied code file: main_nude.py
+2026-01-04 07:10:21,766 - INFO  - Copied code file: policy.py
+2026-01-04 07:10:21,767 - INFO  - Copied code file: process_nude.py
+2026-01-04 07:10:21,767 - INFO  - Copied code file: FAULT_INJECTION_SIMPLE_EXAMPLE.py
+2026-01-04 07:10:21,767 - INFO  - Copied code file: func.py
+2026-01-04 07:10:21,767 - INFO  - Copied code file: __init__.py
+2026-01-04 07:10:21,768 - INFO  - Copied code file: quantizer.py
+2026-01-04 07:10:21,768 - INFO  - Copied code file: lsq.py
+2026-01-04 07:10:21,768 - INFO  - Code backup completed. Code saved to: /workspace/FATBETA/training/mobilenetv2_cifar_nude_bfat_v3/code/quan/quantizer
+2026-01-04 07:10:21,768 - INFO  - Copied code file: utils.py
+2026-01-04 07:10:21,768 - INFO  - Copied code file: __init__.py
+2026-01-04 07:10:21,769 - INFO  - Code backup completed. Code saved to: /workspace/FATBETA/training/mobilenetv2_cifar_nude_bfat_v3/code/quan
+2026-01-04 07:10:21,769 - INFO  - Copied code file: train_rl_restorer_with_enhanced_features.py
+2026-01-04 07:10:21,769 - INFO  - Copied code file: example_rl_restorer.py
+2026-01-04 07:10:21,770 - INFO  - Code backup completed. Code saved to: /workspace/FATBETA/training/mobilenetv2_cifar_nude_bfat_v3/code/logs/restorer_pipeline
+2026-01-04 07:10:21,770 - INFO  - Code backup completed. Code saved to: /workspace/FATBETA/training/mobilenetv2_cifar_nude_bfat_v3/code/logs/sensitive_layer_sets
+2026-01-04 07:10:21,770 - INFO  - Code backup completed. Code saved to: /workspace/FATBETA/training/mobilenetv2_cifar_nude_bfat_v3/code/logs
+2026-01-04 07:10:21,770 - INFO  - Code backup completed. Code saved to: /workspace/FATBETA/training/mobilenetv2_cifar_nude_bfat_v3/code/configs/restorer
+2026-01-04 07:10:21,770 - INFO  - Code backup completed. Code saved to: /workspace/FATBETA/training/mobilenetv2_cifar_nude_bfat_v3/code/configs
+2026-01-04 07:10:21,771 - INFO  - Copied code file: test_resnet18_skip_msb.py
+2026-01-04 07:10:21,771 - INFO  - Copied code file: process_olm_fat.py
+2026-01-04 07:10:21,771 - INFO  - Copied code file: debug_baseline_test.py
+2026-01-04 07:10:21,771 - INFO  - Copied code file: process_pretrain.py
+2026-01-04 07:10:21,772 - INFO  - Copied code file: train_sensitive_restorer_distill.py
+2026-01-04 07:10:21,772 - INFO  - Copied code file: policy.py
+2026-01-04 07:10:21,772 - INFO  - Copied code file: mainalex.py
+2026-01-04 07:10:21,773 - INFO  - Copied code file: func.py
+2026-01-04 07:10:21,773 - INFO  - Copied code file: __init__.py
+2026-01-04 07:10:21,773 - INFO  - Copied code file: quantizer.py
+2026-01-04 07:10:21,773 - INFO  - Copied code file: lsq.py
+2026-01-04 07:10:21,773 - INFO  - Code backup completed. Code saved to: /workspace/FATBETA/training/mobilenetv2_cifar_nude_bfat_v3/code/error_find/quan/quantizer
+2026-01-04 07:10:21,774 - INFO  - Copied code file: utils.py
+2026-01-04 07:10:21,774 - INFO  - Copied code file: __init__.py
+2026-01-04 07:10:21,774 - INFO  - Code backup completed. Code saved to: /workspace/FATBETA/training/mobilenetv2_cifar_nude_bfat_v3/code/error_find/quan
+2026-01-04 07:10:21,774 - INFO  - Code backup completed. Code saved to: /workspace/FATBETA/training/mobilenetv2_cifar_nude_bfat_v3/code/error_find/logs
+2026-01-04 07:10:21,774 - INFO  - Code backup completed. Code saved to: /workspace/FATBETA/training/mobilenetv2_cifar_nude_bfat_v3/code/error_find/configs
+2026-01-04 07:10:21,774 - INFO  - Copied code file: ver_test.py
+2026-01-04 07:10:21,775 - INFO  - Copied code file: process.py
+2026-01-04 07:10:21,775 - INFO  - Copied code file: traincube.py
+2026-01-04 07:10:21,777 - INFO  - Copied code file: ctl_factory.py
+2026-01-04 07:10:21,777 - INFO  - Copied code file: scheduler.py
+2026-01-04 07:10:21,777 - INFO  - Copied code file: train_epoch_bsam.py
+2026-01-04 07:10:21,778 - INFO  - Copied code file: bsam.py
+2026-01-04 07:10:21,778 - INFO  - Copied code file: __init__.py
+2026-01-04 07:10:21,778 - INFO  - Copied code file: train_bsam_quan.py
+2026-01-04 07:10:21,778 - INFO  - Code backup completed. Code saved to: /workspace/FATBETA/training/mobilenetv2_cifar_nude_bfat_v3/code/error_find/bsam_quan_src
+2026-01-04 07:10:21,778 - INFO  - Copied code file: main.py
+2026-01-04 07:10:21,779 - INFO  - Copied code file: qbsam.py
+2026-01-04 07:10:21,779 - INFO  - Copied code file: cubesam.py
+2026-01-04 07:10:21,779 - INFO  - Copied code file: __init__.py
+2026-01-04 07:10:21,779 - INFO  - Code backup completed. Code saved to: /workspace/FATBETA/training/mobilenetv2_cifar_nude_bfat_v3/code/error_find/scalablewp
+2026-01-04 07:10:21,779 - INFO  - Copied code file: model.py
+2026-01-04 07:10:21,780 - INFO  - Copied code file: mobilenetv2.py
+2026-01-04 07:10:21,780 - INFO  - Copied code file: resnet.py
+2026-01-04 07:10:21,780 - INFO  - Copied code file: __init__.py
+2026-01-04 07:10:21,780 - INFO  - Copied code file: alexnet.py
+2026-01-04 07:10:21,780 - INFO  - Code backup completed. Code saved to: /workspace/FATBETA/training/mobilenetv2_cifar_nude_bfat_v3/code/error_find/model
+2026-01-04 07:10:21,781 - INFO  - Copied code file: evolution_search.py
+2026-01-04 07:10:21,781 - INFO  - Copied code file: fi.py
+2026-01-04 07:10:21,781 - INFO  - Copied code file: monitor.py
+2026-01-04 07:10:21,781 - INFO  - Copied code file: model_ema.py
+2026-01-04 07:10:21,781 - INFO  - Copied code file: loss_ops.py
+2026-01-04 07:10:21,782 - INFO  - Copied code file: weight_schd.py
+2026-01-04 07:10:21,782 - INFO  - Copied code file: dist.py
+2026-01-04 07:10:21,782 - INFO  - Copied code file: utils.py
+2026-01-04 07:10:21,782 - INFO  - Copied code file: data_loader.py
+2026-01-04 07:10:21,782 - INFO  - Copied code file: random_search.py
+2026-01-04 07:10:21,783 - INFO  - Copied code file: config.py
+2026-01-04 07:10:21,783 - INFO  - Copied code file: checkpoint.py
+2026-01-04 07:10:21,783 - INFO  - Copied code file: mpq.py
+2026-01-04 07:10:21,783 - INFO  - Copied code file: __init__.py
+2026-01-04 07:10:21,783 - INFO  - Copied code file: qat.py
+2026-01-04 07:10:21,784 - INFO  - Copied code file: greedy_search.py
+2026-01-04 07:10:21,784 - INFO  - Copied code file: searcher.py
+2026-01-04 07:10:21,784 - INFO  - Code backup completed. Code saved to: /workspace/FATBETA/training/mobilenetv2_cifar_nude_bfat_v3/code/error_find/util
+2026-01-04 07:10:21,784 - INFO  - Code backup completed. Code saved to: /workspace/FATBETA/training/mobilenetv2_cifar_nude_bfat_v3/code/error_find
+2026-01-04 07:10:21,784 - INFO  - Copied code file: test_floating_point.py
+2026-01-04 07:10:21,784 - INFO  - Copied code file: test_fault_injection_verbose.py
+2026-01-04 07:10:21,784 - INFO  - Copied code file: analyze_w2a6_real_reason.py
+2026-01-04 07:10:21,785 - INFO  - Copied code file: analyze_bit_width_impact.py
+2026-01-04 07:10:21,785 - INFO  - Copied code file: main_normal.py
+2026-01-04 07:10:21,785 - INFO  - Copied code file: test_gradient_preservation.py
+2026-01-04 07:10:21,785 - INFO  - Code backup completed. Code saved to: /workspace/FATBETA/training/mobilenetv2_cifar_nude_bfat_v3/code/visualizations/fault_activation_features_0_ber1e1
+2026-01-04 07:10:21,785 - INFO  - Code backup completed. Code saved to: /workspace/FATBETA/training/mobilenetv2_cifar_nude_bfat_v3/code/visualizations/fault_activation_features_0
+2026-01-04 07:10:21,786 - INFO  - Code backup completed. Code saved to: /workspace/FATBETA/training/mobilenetv2_cifar_nude_bfat_v3/code/visualizations
+2026-01-04 07:10:21,786 - INFO  - Copied code file: quick_test_gradient_restorer.py
+2026-01-04 07:10:21,786 - INFO  - Copied code file: example_rl_restorer_integration.py
+2026-01-04 07:10:21,786 - INFO  - Copied code file: test_gray_code_fault_injection.py
+2026-01-04 07:10:21,787 - INFO  - Copied code file: test_fault_injection_general.py
+2026-01-04 07:10:21,787 - INFO  - Copied code file: eval_gradient_statistics_restorer.py
+2026-01-04 07:10:21,787 - INFO  - Copied code file: analyze_srqat_scale_weight_norms.py
+2026-01-04 07:10:21,787 - INFO  - Copied code file: analyze_multi_bit_sensitivity.py
+2026-01-04 07:10:21,787 - INFO  - Copied code file: train_olm_encoder_hybrid.py
+2026-01-04 07:10:21,788 - INFO  - Copied code file: train_olm_encoder_enhanced.py
+2026-01-04 07:10:21,788 - INFO  - Copied code file: diagnose_corrector_gap.py
+2026-01-04 07:10:21,788 - INFO  - Copied code file: test_search_olm_from_checkpoint.py
+2026-01-04 07:10:21,788 - INFO  - Copied code file: test_bit_range_fault_injection.py
+2026-01-04 07:10:21,788 - INFO  - Copied code file: analyze_layerwise_activation_drift.py
+2026-01-04 07:10:21,789 - INFO  - Copied code file: train_sensitive_repair_head.py
+2026-01-04 07:10:21,789 - INFO  - Copied code file: train_olm_encoder_improved_v2.py
+2026-01-04 07:10:21,789 - INFO  - Copied code file: sweep_srqat.py
+2026-01-04 07:10:21,789 - INFO  - Copied code file: compare_models_activation_drift.py
+2026-01-04 07:10:21,790 - INFO  - Copied code file: analyze_single_layer_fault_impact.py
+2026-01-04 07:10:21,790 - INFO  - Copied code file: eval_sensitive_restorer.py
+2026-01-04 07:10:21,790 - INFO  - Copied code file: test_olm_fault_injection.py
+2026-01-04 07:10:21,790 - INFO  - Copied code file: train_olm_encoder_improved.py
+2026-01-04 07:10:21,790 - INFO  - Copied code file: analyze_corrector_logits.py
+2026-01-04 07:10:21,791 - INFO  - Copied code file: test_hybrid_olm_fault_injection.py
+2026-01-04 07:10:21,791 - INFO  - Copied code file: verify_dec2_fault_injector.py
+2026-01-04 07:10:21,791 - INFO  - Copied code file: analyze_layer_sensitivity.py
+2026-01-04 07:10:21,791 - INFO  - Copied code file: train_learning_repair_head.py
+2026-01-04 07:10:21,792 - INFO  - Copied code file: test_olm_layer_name_check.py
+2026-01-04 07:10:21,792 - INFO  - Copied code file: train_olm_encoder.py
+2026-01-04 07:10:21,792 - INFO  - Copied code file: eval_sensitive_layer_sets.py
+2026-01-04 07:10:21,792 - INFO  - Copied code file: verify_dec2_olm_fault_injection.py
+2026-01-04 07:10:21,793 - INFO  - Copied code file: compare_old_new_fault_injector.py
+2026-01-04 07:10:21,793 - INFO  - Copied code file: calculate_weight_flip_probability.py
+2026-01-04 07:10:21,793 - INFO  - Copied code file: plot_activation_drift_paper.py
+2026-01-04 07:10:21,793 - INFO  - Copied code file: export_srqat_penalty_stats.py
+2026-01-04 07:10:21,793 - INFO  - Copied code file: collect_layer_statistics.py
+2026-01-04 07:10:21,794 - INFO  - Copied code file: analyze_fault_propagation.py
+2026-01-04 07:10:21,794 - INFO  - Copied code file: test_fault_injection_baseline_resnet18.py
+2026-01-04 07:10:21,794 - INFO  - Copied code file: test_fault_injector.py
+2026-01-04 07:10:21,794 - INFO  - Copied code file: test_learnable_olm_vs_traditional_olm.py
+2026-01-04 07:10:21,795 - INFO  - Copied code file: test_learnable_olm_consistency.py
+2026-01-04 07:10:21,795 - INFO  - Copied code file: visualize_fault_activation.py
+2026-01-04 07:10:21,795 - INFO  - Copied code file: analyze_olm_differences.py
+2026-01-04 07:10:21,795 - INFO  - Copied code file: test_bit7_flip_direction.py
+2026-01-04 07:10:21,795 - INFO  - Copied code file: train_olm_encoder_partial_bits.py
+2026-01-04 07:10:21,796 - INFO  - Copied code file: test_fault_injection_baseline.py
+2026-01-04 07:10:21,796 - INFO  - Copied code file: sweep_resnet18_srqat.py
+2026-01-04 07:10:21,796 - INFO  - Copied code file: compare_lsq_scales_with_checkpoint.py
+2026-01-04 07:10:21,796 - INFO  - Copied code file: eval_with_fault_injection.py
+2026-01-04 07:10:21,797 - INFO  - Copied code file: plot_weight_distribution_violin.py
+2026-01-04 07:10:21,797 - INFO  - Copied code file: compare_olm_vs_gray_code.py
+2026-01-04 07:10:21,797 - INFO  - Copied code file: train_olm_encoder_hybrid_v2.py
+2026-01-04 07:10:21,797 - INFO  - Code backup completed. Code saved to: /workspace/FATBETA/training/mobilenetv2_cifar_nude_bfat_v3/code/tools
+2026-01-04 07:10:21,797 - INFO  - Copied code file: example_enhanced_features.py
+2026-01-04 07:10:21,798 - INFO  - Copied code file: process.py
+2026-01-04 07:10:21,798 - INFO  - Copied code file: test_ber_verification.py
+2026-01-04 07:10:21,798 - INFO  - Copied code file: test_json_config_loading.py
+2026-01-04 07:10:21,798 - INFO  - Copied code file: main_olm_fat.py
+2026-01-04 07:10:21,798 - INFO  - Copied code file: process_sam.py
+2026-01-04 07:10:21,799 - INFO  - Copied code file: main.py
+2026-01-04 07:10:21,799 - INFO  - Code backup completed. Code saved to: /workspace/FATBETA/training/mobilenetv2_cifar_nude_bfat_v3/code/sensitive_training/alexnet_cifar10_sensitive_stage2_transformer/tb_runs
+2026-01-04 07:10:21,799 - INFO  - Code backup completed. Code saved to: /workspace/FATBETA/training/mobilenetv2_cifar_nude_bfat_v3/code/sensitive_training/alexnet_cifar10_sensitive_stage2_transformer
+2026-01-04 07:10:21,799 - INFO  - Code backup completed. Code saved to: /workspace/FATBETA/training/mobilenetv2_cifar_nude_bfat_v3/code/sensitive_training/alexnet_cifar10_sensitive_stage2/tb_runs
+2026-01-04 07:10:21,799 - INFO  - Code backup completed. Code saved to: /workspace/FATBETA/training/mobilenetv2_cifar_nude_bfat_v3/code/sensitive_training/alexnet_cifar10_sensitive_stage2
+2026-01-04 07:10:21,799 - INFO  - Code backup completed. Code saved to: /workspace/FATBETA/training/mobilenetv2_cifar_nude_bfat_v3/code/sensitive_training
+2026-01-04 07:10:21,800 - INFO  - Copied code file: debug_fault_injection_detailed.py
+2026-01-04 07:10:21,800 - INFO  - Code backup completed. Code saved to: /workspace/FATBETA/training/mobilenetv2_cifar_nude_bfat_v3/code/.cursor
+2026-01-04 07:10:21,800 - INFO  - Copied code file: test_baseline_fault_tolerance.py
+2026-01-04 07:10:21,800 - INFO  - Copied code file: compare_scripts.py
+2026-01-04 07:10:21,800 - INFO  - Code backup completed. Code saved to: /workspace/FATBETA/training/mobilenetv2_cifar_nude_bfat_v3/code/docs
+2026-01-04 07:10:21,800 - INFO  - Code backup completed. Code saved to: /workspace/FATBETA/training/mobilenetv2_cifar_nude_bfat_v3/code/analysis/resnet18_ls0_drift_ber3e2
+2026-01-04 07:10:21,801 - INFO  - Code backup completed. Code saved to: /workspace/FATBETA/training/mobilenetv2_cifar_nude_bfat_v3/code/analysis/srqat_drift
+2026-01-04 07:10:21,801 - INFO  - Code backup completed. Code saved to: /workspace/FATBETA/training/mobilenetv2_cifar_nude_bfat_v3/code/analysis/resnet18_ls1e7_drift_ber3e2
+2026-01-04 07:10:21,801 - INFO  - Code backup completed. Code saved to: /workspace/FATBETA/training/mobilenetv2_cifar_nude_bfat_v3/code/analysis/clean120_drift
+2026-01-04 07:10:21,801 - INFO  - Code backup completed. Code saved to: /workspace/FATBETA/training/mobilenetv2_cifar_nude_bfat_v3/code/analysis/resnet18_paper_figs
+2026-01-04 07:10:21,801 - INFO  - Code backup completed. Code saved to: /workspace/FATBETA/training/mobilenetv2_cifar_nude_bfat_v3/code/analysis/comparison_srqat
+2026-01-04 07:10:21,801 - INFO  - Code backup completed. Code saved to: /workspace/FATBETA/training/mobilenetv2_cifar_nude_bfat_v3/code/analysis/comparison
+2026-01-04 07:10:21,801 - INFO  - Code backup completed. Code saved to: /workspace/FATBETA/training/mobilenetv2_cifar_nude_bfat_v3/code/analysis/resnet18_drift_compare_ber3e2
+2026-01-04 07:10:21,801 - INFO  - Code backup completed. Code saved to: /workspace/FATBETA/training/mobilenetv2_cifar_nude_bfat_v3/code/analysis/paper_figs
+2026-01-04 07:10:21,802 - INFO  - Code backup completed. Code saved to: /workspace/FATBETA/training/mobilenetv2_cifar_nude_bfat_v3/code/analysis/srqat_ls0_drift
+2026-01-04 07:10:21,802 - INFO  - Code backup completed. Code saved to: /workspace/FATBETA/training/mobilenetv2_cifar_nude_bfat_v3/code/analysis
+2026-01-04 07:10:21,802 - INFO  - Copied code file: alexnet_cifar.py
+2026-01-04 07:10:21,802 - INFO  - Copied code file: model.py
+2026-01-04 07:10:21,802 - INFO  - Copied code file: mobilenetv2.py
+2026-01-04 07:10:21,803 - INFO  - Copied code file: resnet_cifar.py
+2026-01-04 07:10:21,803 - INFO  - Copied code file: __init__.py
+2026-01-04 07:10:21,803 - INFO  - Copied code file: mobilenetv2_cifar.py
+2026-01-04 07:10:21,803 - INFO  - Code backup completed. Code saved to: /workspace/FATBETA/training/mobilenetv2_cifar_nude_bfat_v3/code/model
+2026-01-04 07:10:21,803 - INFO  - Copied code file: analyze_w2a6_slowdown.py
+2026-01-04 07:10:21,803 - INFO  - Copied code file: main_pretrain.py
+2026-01-04 07:10:21,804 - INFO  - Copied code file: test_fault_injection_seed_logic.py
+2026-01-04 07:10:21,804 - INFO  - Copied code file: evolution_search.py
+2026-01-04 07:10:21,804 - INFO  - Copied code file: process_normal.py
+2026-01-04 07:10:21,804 - INFO  - Copied code file: run_fault_tolerance_test.py
+2026-01-04 07:10:21,805 - INFO  - Copied code file: mobilenetv2_fast_ber_sweep.py
+2026-01-04 07:10:21,805 - INFO  - Copied code file: mobilenetv2_ber_sweep_ema.py
+2026-01-04 07:10:21,805 - INFO  - Copied code file: resnet18_ber_sweep_msb.py
+2026-01-04 07:10:21,805 - INFO  - Code backup completed. Code saved to: /workspace/FATBETA/training/mobilenetv2_cifar_nude_bfat_v3/code/scripts
+2026-01-04 07:10:21,805 - INFO  - Copied code file: test_fault_injection_debug.py
+2026-01-04 07:10:21,806 - INFO  - Copied code file: train_sensitive_restorer.py
+2026-01-04 07:10:21,806 - INFO  - Copied code file: monitor.py
+2026-01-04 07:10:21,806 - INFO  - Copied code file: model_ema.py
+2026-01-04 07:10:21,806 - INFO  - Copied code file: loss_ops.py
+2026-01-04 07:10:21,807 - INFO  - Copied code file: intermediate_restorer_trainer.py
+2026-01-04 07:10:21,807 - INFO  - Copied code file: sensitive_features.py
+2026-01-04 07:10:21,807 - INFO  - Copied code file: intermediate_layer_restorer.py
+2026-01-04 07:10:21,807 - INFO  - Copied code file: rl_intermediate_layer_restorer.py
+2026-01-04 07:10:21,807 - INFO  - Copied code file: rl_restorer_lightweight.py
+2026-01-04 07:10:21,808 - INFO  - Copied code file: weight_schd.py
+2026-01-04 07:10:21,808 - INFO  - Copied code file: olm_encoder.py
+2026-01-04 07:10:21,808 - INFO  - Copied code file: intermediate_restorer_integration.py
+2026-01-04 07:10:21,808 - INFO  - Copied code file: learnable_olm.py
+2026-01-04 07:10:21,809 - INFO  - Copied code file: efficient_hybrid_olm_optimizer.py
+2026-01-04 07:10:21,809 - INFO  - Copied code file: lsq_sam.py
+2026-01-04 07:10:21,809 - INFO  - Copied code file: hybrid_olm_optimizer.py
+2026-01-04 07:10:21,809 - INFO  - Copied code file: integer_inn_encoder.py
+2026-01-04 07:10:21,809 - INFO  - Copied code file: gradient_statistics_restorer.py
+2026-01-04 07:10:21,810 - INFO  - Copied code file: dist.py
+2026-01-04 07:10:21,810 - INFO  - Copied code file: utils.py
+2026-01-04 07:10:21,810 - INFO  - Copied code file: layerwise_rl_restorer.py
+2026-01-04 07:10:21,810 - INFO  - Copied code file: fault_injector.py
+2026-01-04 07:10:21,811 - INFO  - Copied code file: data_loader.py
+2026-01-04 07:10:21,811 - INFO  - Copied code file: random_search.py
+2026-01-04 07:10:21,811 - INFO  - Copied code file: bsam.py
+2026-01-04 07:10:21,811 - INFO  - Copied code file: improved_olm_encoder_genetic.py
+2026-01-04 07:10:21,811 - INFO  - Copied code file: config.py
+2026-01-04 07:10:21,812 - INFO  - Copied code file: checkpoint.py
+2026-01-04 07:10:21,812 - INFO  - Copied code file: sensitive_restorer_v2.py
+2026-01-04 07:10:21,812 - INFO  - Copied code file: fault_injector_question.py
+2026-01-04 07:10:21,812 - INFO  - Copied code file: mpq.py
+2026-01-04 07:10:21,813 - INFO  - Copied code file: progressive_ber_scheduler.py
+2026-01-04 07:10:21,813 - INFO  - Copied code file: sensitive_restorer.py
+2026-01-04 07:10:21,813 - INFO  - Copied code file: __init__.py
+2026-01-04 07:10:21,813 - INFO  - Copied code file: improved_olm_encoder.py
+2026-01-04 07:10:21,813 - INFO  - Copied code file: rl_restorer.py
+2026-01-04 07:10:21,814 - INFO  - Copied code file: improved_olm_encoder_v2.py
+2026-01-04 07:10:21,814 - INFO  - Copied code file: qat.py
+2026-01-04 07:10:21,814 - INFO  - Copied code file: enhanced_feature_extractor.py
+2026-01-04 07:10:21,814 - INFO  - Copied code file: output_corrector.py
+2026-01-04 07:10:21,814 - INFO  - Copied code file: rl_restorer_trainer.py
+2026-01-04 07:10:21,815 - INFO  - Copied code file: greedy_search.py
+2026-01-04 07:10:21,815 - INFO  - Copied code file: rl_intermediate_restorer_integration.py
+2026-01-04 07:10:21,815 - INFO  - Copied code file: sensitive_layer_restorer.py
+2026-01-04 07:10:21,816 - INFO  - Copied code file: search_olm_manager.py
+2026-01-04 07:10:21,816 - INFO  - Copied code file: searcher.py
+2026-01-04 07:10:21,816 - INFO  - Copied code file: olm_encoder_enhanced.py
+2026-01-04 07:10:21,816 - INFO  - Copied code file: sensitive_restorer_transformer.py
+2026-01-04 07:10:21,816 - INFO  - Copied code file: rl_restorer_integration.py
+2026-01-04 07:10:21,816 - INFO  - Code backup completed. Code saved to: /workspace/FATBETA/training/mobilenetv2_cifar_nude_bfat_v3/code/util
+2026-01-04 07:10:21,817 - INFO  - Copied code file: test_baseline_fault_tolerance_simple.py
+2026-01-04 07:10:21,817 - INFO  - Code backup completed. Code saved to: /workspace/FATBETA/training/mobilenetv2_cifar_nude_bfat_v3/code
+2026-01-04 07:10:21,868 - INFO  - Created `mobilenet_v2_cifar` model for `cifar10` dataset (num_classes=10)
+          Use pre-trained model = False
+2026-01-04 07:10:22,814 - INFO  - Ignoring 265 missing optional buffers/parameters that were added after checkpoint was saved:
+2026-01-04 07:10:22,815 - INFO  -   - features.0.0.current_bit_cands
+2026-01-04 07:10:22,815 - INFO  -   - features.0.0.quan_w_fn.s
+2026-01-04 07:10:22,815 - INFO  -   - features.0.0.quan_w_fn.init_state
+2026-01-04 07:10:22,815 - INFO  -   - features.0.0.quan_a_fn.s
+2026-01-04 07:10:22,815 - INFO  -   - features.0.0.quan_a_fn.init_state
+2026-01-04 07:10:22,815 - INFO  -   ... and 260 more
+2026-01-04 07:10:22,815 - INFO  - Note: Missing quantizer parameters (quan_*.s, init_state) will be auto-initialized during forward pass
+2026-01-04 07:10:22,845 - INFO  - Loaded checkpoint mobilenet_v2_cifar model (next epoch 0) from training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_best.pth.tar
+2026-01-04 07:10:22,851 - INFO  - [NUDE] Initializing model at max target bit-width: 6
+2026-01-04 07:10:24,734 - INFO  - [DEBUG] Dataloaders initialized: train=97, val=97, test=20
+2026-01-04 07:10:26,502 - INFO  - ================================================================================
+2026-01-04 07:10:26,502 - INFO  - 🚀 [NUDE] BFAT ENABLED
+2026-01-04 07:10:26,502 - INFO  - ================================================================================
+2026-01-04 07:10:26,502 - INFO  -   ✅ FaultInjector initialized for BFAT
+2026-01-04 07:10:26,708 - INFO  - [NUDE] Force training only max(target_bits)=6 (no nr_random_sample)
+2026-01-04 07:10:26,722 - INFO  - 🎲 Epoch 0: FaultInjector seed rotated to 42
+2026-01-04 07:10:26,748 - INFO  - [NUDE] Epoch 0: force max bit-width W/A = 6
+2026-01-04 07:10:26,748 - INFO  - ================================================================================
+2026-01-04 07:10:26,748 - INFO  - 🔥 [NUDE] BFAT ACTIVE
+2026-01-04 07:10:26,748 - INFO  -    Loss Type: direct_ce
+2026-01-04 07:10:26,748 - INFO  -    Proj Mode: orthogonal
+2026-01-04 07:10:26,748 - INFO  -    Injection: All Bits
+2026-01-04 07:10:26,748 - INFO  - ================================================================================
+2026-01-04 07:11:24,702 - INFO  - [NUDE][TRAIN] Epoch 0/150 Iter 50/97 Loss 1.0029 Top1 79.30 Top5 98.12
+2026-01-04 07:12:18,444 - INFO  - [NUDE] Validate: force max bit-width W/A = 6
+2026-01-04 07:12:19,994 - INFO  - [NUDE][EPOCH] 0/150 Train: Top1=81.76 Top5=98.58 Loss=0.9408 | Val(EMA): Top1=9.99 | LR: 0.000100 QLR: 0.000010
+2026-01-04 07:12:19,995 - INFO  -   ⏱️  本Epoch耗时: 1分53秒 | 平均Epoch耗时: 1分53秒 | 剩余Epoch数: 149
+2026-01-04 07:12:19,995 - INFO  -   📅 预估剩余时间: 4小时41分17秒 | 预估完成时间: 2026-01-04 11:53:37
+2026-01-04 07:12:21,617 - INFO  - ([1] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_nude_bfat_v3/mobilenetv2_cifar_nude_bfat_v3_checkpoint.pth.tar
+
+2026-01-04 07:12:21,626 - INFO  - 🎲 Epoch 1: FaultInjector seed rotated to 43
+2026-01-04 07:12:21,656 - INFO  - [NUDE] Epoch 1: force max bit-width W/A = 6
+2026-01-04 07:12:21,656 - INFO  - ================================================================================
+2026-01-04 07:12:21,656 - INFO  - 🔥 [NUDE] BFAT ACTIVE
+2026-01-04 07:12:21,656 - INFO  -    Loss Type: direct_ce
+2026-01-04 07:12:21,656 - INFO  -    Proj Mode: orthogonal
+2026-01-04 07:12:21,656 - INFO  -    Injection: All Bits
+2026-01-04 07:12:21,656 - INFO  - ================================================================================
+2026-01-04 07:13:19,695 - INFO  - [NUDE][TRAIN] Epoch 1/150 Iter 50/97 Loss 0.8172 Top1 86.49 Top5 99.48
+2026-01-04 07:14:14,730 - INFO  - [NUDE] Validate: force max bit-width W/A = 6
+2026-01-04 07:14:15,783 - INFO  - [NUDE][EPOCH] 1/150 Train: Top1=86.84 Top5=99.50 Loss=0.8104 | Val(EMA): Top1=10.02 | LR: 0.002080 QLR: 0.000010
+2026-01-04 07:14:15,783 - INFO  -   ⏱️  本Epoch耗时: 1分54秒 | 平均Epoch耗时: 1分53秒 | 剩余Epoch数: 148
+2026-01-04 07:14:15,784 - INFO  -   📅 预估剩余时间: 4小时40分29秒 | 预估完成时间: 2026-01-04 11:54:45
+2026-01-04 07:14:17,245 - INFO  - ([2] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_nude_bfat_v3/mobilenetv2_cifar_nude_bfat_v3_checkpoint.pth.tar
+
+2026-01-04 07:14:17,255 - INFO  - 🎲 Epoch 2: FaultInjector seed rotated to 44
+2026-01-04 07:14:17,283 - INFO  - [NUDE] Epoch 2: force max bit-width W/A = 6
+2026-01-04 07:14:17,283 - INFO  - ================================================================================
+2026-01-04 07:14:17,284 - INFO  - 🔥 [NUDE] BFAT ACTIVE
+2026-01-04 07:14:17,284 - INFO  -    Loss Type: direct_ce
+2026-01-04 07:14:17,284 - INFO  -    Proj Mode: orthogonal
+2026-01-04 07:14:17,284 - INFO  -    Injection: All Bits
+2026-01-04 07:14:17,284 - INFO  - ================================================================================

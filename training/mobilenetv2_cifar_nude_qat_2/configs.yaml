@@ -1,0 +1,83 @@
+arch: mobilenet_v2_cifar
+cooldown_epochs: 0
+dataloader:
+  batch_size: 128
+  dataset: cifar10
+  deterministic: true
+  num_classes: 10
+  path: ./data
+  workers: 4
+decay_epochs: 30
+decay_rate: 0.1
+device: cuda:0
+distributed: true
+dropout: 0.2
+ema_decay: 0.9997
+enable_dynamic_bit_training: false
+epochs: 100
+eval: false
+information_distortion_mitigation: false
+kd: false
+local_rank: 0
+log:
+  num_best_scores: 3
+  print_freq: 50
+lr: 0.01
+min_lr: 1.0e-05
+momentum: 0.9
+name: mobilenetv2_cifar_nude_qat_2
+num_random_path: 1
+opt: sgd
+output_dir: training
+post_training_batchnorm_calibration: true
+pre_trained: false
+quan:
+  act:
+    all_positive: true
+    bit: 2
+    mode: lsq
+    per_channel: false
+    symmetric: false
+  excepts:
+    classifier.1:
+      act:
+        bit: null
+      weight:
+        bit: null
+    features.0.0:
+      act:
+        all_positive: false
+        bit: null
+      weight:
+        bit: null
+    features.0.1:
+      act:
+        bit: null
+      weight:
+        bit: null
+  weight:
+    all_positive: false
+    bit: 2
+    mode: lsq
+    per_channel: false
+    symmetric: false
+rank: 0
+resume:
+  lean: true
+  path: training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_best.pth.tar
+scale_gradient: true
+sched: cosine
+search: false
+smoothing: 0.1
+split_aw_cands: false
+target_bits:
+- 6
+- 5
+- 4
+- 3
+- 2
+training_device: gpu
+warmup_epochs: 5
+warmup_lr: 0.0001
+weight_decay: 4.0e-05
+world_size: 4

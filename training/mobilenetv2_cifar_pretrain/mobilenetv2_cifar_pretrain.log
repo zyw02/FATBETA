@@ -1,0 +1,1525 @@
+2026-01-03 05:03:08,031 - INFO  - Log file for this run: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain.log
+2026-01-03 05:03:08,036 - INFO  - TensorBoard data directory: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/tb_runs
+2026-01-03 05:03:08,037 - INFO  - Copied code file: main_nude.py
+2026-01-03 05:03:08,037 - INFO  - Copied code file: policy.py
+2026-01-03 05:03:08,037 - INFO  - Copied code file: process_nude.py
+2026-01-03 05:03:08,037 - INFO  - Copied code file: FAULT_INJECTION_SIMPLE_EXAMPLE.py
+2026-01-03 05:03:08,038 - INFO  - Copied code file: func.py
+2026-01-03 05:03:08,038 - INFO  - Copied code file: __init__.py
+2026-01-03 05:03:08,038 - INFO  - Copied code file: quantizer.py
+2026-01-03 05:03:08,039 - INFO  - Copied code file: lsq.py
+2026-01-03 05:03:08,039 - INFO  - Code backup completed. Code saved to: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/code/quan/quantizer
+2026-01-03 05:03:08,039 - INFO  - Copied code file: utils.py
+2026-01-03 05:03:08,039 - INFO  - Copied code file: __init__.py
+2026-01-03 05:03:08,039 - INFO  - Code backup completed. Code saved to: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/code/quan
+2026-01-03 05:03:08,040 - INFO  - Copied code file: train_rl_restorer_with_enhanced_features.py
+2026-01-03 05:03:08,040 - INFO  - Copied code file: example_rl_restorer.py
+2026-01-03 05:03:08,040 - INFO  - Code backup completed. Code saved to: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/code/logs/restorer_pipeline
+2026-01-03 05:03:08,041 - INFO  - Code backup completed. Code saved to: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/code/logs/sensitive_layer_sets
+2026-01-03 05:03:08,041 - INFO  - Code backup completed. Code saved to: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/code/logs
+2026-01-03 05:03:08,041 - INFO  - Code backup completed. Code saved to: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/code/configs/restorer
+2026-01-03 05:03:08,041 - INFO  - Code backup completed. Code saved to: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/code/configs
+2026-01-03 05:03:08,041 - INFO  - Copied code file: test_resnet18_skip_msb.py
+2026-01-03 05:03:08,041 - INFO  - Copied code file: process_olm_fat.py
+2026-01-03 05:03:08,041 - INFO  - Copied code file: debug_baseline_test.py
+2026-01-03 05:03:08,042 - INFO  - Copied code file: process_pretrain.py
+2026-01-03 05:03:08,042 - INFO  - Copied code file: train_sensitive_restorer_distill.py
+2026-01-03 05:03:08,042 - INFO  - Copied code file: policy.py
+2026-01-03 05:03:08,042 - INFO  - Copied code file: mainalex.py
+2026-01-03 05:03:08,043 - INFO  - Copied code file: func.py
+2026-01-03 05:03:08,043 - INFO  - Copied code file: __init__.py
+2026-01-03 05:03:08,043 - INFO  - Copied code file: quantizer.py
+2026-01-03 05:03:08,043 - INFO  - Copied code file: lsq.py
+2026-01-03 05:03:08,044 - INFO  - Code backup completed. Code saved to: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/code/error_find/quan/quantizer
+2026-01-03 05:03:08,044 - INFO  - Copied code file: utils.py
+2026-01-03 05:03:08,044 - INFO  - Copied code file: __init__.py
+2026-01-03 05:03:08,044 - INFO  - Code backup completed. Code saved to: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/code/error_find/quan
+2026-01-03 05:03:08,044 - INFO  - Code backup completed. Code saved to: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/code/error_find/logs
+2026-01-03 05:03:08,044 - INFO  - Code backup completed. Code saved to: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/code/error_find/configs
+2026-01-03 05:03:08,044 - INFO  - Copied code file: ver_test.py
+2026-01-03 05:03:08,045 - INFO  - Copied code file: process.py
+2026-01-03 05:03:08,045 - INFO  - Copied code file: traincube.py
+2026-01-03 05:03:08,045 - INFO  - Copied code file: ctl_factory.py
+2026-01-03 05:03:08,045 - INFO  - Copied code file: scheduler.py
+2026-01-03 05:03:08,046 - INFO  - Copied code file: train_epoch_bsam.py
+2026-01-03 05:03:08,046 - INFO  - Copied code file: bsam.py
+2026-01-03 05:03:08,046 - INFO  - Copied code file: __init__.py
+2026-01-03 05:03:08,046 - INFO  - Copied code file: train_bsam_quan.py
+2026-01-03 05:03:08,046 - INFO  - Code backup completed. Code saved to: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/code/error_find/bsam_quan_src
+2026-01-03 05:03:08,047 - INFO  - Copied code file: main.py
+2026-01-03 05:03:08,047 - INFO  - Copied code file: qbsam.py
+2026-01-03 05:03:08,047 - INFO  - Copied code file: cubesam.py
+2026-01-03 05:03:08,047 - INFO  - Copied code file: __init__.py
+2026-01-03 05:03:08,047 - INFO  - Code backup completed. Code saved to: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/code/error_find/scalablewp
+2026-01-03 05:03:08,048 - INFO  - Copied code file: model.py
+2026-01-03 05:03:08,048 - INFO  - Copied code file: mobilenetv2.py
+2026-01-03 05:03:08,048 - INFO  - Copied code file: resnet.py
+2026-01-03 05:03:08,048 - INFO  - Copied code file: __init__.py
+2026-01-03 05:03:08,048 - INFO  - Copied code file: alexnet.py
+2026-01-03 05:03:08,048 - INFO  - Code backup completed. Code saved to: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/code/error_find/model
+2026-01-03 05:03:08,049 - INFO  - Copied code file: evolution_search.py
+2026-01-03 05:03:08,049 - INFO  - Copied code file: fi.py
+2026-01-03 05:03:08,049 - INFO  - Copied code file: monitor.py
+2026-01-03 05:03:08,049 - INFO  - Copied code file: model_ema.py
+2026-01-03 05:03:08,050 - INFO  - Copied code file: loss_ops.py
+2026-01-03 05:03:08,050 - INFO  - Copied code file: weight_schd.py
+2026-01-03 05:03:08,050 - INFO  - Copied code file: dist.py
+2026-01-03 05:03:08,050 - INFO  - Copied code file: utils.py
+2026-01-03 05:03:08,050 - INFO  - Copied code file: data_loader.py
+2026-01-03 05:03:08,051 - INFO  - Copied code file: random_search.py
+2026-01-03 05:03:08,051 - INFO  - Copied code file: config.py
+2026-01-03 05:03:08,051 - INFO  - Copied code file: checkpoint.py
+2026-01-03 05:03:08,051 - INFO  - Copied code file: mpq.py
+2026-01-03 05:03:08,052 - INFO  - Copied code file: __init__.py
+2026-01-03 05:03:08,052 - INFO  - Copied code file: qat.py
+2026-01-03 05:03:08,052 - INFO  - Copied code file: greedy_search.py
+2026-01-03 05:03:08,052 - INFO  - Copied code file: searcher.py
+2026-01-03 05:03:08,052 - INFO  - Code backup completed. Code saved to: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/code/error_find/util
+2026-01-03 05:03:08,052 - INFO  - Code backup completed. Code saved to: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/code/error_find
+2026-01-03 05:03:08,053 - INFO  - Copied code file: test_fault_injection_verbose.py
+2026-01-03 05:03:08,053 - INFO  - Copied code file: analyze_w2a6_real_reason.py
+2026-01-03 05:03:08,053 - INFO  - Copied code file: analyze_bit_width_impact.py
+2026-01-03 05:03:08,053 - INFO  - Copied code file: main_normal.py
+2026-01-03 05:03:08,053 - INFO  - Copied code file: test_gradient_preservation.py
+2026-01-03 05:03:08,054 - INFO  - Code backup completed. Code saved to: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/code/visualizations/fault_activation_features_0_ber1e1
+2026-01-03 05:03:08,054 - INFO  - Code backup completed. Code saved to: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/code/visualizations/fault_activation_features_0
+2026-01-03 05:03:08,054 - INFO  - Code backup completed. Code saved to: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/code/visualizations
+2026-01-03 05:03:08,054 - INFO  - Copied code file: quick_test_gradient_restorer.py
+2026-01-03 05:03:08,054 - INFO  - Copied code file: example_rl_restorer_integration.py
+2026-01-03 05:03:08,055 - INFO  - Copied code file: test_gray_code_fault_injection.py
+2026-01-03 05:03:08,055 - INFO  - Copied code file: eval_gradient_statistics_restorer.py
+2026-01-03 05:03:08,055 - INFO  - Copied code file: analyze_srqat_scale_weight_norms.py
+2026-01-03 05:03:08,055 - INFO  - Copied code file: analyze_multi_bit_sensitivity.py
+2026-01-03 05:03:08,056 - INFO  - Copied code file: train_olm_encoder_hybrid.py
+2026-01-03 05:03:08,056 - INFO  - Copied code file: train_olm_encoder_enhanced.py
+2026-01-03 05:03:08,056 - INFO  - Copied code file: diagnose_corrector_gap.py
+2026-01-03 05:03:08,056 - INFO  - Copied code file: test_search_olm_from_checkpoint.py
+2026-01-03 05:03:08,056 - INFO  - Copied code file: test_bit_range_fault_injection.py
+2026-01-03 05:03:08,057 - INFO  - Copied code file: analyze_layerwise_activation_drift.py
+2026-01-03 05:03:08,057 - INFO  - Copied code file: train_sensitive_repair_head.py
+2026-01-03 05:03:08,057 - INFO  - Copied code file: train_olm_encoder_improved_v2.py
+2026-01-03 05:03:08,057 - INFO  - Copied code file: sweep_srqat.py
+2026-01-03 05:03:08,058 - INFO  - Copied code file: compare_models_activation_drift.py
+2026-01-03 05:03:08,058 - INFO  - Copied code file: analyze_single_layer_fault_impact.py
+2026-01-03 05:03:08,058 - INFO  - Copied code file: eval_sensitive_restorer.py
+2026-01-03 05:03:08,058 - INFO  - Copied code file: test_olm_fault_injection.py
+2026-01-03 05:03:08,058 - INFO  - Copied code file: train_olm_encoder_improved.py
+2026-01-03 05:03:08,059 - INFO  - Copied code file: analyze_corrector_logits.py
+2026-01-03 05:03:08,059 - INFO  - Copied code file: test_hybrid_olm_fault_injection.py
+2026-01-03 05:03:08,059 - INFO  - Copied code file: verify_dec2_fault_injector.py
+2026-01-03 05:03:08,060 - INFO  - Copied code file: analyze_layer_sensitivity.py
+2026-01-03 05:03:08,060 - INFO  - Copied code file: train_learning_repair_head.py
+2026-01-03 05:03:08,060 - INFO  - Copied code file: test_olm_layer_name_check.py
+2026-01-03 05:03:08,060 - INFO  - Copied code file: train_olm_encoder.py
+2026-01-03 05:03:08,061 - INFO  - Copied code file: eval_sensitive_layer_sets.py
+2026-01-03 05:03:08,061 - INFO  - Copied code file: verify_dec2_olm_fault_injection.py
+2026-01-03 05:03:08,061 - INFO  - Copied code file: compare_old_new_fault_injector.py
+2026-01-03 05:03:08,061 - INFO  - Copied code file: calculate_weight_flip_probability.py
+2026-01-03 05:03:08,062 - INFO  - Copied code file: plot_activation_drift_paper.py
+2026-01-03 05:03:08,062 - INFO  - Copied code file: export_srqat_penalty_stats.py
+2026-01-03 05:03:08,062 - INFO  - Copied code file: collect_layer_statistics.py
+2026-01-03 05:03:08,062 - INFO  - Copied code file: analyze_fault_propagation.py
+2026-01-03 05:03:08,062 - INFO  - Copied code file: test_fault_injection_baseline_resnet18.py
+2026-01-03 05:03:08,063 - INFO  - Copied code file: test_fault_injector.py
+2026-01-03 05:03:08,063 - INFO  - Copied code file: test_learnable_olm_vs_traditional_olm.py
+2026-01-03 05:03:08,063 - INFO  - Copied code file: test_learnable_olm_consistency.py
+2026-01-03 05:03:08,063 - INFO  - Copied code file: visualize_fault_activation.py
+2026-01-03 05:03:08,064 - INFO  - Copied code file: analyze_olm_differences.py
+2026-01-03 05:03:08,064 - INFO  - Copied code file: test_bit7_flip_direction.py
+2026-01-03 05:03:08,064 - INFO  - Copied code file: train_olm_encoder_partial_bits.py
+2026-01-03 05:03:08,064 - INFO  - Copied code file: test_fault_injection_baseline.py
+2026-01-03 05:03:08,065 - INFO  - Copied code file: sweep_resnet18_srqat.py
+2026-01-03 05:03:08,065 - INFO  - Copied code file: compare_lsq_scales_with_checkpoint.py
+2026-01-03 05:03:08,065 - INFO  - Copied code file: eval_with_fault_injection.py
+2026-01-03 05:03:08,065 - INFO  - Copied code file: plot_weight_distribution_violin.py
+2026-01-03 05:03:08,065 - INFO  - Copied code file: compare_olm_vs_gray_code.py
+2026-01-03 05:03:08,066 - INFO  - Copied code file: train_olm_encoder_hybrid_v2.py
+2026-01-03 05:03:08,066 - INFO  - Code backup completed. Code saved to: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/code/tools
+2026-01-03 05:03:08,066 - INFO  - Copied code file: example_enhanced_features.py
+2026-01-03 05:03:08,066 - INFO  - Copied code file: process.py
+2026-01-03 05:03:08,066 - INFO  - Copied code file: test_ber_verification.py
+2026-01-03 05:03:08,067 - INFO  - Copied code file: test_json_config_loading.py
+2026-01-03 05:03:08,067 - INFO  - Copied code file: main_olm_fat.py
+2026-01-03 05:03:08,067 - INFO  - Copied code file: process_sam.py
+2026-01-03 05:03:08,067 - INFO  - Copied code file: main.py
+2026-01-03 05:03:08,068 - INFO  - Code backup completed. Code saved to: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/code/sensitive_training/alexnet_cifar10_sensitive_stage2_transformer/tb_runs
+2026-01-03 05:03:08,068 - INFO  - Code backup completed. Code saved to: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/code/sensitive_training/alexnet_cifar10_sensitive_stage2_transformer
+2026-01-03 05:03:08,068 - INFO  - Code backup completed. Code saved to: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/code/sensitive_training/alexnet_cifar10_sensitive_stage2/tb_runs
+2026-01-03 05:03:08,068 - INFO  - Code backup completed. Code saved to: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/code/sensitive_training/alexnet_cifar10_sensitive_stage2
+2026-01-03 05:03:08,068 - INFO  - Code backup completed. Code saved to: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/code/sensitive_training
+2026-01-03 05:03:08,068 - INFO  - Copied code file: debug_fault_injection_detailed.py
+2026-01-03 05:03:08,068 - INFO  - Code backup completed. Code saved to: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/code/.cursor
+2026-01-03 05:03:08,069 - INFO  - Copied code file: test_baseline_fault_tolerance.py
+2026-01-03 05:03:08,069 - INFO  - Copied code file: compare_scripts.py
+2026-01-03 05:03:08,069 - INFO  - Code backup completed. Code saved to: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/code/docs
+2026-01-03 05:03:08,069 - INFO  - Code backup completed. Code saved to: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/code/analysis/resnet18_ls0_drift_ber3e2
+2026-01-03 05:03:08,069 - INFO  - Code backup completed. Code saved to: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/code/analysis/srqat_drift
+2026-01-03 05:03:08,069 - INFO  - Code backup completed. Code saved to: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/code/analysis/resnet18_ls1e7_drift_ber3e2
+2026-01-03 05:03:08,070 - INFO  - Code backup completed. Code saved to: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/code/analysis/clean120_drift
+2026-01-03 05:03:08,070 - INFO  - Code backup completed. Code saved to: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/code/analysis/resnet18_paper_figs
+2026-01-03 05:03:08,070 - INFO  - Code backup completed. Code saved to: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/code/analysis/comparison_srqat
+2026-01-03 05:03:08,070 - INFO  - Code backup completed. Code saved to: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/code/analysis/comparison
+2026-01-03 05:03:08,070 - INFO  - Code backup completed. Code saved to: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/code/analysis/resnet18_drift_compare_ber3e2
+2026-01-03 05:03:08,070 - INFO  - Code backup completed. Code saved to: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/code/analysis/paper_figs
+2026-01-03 05:03:08,070 - INFO  - Code backup completed. Code saved to: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/code/analysis/srqat_ls0_drift
+2026-01-03 05:03:08,070 - INFO  - Code backup completed. Code saved to: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/code/analysis
+2026-01-03 05:03:08,071 - INFO  - Copied code file: alexnet_cifar.py
+2026-01-03 05:03:08,071 - INFO  - Copied code file: model.py
+2026-01-03 05:03:08,071 - INFO  - Copied code file: mobilenetv2.py
+2026-01-03 05:03:08,071 - INFO  - Copied code file: resnet_cifar.py
+2026-01-03 05:03:08,071 - INFO  - Copied code file: __init__.py
+2026-01-03 05:03:08,072 - INFO  - Copied code file: mobilenetv2_cifar.py
+2026-01-03 05:03:08,072 - INFO  - Code backup completed. Code saved to: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/code/model
+2026-01-03 05:03:08,072 - INFO  - Copied code file: analyze_w2a6_slowdown.py
+2026-01-03 05:03:08,072 - INFO  - Copied code file: main_pretrain.py
+2026-01-03 05:03:08,072 - INFO  - Copied code file: test_fault_injection_seed_logic.py
+2026-01-03 05:03:08,073 - INFO  - Copied code file: evolution_search.py
+2026-01-03 05:03:08,073 - INFO  - Copied code file: process_normal.py
+2026-01-03 05:03:08,073 - INFO  - Copied code file: run_fault_tolerance_test.py
+2026-01-03 05:03:08,073 - INFO  - Copied code file: resnet18_ber_sweep_msb.py
+2026-01-03 05:03:08,073 - INFO  - Code backup completed. Code saved to: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/code/scripts
+2026-01-03 05:03:08,074 - INFO  - Copied code file: test_fault_injection_debug.py
+2026-01-03 05:03:08,074 - INFO  - Copied code file: train_sensitive_restorer.py
+2026-01-03 05:03:08,074 - INFO  - Copied code file: monitor.py
+2026-01-03 05:03:08,074 - INFO  - Copied code file: model_ema.py
+2026-01-03 05:03:08,075 - INFO  - Copied code file: loss_ops.py
+2026-01-03 05:03:08,075 - INFO  - Copied code file: intermediate_restorer_trainer.py
+2026-01-03 05:03:08,075 - INFO  - Copied code file: sensitive_features.py
+2026-01-03 05:03:08,075 - INFO  - Copied code file: intermediate_layer_restorer.py
+2026-01-03 05:03:08,076 - INFO  - Copied code file: rl_intermediate_layer_restorer.py
+2026-01-03 05:03:08,076 - INFO  - Copied code file: rl_restorer_lightweight.py
+2026-01-03 05:03:08,076 - INFO  - Copied code file: weight_schd.py
+2026-01-03 05:03:08,076 - INFO  - Copied code file: olm_encoder.py
+2026-01-03 05:03:08,076 - INFO  - Copied code file: intermediate_restorer_integration.py
+2026-01-03 05:03:08,077 - INFO  - Copied code file: learnable_olm.py
+2026-01-03 05:03:08,077 - INFO  - Copied code file: efficient_hybrid_olm_optimizer.py
+2026-01-03 05:03:08,077 - INFO  - Copied code file: lsq_sam.py
+2026-01-03 05:03:08,077 - INFO  - Copied code file: hybrid_olm_optimizer.py
+2026-01-03 05:03:08,078 - INFO  - Copied code file: integer_inn_encoder.py
+2026-01-03 05:03:08,078 - INFO  - Copied code file: gradient_statistics_restorer.py
+2026-01-03 05:03:08,078 - INFO  - Copied code file: dist.py
+2026-01-03 05:03:08,078 - INFO  - Copied code file: utils.py
+2026-01-03 05:03:08,078 - INFO  - Copied code file: layerwise_rl_restorer.py
+2026-01-03 05:03:08,079 - INFO  - Copied code file: fault_injector.py
+2026-01-03 05:03:08,079 - INFO  - Copied code file: data_loader.py
+2026-01-03 05:03:08,079 - INFO  - Copied code file: random_search.py
+2026-01-03 05:03:08,079 - INFO  - Copied code file: bsam.py
+2026-01-03 05:03:08,080 - INFO  - Copied code file: improved_olm_encoder_genetic.py
+2026-01-03 05:03:08,080 - INFO  - Copied code file: config.py
+2026-01-03 05:03:08,080 - INFO  - Copied code file: checkpoint.py
+2026-01-03 05:03:08,080 - INFO  - Copied code file: sensitive_restorer_v2.py
+2026-01-03 05:03:08,081 - INFO  - Copied code file: fault_injector_question.py
+2026-01-03 05:03:08,081 - INFO  - Copied code file: mpq.py
+2026-01-03 05:03:08,081 - INFO  - Copied code file: progressive_ber_scheduler.py
+2026-01-03 05:03:08,081 - INFO  - Copied code file: sensitive_restorer.py
+2026-01-03 05:03:08,082 - INFO  - Copied code file: __init__.py
+2026-01-03 05:03:08,082 - INFO  - Copied code file: improved_olm_encoder.py
+2026-01-03 05:03:08,082 - INFO  - Copied code file: rl_restorer.py
+2026-01-03 05:03:08,082 - INFO  - Copied code file: improved_olm_encoder_v2.py
+2026-01-03 05:03:08,083 - INFO  - Copied code file: qat.py
+2026-01-03 05:03:08,083 - INFO  - Copied code file: enhanced_feature_extractor.py
+2026-01-03 05:03:08,083 - INFO  - Copied code file: output_corrector.py
+2026-01-03 05:03:08,083 - INFO  - Copied code file: rl_restorer_trainer.py
+2026-01-03 05:03:08,084 - INFO  - Copied code file: greedy_search.py
+2026-01-03 05:03:08,084 - INFO  - Copied code file: rl_intermediate_restorer_integration.py
+2026-01-03 05:03:08,084 - INFO  - Copied code file: sensitive_layer_restorer.py
+2026-01-03 05:03:08,084 - INFO  - Copied code file: search_olm_manager.py
+2026-01-03 05:03:08,085 - INFO  - Copied code file: searcher.py
+2026-01-03 05:03:08,085 - INFO  - Copied code file: olm_encoder_enhanced.py
+2026-01-03 05:03:08,085 - INFO  - Copied code file: sensitive_restorer_transformer.py
+2026-01-03 05:03:08,085 - INFO  - Copied code file: rl_restorer_integration.py
+2026-01-03 05:03:08,085 - INFO  - Code backup completed. Code saved to: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/code/util
+2026-01-03 05:03:08,086 - INFO  - Copied code file: test_baseline_fault_tolerance_simple.py
+2026-01-03 05:03:08,086 - INFO  - Code backup completed. Code saved to: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/code
+2026-01-03 05:03:08,308 - INFO  - Created `mobilenet_v2_cifar` model for `cifar10` dataset (num_classes=10)
+          Use pre-trained model = False
+2026-01-03 05:44:37,701 - INFO  - Start Floating-Point Pre-training: mobilenet_v2_cifar on cifar10
+2026-01-03 05:44:37,701 - INFO  - >>>>>>>> Epoch   0
+2026-01-03 05:50:49,808 - INFO  - Epoch: [0][50/97] Loss 2.2564 (2.2919) Top1 17.19 (11.89) LR 0.001000
+2026-01-03 05:50:54,451 - INFO  - Test:  Loss 2.2200 Top1 16.33 Top5 66.42
+2026-01-03 05:50:54,640 - INFO  - ([0] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+                Best: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_best.pth.tar
+
+2026-01-03 05:50:54,641 - INFO  - >>>>>>>> Epoch   1
+2026-01-03 05:50:57,517 - INFO  - Epoch: [1][50/97] Loss 1.8040 (1.9581) Top1 29.10 (23.64) LR 0.010800
+2026-01-03 05:51:02,167 - INFO  - Test:  Loss 1.7762 Top1 33.40 Top5 86.95
+2026-01-03 05:51:02,317 - INFO  - ([1] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+                Best: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_best.pth.tar
+
+2026-01-03 05:51:02,317 - INFO  - >>>>>>>> Epoch   2
+2026-01-03 05:51:05,157 - INFO  - Epoch: [2][50/97] Loss 1.5212 (1.6112) Top1 44.34 (39.08) LR 0.020600
+2026-01-03 05:51:09,627 - INFO  - Test:  Loss 1.5954 Top1 44.24 Top5 91.26
+2026-01-03 05:51:09,781 - INFO  - ([2] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+                Best: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_best.pth.tar
+
+2026-01-03 05:51:09,781 - INFO  - >>>>>>>> Epoch   3
+2026-01-03 05:51:12,635 - INFO  - Epoch: [3][50/97] Loss 1.2040 (1.3340) Top1 57.23 (51.66) LR 0.030400
+2026-01-03 05:51:17,198 - INFO  - Test:  Loss 1.1975 Top1 57.87 Top5 95.34
+2026-01-03 05:51:17,351 - INFO  - ([3] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+                Best: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_best.pth.tar
+
+2026-01-03 05:51:17,352 - INFO  - >>>>>>>> Epoch   4
+2026-01-03 05:51:20,198 - INFO  - Epoch: [4][50/97] Loss 1.0602 (1.1072) Top1 63.28 (60.34) LR 0.040200
+2026-01-03 05:51:24,829 - INFO  - Test:  Loss 1.1592 Top1 59.08 Top5 96.05
+2026-01-03 05:51:24,993 - INFO  - ([4] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+                Best: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_best.pth.tar
+
+2026-01-03 05:51:24,993 - INFO  - >>>>>>>> Epoch   5
+2026-01-03 05:51:27,845 - INFO  - Epoch: [5][50/97] Loss 0.9750 (0.9317) Top1 66.41 (66.64) LR 0.049923
+2026-01-03 05:51:32,519 - INFO  - Test:  Loss 0.9220 Top1 68.15 Top5 96.92
+2026-01-03 05:51:32,676 - INFO  - ([5] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+                Best: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_best.pth.tar
+
+2026-01-03 05:51:32,676 - INFO  - >>>>>>>> Epoch   6
+2026-01-03 05:51:35,555 - INFO  - Epoch: [6][50/97] Loss 0.6922 (0.7798) Top1 76.37 (72.59) LR 0.049889
+2026-01-03 05:51:40,089 - INFO  - Test:  Loss 0.7134 Top1 74.70 Top5 98.57
+2026-01-03 05:51:40,278 - INFO  - ([6] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+                Best: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_best.pth.tar
+
+2026-01-03 05:51:40,279 - INFO  - >>>>>>>> Epoch   7
+2026-01-03 05:51:43,144 - INFO  - Epoch: [7][50/97] Loss 0.5549 (0.6592) Top1 82.03 (76.97) LR 0.049849
+2026-01-03 05:51:47,719 - INFO  - Test:  Loss 0.6671 Top1 76.92 Top5 98.63
+2026-01-03 05:51:47,872 - INFO  - ([7] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+                Best: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_best.pth.tar
+
+2026-01-03 05:51:47,872 - INFO  - >>>>>>>> Epoch   8
+2026-01-03 05:51:50,753 - INFO  - Epoch: [8][50/97] Loss 0.5930 (0.5957) Top1 78.32 (79.15) LR 0.049803
+2026-01-03 05:51:55,328 - INFO  - Test:  Loss 0.5674 Top1 80.07 Top5 99.13
+2026-01-03 05:51:55,477 - INFO  - ([8] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+                Best: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_best.pth.tar
+
+2026-01-03 05:51:55,478 - INFO  - >>>>>>>> Epoch   9
+2026-01-03 05:51:58,361 - INFO  - Epoch: [9][50/97] Loss 0.4981 (0.5455) Top1 82.81 (80.83) LR 0.049751
+2026-01-03 05:52:02,987 - INFO  - Test:  Loss 0.5496 Top1 80.87 Top5 99.18
+2026-01-03 05:52:03,146 - INFO  - ([9] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+                Best: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_best.pth.tar
+
+2026-01-03 05:52:03,147 - INFO  - >>>>>>>> Epoch  10
+2026-01-03 05:52:06,038 - INFO  - Epoch: [10][50/97] Loss 0.5691 (0.5037) Top1 82.23 (82.43) LR 0.049693
+2026-01-03 05:52:10,638 - INFO  - Test:  Loss 0.4698 Top1 83.78 Top5 99.39
+2026-01-03 05:52:10,787 - INFO  - ([10] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+                Best: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_best.pth.tar
+
+2026-01-03 05:52:10,787 - INFO  - >>>>>>>> Epoch  11
+2026-01-03 05:52:13,680 - INFO  - Epoch: [11][50/97] Loss 0.4743 (0.4701) Top1 83.98 (83.56) LR 0.049628
+2026-01-03 05:52:18,419 - INFO  - Test:  Loss 0.4515 Top1 84.18 Top5 99.36
+2026-01-03 05:52:18,616 - INFO  - ([11] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+                Best: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_best.pth.tar
+
+2026-01-03 05:52:18,617 - INFO  - >>>>>>>> Epoch  12
+2026-01-03 05:52:21,460 - INFO  - Epoch: [12][50/97] Loss 0.3727 (0.4346) Top1 86.91 (84.84) LR 0.049558
+2026-01-03 05:52:26,082 - INFO  - Test:  Loss 0.4293 Top1 84.91 Top5 99.45
+2026-01-03 05:52:26,229 - INFO  - ([12] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+                Best: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_best.pth.tar
+
+2026-01-03 05:52:26,230 - INFO  - >>>>>>>> Epoch  13
+2026-01-03 05:52:29,076 - INFO  - Epoch: [13][50/97] Loss 0.4088 (0.4163) Top1 85.55 (85.54) LR 0.049482
+2026-01-03 05:52:33,605 - INFO  - Test:  Loss 0.4265 Top1 85.24 Top5 99.47
+2026-01-03 05:52:33,789 - INFO  - ([13] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+                Best: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_best.pth.tar
+
+2026-01-03 05:52:33,789 - INFO  - >>>>>>>> Epoch  14
+2026-01-03 05:52:36,683 - INFO  - Epoch: [14][50/97] Loss 0.3658 (0.3913) Top1 87.89 (86.57) LR 0.049399
+2026-01-03 05:52:41,301 - INFO  - Test:  Loss 0.4318 Top1 84.94 Top5 99.43
+2026-01-03 05:52:41,382 - INFO  - ([14] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+
+2026-01-03 05:52:41,383 - INFO  - >>>>>>>> Epoch  15
+2026-01-03 05:52:44,306 - INFO  - Epoch: [15][50/97] Loss 0.3984 (0.3705) Top1 86.13 (87.05) LR 0.049311
+2026-01-03 05:52:48,859 - INFO  - Test:  Loss 0.3616 Top1 87.44 Top5 99.64
+2026-01-03 05:52:49,036 - INFO  - ([15] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+                Best: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_best.pth.tar
+
+2026-01-03 05:52:49,037 - INFO  - >>>>>>>> Epoch  16
+2026-01-03 05:52:51,917 - INFO  - Epoch: [16][50/97] Loss 0.3786 (0.3468) Top1 86.52 (87.82) LR 0.049216
+2026-01-03 05:52:56,551 - INFO  - Test:  Loss 0.3568 Top1 87.57 Top5 99.64
+2026-01-03 05:52:56,741 - INFO  - ([16] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+                Best: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_best.pth.tar
+
+2026-01-03 05:52:56,741 - INFO  - >>>>>>>> Epoch  17
+2026-01-03 05:52:59,625 - INFO  - Epoch: [17][50/97] Loss 0.2953 (0.3308) Top1 90.82 (88.28) LR 0.049116
+2026-01-03 05:53:04,289 - INFO  - Test:  Loss 0.3355 Top1 88.35 Top5 99.74
+2026-01-03 05:53:04,455 - INFO  - ([17] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+                Best: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_best.pth.tar
+
+2026-01-03 05:53:04,456 - INFO  - >>>>>>>> Epoch  18
+2026-01-03 05:53:07,339 - INFO  - Epoch: [18][50/97] Loss 0.3140 (0.3179) Top1 87.70 (88.74) LR 0.049009
+2026-01-03 05:53:11,942 - INFO  - Test:  Loss 0.3323 Top1 88.40 Top5 99.72
+2026-01-03 05:53:12,097 - INFO  - ([18] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+                Best: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_best.pth.tar
+
+2026-01-03 05:53:12,098 - INFO  - >>>>>>>> Epoch  19
+2026-01-03 05:53:14,962 - INFO  - Epoch: [19][50/97] Loss 0.3581 (0.3003) Top1 86.91 (89.57) LR 0.048897
+2026-01-03 05:53:19,462 - INFO  - Test:  Loss 0.3130 Top1 89.12 Top5 99.74
+2026-01-03 05:53:19,619 - INFO  - ([19] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+                Best: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_best.pth.tar
+
+2026-01-03 05:53:19,620 - INFO  - >>>>>>>> Epoch  20
+2026-01-03 05:53:22,487 - INFO  - Epoch: [20][50/97] Loss 0.2682 (0.2949) Top1 90.23 (89.76) LR 0.048779
+2026-01-03 05:53:27,043 - INFO  - Test:  Loss 0.2695 Top1 90.67 Top5 99.80
+2026-01-03 05:53:27,224 - INFO  - ([20] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+                Best: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_best.pth.tar
+
+2026-01-03 05:53:27,225 - INFO  - >>>>>>>> Epoch  21
+2026-01-03 05:53:30,090 - INFO  - Epoch: [21][50/97] Loss 0.3005 (0.2837) Top1 90.04 (90.30) LR 0.048655
+2026-01-03 05:53:34,647 - INFO  - Test:  Loss 0.3534 Top1 87.62 Top5 99.69
+2026-01-03 05:53:34,722 - INFO  - ([21] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+
+2026-01-03 05:53:34,722 - INFO  - >>>>>>>> Epoch  22
+2026-01-03 05:53:37,603 - INFO  - Epoch: [22][50/97] Loss 0.2126 (0.2647) Top1 91.21 (90.70) LR 0.048525
+2026-01-03 05:53:42,209 - INFO  - Test:  Loss 0.2910 Top1 89.79 Top5 99.80
+2026-01-03 05:53:42,294 - INFO  - ([22] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+
+2026-01-03 05:53:42,295 - INFO  - >>>>>>>> Epoch  23
+2026-01-03 05:53:45,179 - INFO  - Epoch: [23][50/97] Loss 0.2987 (0.2608) Top1 89.26 (90.72) LR 0.048389
+2026-01-03 05:53:49,888 - INFO  - Test:  Loss 0.2736 Top1 90.44 Top5 99.82
+2026-01-03 05:53:49,964 - INFO  - ([23] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+
+2026-01-03 05:53:49,965 - INFO  - >>>>>>>> Epoch  24
+2026-01-03 05:53:52,850 - INFO  - Epoch: [24][50/97] Loss 0.1849 (0.2433) Top1 93.95 (91.45) LR 0.048248
+2026-01-03 05:53:57,451 - INFO  - Test:  Loss 0.3153 Top1 88.77 Top5 99.81
+2026-01-03 05:53:57,533 - INFO  - ([24] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+
+2026-01-03 05:53:57,533 - INFO  - >>>>>>>> Epoch  25
+2026-01-03 05:54:00,392 - INFO  - Epoch: [25][50/97] Loss 0.2577 (0.2421) Top1 91.41 (91.43) LR 0.048101
+2026-01-03 05:54:04,972 - INFO  - Test:  Loss 0.2504 Top1 91.25 Top5 99.83
+2026-01-03 05:54:05,152 - INFO  - ([25] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+                Best: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_best.pth.tar
+
+2026-01-03 05:54:05,152 - INFO  - >>>>>>>> Epoch  26
+2026-01-03 05:54:08,023 - INFO  - Epoch: [26][50/97] Loss 0.2868 (0.2340) Top1 90.04 (91.76) LR 0.047948
+2026-01-03 05:54:12,661 - INFO  - Test:  Loss 0.2427 Top1 91.21 Top5 99.89
+2026-01-03 05:54:12,737 - INFO  - ([26] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+
+2026-01-03 05:54:12,738 - INFO  - >>>>>>>> Epoch  27
+2026-01-03 05:54:15,597 - INFO  - Epoch: [27][50/97] Loss 0.2453 (0.2273) Top1 91.99 (92.11) LR 0.047790
+2026-01-03 05:54:20,131 - INFO  - Test:  Loss 0.2444 Top1 91.44 Top5 99.86
+2026-01-03 05:54:20,282 - INFO  - ([27] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+                Best: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_best.pth.tar
+
+2026-01-03 05:54:20,301 - INFO  - >>>>>>>> Epoch  28
+2026-01-03 05:54:23,149 - INFO  - Epoch: [28][50/97] Loss 0.2317 (0.2122) Top1 91.99 (92.59) LR 0.047625
+2026-01-03 05:54:27,749 - INFO  - Test:  Loss 0.2494 Top1 91.18 Top5 99.84
+2026-01-03 05:54:27,833 - INFO  - ([28] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+
+2026-01-03 05:54:27,834 - INFO  - >>>>>>>> Epoch  29
+2026-01-03 05:54:30,732 - INFO  - Epoch: [29][50/97] Loss 0.1981 (0.2123) Top1 92.97 (92.58) LR 0.047456
+2026-01-03 05:54:35,339 - INFO  - Test:  Loss 0.2215 Top1 92.12 Top5 99.88
+2026-01-03 05:54:35,490 - INFO  - ([29] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+                Best: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_best.pth.tar
+
+2026-01-03 05:54:35,491 - INFO  - >>>>>>>> Epoch  30
+2026-01-03 05:54:38,392 - INFO  - Epoch: [30][50/97] Loss 0.2295 (0.2053) Top1 91.21 (92.99) LR 0.047281
+2026-01-03 05:54:43,050 - INFO  - Test:  Loss 0.2531 Top1 91.09 Top5 99.86
+2026-01-03 05:54:43,131 - INFO  - ([30] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+
+2026-01-03 05:54:43,131 - INFO  - >>>>>>>> Epoch  31
+2026-01-03 05:54:46,008 - INFO  - Epoch: [31][50/97] Loss 0.2253 (0.1993) Top1 92.58 (93.10) LR 0.047100
+2026-01-03 05:54:50,563 - INFO  - Test:  Loss 0.2307 Top1 91.95 Top5 99.91
+2026-01-03 05:54:50,650 - INFO  - ([31] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+
+2026-01-03 05:54:50,651 - INFO  - >>>>>>>> Epoch  32
+2026-01-03 05:54:53,534 - INFO  - Epoch: [32][50/97] Loss 0.2236 (0.1951) Top1 92.19 (93.27) LR 0.046914
+2026-01-03 05:54:58,217 - INFO  - Test:  Loss 0.2384 Top1 91.53 Top5 99.92
+2026-01-03 05:54:58,305 - INFO  - ([32] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+
+2026-01-03 05:54:58,306 - INFO  - >>>>>>>> Epoch  33
+2026-01-03 05:55:01,168 - INFO  - Epoch: [33][50/97] Loss 0.1834 (0.1982) Top1 93.75 (93.11) LR 0.046722
+2026-01-03 05:55:05,720 - INFO  - Test:  Loss 0.2120 Top1 92.61 Top5 99.93
+2026-01-03 05:55:05,922 - INFO  - ([33] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+                Best: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_best.pth.tar
+
+2026-01-03 05:55:05,923 - INFO  - >>>>>>>> Epoch  34
+2026-01-03 05:55:08,840 - INFO  - Epoch: [34][50/97] Loss 0.2102 (0.1854) Top1 92.19 (93.56) LR 0.046526
+2026-01-03 05:55:13,423 - INFO  - Test:  Loss 0.2025 Top1 92.92 Top5 99.91
+2026-01-03 05:55:13,617 - INFO  - ([34] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+                Best: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_best.pth.tar
+
+2026-01-03 05:55:13,618 - INFO  - >>>>>>>> Epoch  35
+2026-01-03 05:55:16,479 - INFO  - Epoch: [35][50/97] Loss 0.1703 (0.1824) Top1 93.95 (93.58) LR 0.046323
+2026-01-03 05:55:21,213 - INFO  - Test:  Loss 0.1899 Top1 93.52 Top5 99.95
+2026-01-03 05:55:21,407 - INFO  - ([35] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+                Best: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_best.pth.tar
+
+2026-01-03 05:55:21,407 - INFO  - >>>>>>>> Epoch  36
+2026-01-03 05:55:24,288 - INFO  - Epoch: [36][50/97] Loss 0.1947 (0.1762) Top1 93.75 (93.77) LR 0.046116
+2026-01-03 05:55:28,956 - INFO  - Test:  Loss 0.1910 Top1 93.28 Top5 99.92
+2026-01-03 05:55:29,034 - INFO  - ([36] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+
+2026-01-03 05:55:29,035 - INFO  - >>>>>>>> Epoch  37
+2026-01-03 05:55:31,921 - INFO  - Epoch: [37][50/97] Loss 0.1926 (0.1791) Top1 94.73 (93.73) LR 0.045903
+2026-01-03 05:55:36,451 - INFO  - Test:  Loss 0.1747 Top1 93.92 Top5 99.95
+2026-01-03 05:55:36,621 - INFO  - ([37] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+                Best: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_best.pth.tar
+
+2026-01-03 05:55:36,622 - INFO  - >>>>>>>> Epoch  38
+2026-01-03 05:55:39,486 - INFO  - Epoch: [38][50/97] Loss 0.1675 (0.1611) Top1 93.95 (94.48) LR 0.045686
+2026-01-03 05:55:44,081 - INFO  - Test:  Loss 0.1864 Top1 93.43 Top5 99.92
+2026-01-03 05:55:44,159 - INFO  - ([38] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+
+2026-01-03 05:55:44,159 - INFO  - >>>>>>>> Epoch  39
+2026-01-03 05:55:47,036 - INFO  - Epoch: [39][50/97] Loss 0.2215 (0.1697) Top1 92.77 (94.04) LR 0.045463
+2026-01-03 05:55:51,568 - INFO  - Test:  Loss 0.1960 Top1 93.01 Top5 99.93
+2026-01-03 05:55:51,655 - INFO  - ([39] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+
+2026-01-03 05:55:51,655 - INFO  - >>>>>>>> Epoch  40
+2026-01-03 05:55:54,547 - INFO  - Epoch: [40][50/97] Loss 0.1731 (0.1646) Top1 93.75 (94.21) LR 0.045235
+2026-01-03 05:55:59,160 - INFO  - Test:  Loss 0.1807 Top1 93.62 Top5 99.94
+2026-01-03 05:55:59,240 - INFO  - ([40] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+
+2026-01-03 05:55:59,240 - INFO  - >>>>>>>> Epoch  41
+2026-01-03 05:56:02,124 - INFO  - Epoch: [41][50/97] Loss 0.1325 (0.1592) Top1 94.92 (94.39) LR 0.045002
+2026-01-03 05:56:06,787 - INFO  - Test:  Loss 0.1733 Top1 93.99 Top5 99.95
+2026-01-03 05:56:06,945 - INFO  - ([41] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+                Best: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_best.pth.tar
+
+2026-01-03 05:56:06,945 - INFO  - >>>>>>>> Epoch  42
+2026-01-03 05:56:09,811 - INFO  - Epoch: [42][50/97] Loss 0.1378 (0.1494) Top1 95.31 (94.82) LR 0.044764
+2026-01-03 05:56:14,430 - INFO  - Test:  Loss 0.2410 Top1 91.68 Top5 99.91
+2026-01-03 05:56:14,509 - INFO  - ([42] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+
+2026-01-03 05:56:14,510 - INFO  - >>>>>>>> Epoch  43
+2026-01-03 05:56:17,403 - INFO  - Epoch: [43][50/97] Loss 0.1710 (0.1546) Top1 94.34 (94.59) LR 0.044522
+2026-01-03 05:56:21,987 - INFO  - Test:  Loss 0.1774 Top1 93.88 Top5 99.94
+2026-01-03 05:56:22,067 - INFO  - ([43] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+
+2026-01-03 05:56:22,068 - INFO  - >>>>>>>> Epoch  44
+2026-01-03 05:56:24,947 - INFO  - Epoch: [44][50/97] Loss 0.0942 (0.1460) Top1 96.68 (94.88) LR 0.044274
+2026-01-03 05:56:29,451 - INFO  - Test:  Loss 0.2414 Top1 91.65 Top5 99.75
+2026-01-03 05:56:29,528 - INFO  - ([44] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+
+2026-01-03 05:56:29,529 - INFO  - >>>>>>>> Epoch  45
+2026-01-03 05:56:32,405 - INFO  - Epoch: [45][50/97] Loss 0.1823 (0.1517) Top1 92.77 (94.73) LR 0.044022
+2026-01-03 05:56:36,969 - INFO  - Test:  Loss 0.1437 Top1 95.00 Top5 99.96
+2026-01-03 05:56:37,143 - INFO  - ([45] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+                Best: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_best.pth.tar
+
+2026-01-03 05:56:37,144 - INFO  - >>>>>>>> Epoch  46
+2026-01-03 05:56:40,011 - INFO  - Epoch: [46][50/97] Loss 0.1443 (0.1417) Top1 95.70 (95.04) LR 0.043765
+2026-01-03 05:56:44,557 - INFO  - Test:  Loss 0.1778 Top1 93.87 Top5 99.94
+2026-01-03 05:56:44,637 - INFO  - ([46] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+
+2026-01-03 05:56:44,638 - INFO  - >>>>>>>> Epoch  47
+2026-01-03 05:56:47,523 - INFO  - Epoch: [47][50/97] Loss 0.1581 (0.1463) Top1 94.92 (94.79) LR 0.043504
+2026-01-03 05:56:52,184 - INFO  - Test:  Loss 0.1516 Top1 94.75 Top5 99.94
+2026-01-03 05:56:52,265 - INFO  - ([47] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+
+2026-01-03 05:56:52,265 - INFO  - >>>>>>>> Epoch  48
+2026-01-03 05:56:55,137 - INFO  - Epoch: [48][50/97] Loss 0.1382 (0.1399) Top1 95.31 (95.13) LR 0.043238
+2026-01-03 05:56:59,811 - INFO  - Test:  Loss 0.1881 Top1 93.29 Top5 99.95
+2026-01-03 05:56:59,891 - INFO  - ([48] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+
+2026-01-03 05:56:59,891 - INFO  - >>>>>>>> Epoch  49
+2026-01-03 05:57:02,765 - INFO  - Epoch: [49][50/97] Loss 0.1534 (0.1337) Top1 94.53 (95.39) LR 0.042967
+2026-01-03 05:57:07,349 - INFO  - Test:  Loss 0.1684 Top1 94.12 Top5 99.93
+2026-01-03 05:57:07,433 - INFO  - ([49] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+
+2026-01-03 05:57:07,434 - INFO  - >>>>>>>> Epoch  50
+2026-01-03 05:57:10,327 - INFO  - Epoch: [50][50/97] Loss 0.1019 (0.1350) Top1 96.88 (95.39) LR 0.042692
+2026-01-03 05:57:14,888 - INFO  - Test:  Loss 0.1461 Top1 94.96 Top5 99.96
+2026-01-03 05:57:14,974 - INFO  - ([50] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+
+2026-01-03 05:57:14,975 - INFO  - >>>>>>>> Epoch  51
+2026-01-03 05:57:17,876 - INFO  - Epoch: [51][50/97] Loss 0.0764 (0.1339) Top1 97.66 (95.25) LR 0.042413
+2026-01-03 05:57:22,472 - INFO  - Test:  Loss 0.1506 Top1 94.82 Top5 99.95
+2026-01-03 05:57:22,597 - INFO  - ([51] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+
+2026-01-03 05:57:22,598 - INFO  - >>>>>>>> Epoch  52
+2026-01-03 05:57:25,507 - INFO  - Epoch: [52][50/97] Loss 0.1938 (0.1268) Top1 93.95 (95.64) LR 0.042129
+2026-01-03 05:57:30,114 - INFO  - Test:  Loss 0.1759 Top1 93.72 Top5 99.92
+2026-01-03 05:57:30,193 - INFO  - ([52] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+
+2026-01-03 05:57:30,194 - INFO  - >>>>>>>> Epoch  53
+2026-01-03 05:57:33,064 - INFO  - Epoch: [53][50/97] Loss 0.1063 (0.1244) Top1 96.48 (95.66) LR 0.041842
+2026-01-03 05:57:37,785 - INFO  - Test:  Loss 0.1529 Top1 94.74 Top5 99.96
+2026-01-03 05:57:37,868 - INFO  - ([53] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+
+2026-01-03 05:57:37,868 - INFO  - >>>>>>>> Epoch  54
+2026-01-03 05:57:40,725 - INFO  - Epoch: [54][50/97] Loss 0.1391 (0.1233) Top1 94.53 (95.73) LR 0.041550
+2026-01-03 05:57:45,349 - INFO  - Test:  Loss 0.1371 Top1 95.13 Top5 99.97
+2026-01-03 05:57:45,512 - INFO  - ([54] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+                Best: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_best.pth.tar
+
+2026-01-03 05:57:45,513 - INFO  - >>>>>>>> Epoch  55
+2026-01-03 05:57:48,404 - INFO  - Epoch: [55][50/97] Loss 0.1397 (0.1227) Top1 94.53 (95.67) LR 0.041254
+2026-01-03 05:57:52,922 - INFO  - Test:  Loss 0.1499 Top1 94.71 Top5 99.97
+2026-01-03 05:57:53,000 - INFO  - ([55] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+
+2026-01-03 05:57:53,001 - INFO  - >>>>>>>> Epoch  56
+2026-01-03 05:57:55,866 - INFO  - Epoch: [56][50/97] Loss 0.0901 (0.1256) Top1 97.66 (95.57) LR 0.040954
+2026-01-03 05:58:00,400 - INFO  - Test:  Loss 0.1498 Top1 94.74 Top5 99.96
+2026-01-03 05:58:00,484 - INFO  - ([56] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+
+2026-01-03 05:58:00,485 - INFO  - >>>>>>>> Epoch  57
+2026-01-03 05:58:03,364 - INFO  - Epoch: [57][50/97] Loss 0.1503 (0.1189) Top1 95.70 (95.96) LR 0.040650
+2026-01-03 05:58:08,006 - INFO  - Test:  Loss 0.1449 Top1 95.01 Top5 99.95
+2026-01-03 05:58:08,084 - INFO  - ([57] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+
+2026-01-03 05:58:08,085 - INFO  - >>>>>>>> Epoch  58
+2026-01-03 05:58:10,969 - INFO  - Epoch: [58][50/97] Loss 0.0916 (0.1151) Top1 97.27 (96.03) LR 0.040342
+2026-01-03 05:58:15,524 - INFO  - Test:  Loss 0.1234 Top1 95.59 Top5 99.98
+2026-01-03 05:58:15,675 - INFO  - ([58] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+                Best: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_best.pth.tar
+
+2026-01-03 05:58:15,675 - INFO  - >>>>>>>> Epoch  59
+2026-01-03 05:58:18,559 - INFO  - Epoch: [59][50/97] Loss 0.1182 (0.1158) Top1 96.29 (95.99) LR 0.040030
+2026-01-03 05:58:23,352 - INFO  - Test:  Loss 0.1261 Top1 95.61 Top5 99.97
+2026-01-03 05:58:23,523 - INFO  - ([59] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+                Best: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_best.pth.tar
+
+2026-01-03 05:58:23,523 - INFO  - >>>>>>>> Epoch  60
+2026-01-03 05:58:26,389 - INFO  - Epoch: [60][50/97] Loss 0.0795 (0.1105) Top1 97.66 (96.24) LR 0.039715
+2026-01-03 05:58:31,016 - INFO  - Test:  Loss 0.1245 Top1 95.73 Top5 99.97
+2026-01-03 05:58:31,224 - INFO  - ([60] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+                Best: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_best.pth.tar
+
+2026-01-03 05:58:31,225 - INFO  - >>>>>>>> Epoch  61
+2026-01-03 05:58:34,121 - INFO  - Epoch: [61][50/97] Loss 0.1240 (0.1083) Top1 95.90 (96.35) LR 0.039396
+2026-01-03 05:58:38,639 - INFO  - Test:  Loss 0.1599 Top1 94.23 Top5 99.97
+2026-01-03 05:58:38,716 - INFO  - ([61] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+
+2026-01-03 05:58:38,717 - INFO  - >>>>>>>> Epoch  62
+2026-01-03 05:58:41,589 - INFO  - Epoch: [62][50/97] Loss 0.1364 (0.1024) Top1 95.12 (96.50) LR 0.039074
+2026-01-03 05:58:46,131 - INFO  - Test:  Loss 0.1254 Top1 95.58 Top5 99.97
+2026-01-03 05:58:46,211 - INFO  - ([62] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+
+2026-01-03 05:58:46,212 - INFO  - >>>>>>>> Epoch  63
+2026-01-03 05:58:49,135 - INFO  - Epoch: [63][50/97] Loss 0.0750 (0.1064) Top1 97.66 (96.21) LR 0.038748
+2026-01-03 05:58:53,678 - INFO  - Test:  Loss 0.1468 Top1 94.95 Top5 99.97
+2026-01-03 05:58:53,758 - INFO  - ([63] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+
+2026-01-03 05:58:53,758 - INFO  - >>>>>>>> Epoch  64
+2026-01-03 05:58:56,622 - INFO  - Epoch: [64][50/97] Loss 0.0810 (0.1048) Top1 97.27 (96.35) LR 0.038419
+2026-01-03 05:59:01,186 - INFO  - Test:  Loss 0.1198 Top1 95.85 Top5 99.96
+2026-01-03 05:59:01,368 - INFO  - ([64] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+                Best: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_best.pth.tar
+
+2026-01-03 05:59:01,369 - INFO  - >>>>>>>> Epoch  65
+2026-01-03 05:59:04,245 - INFO  - Epoch: [65][50/97] Loss 0.0745 (0.1024) Top1 97.46 (96.44) LR 0.038086
+2026-01-03 05:59:08,943 - INFO  - Test:  Loss 0.1192 Top1 95.81 Top5 99.99
+2026-01-03 05:59:09,032 - INFO  - ([65] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+
+2026-01-03 05:59:09,033 - INFO  - >>>>>>>> Epoch  66
+2026-01-03 05:59:11,913 - INFO  - Epoch: [66][50/97] Loss 0.0956 (0.1030) Top1 97.07 (96.46) LR 0.037751
+2026-01-03 05:59:16,601 - INFO  - Test:  Loss 0.1322 Top1 95.41 Top5 99.96
+2026-01-03 05:59:16,683 - INFO  - ([66] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+
+2026-01-03 05:59:16,683 - INFO  - >>>>>>>> Epoch  67
+2026-01-03 05:59:19,549 - INFO  - Epoch: [67][50/97] Loss 0.1114 (0.1011) Top1 95.51 (96.52) LR 0.037412
+2026-01-03 05:59:24,188 - INFO  - Test:  Loss 0.1089 Top1 96.21 Top5 99.98
+2026-01-03 05:59:24,346 - INFO  - ([67] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+                Best: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_best.pth.tar
+
+2026-01-03 05:59:24,346 - INFO  - >>>>>>>> Epoch  68
+2026-01-03 05:59:27,244 - INFO  - Epoch: [68][50/97] Loss 0.1409 (0.1014) Top1 94.73 (96.46) LR 0.037070
+2026-01-03 05:59:31,853 - INFO  - Test:  Loss 0.1139 Top1 96.09 Top5 99.99
+2026-01-03 05:59:31,933 - INFO  - ([68] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+
+2026-01-03 05:59:31,934 - INFO  - >>>>>>>> Epoch  69
+2026-01-03 05:59:34,805 - INFO  - Epoch: [69][50/97] Loss 0.0705 (0.0970) Top1 97.07 (96.70) LR 0.036725
+2026-01-03 05:59:39,331 - INFO  - Test:  Loss 0.1028 Top1 96.43 Top5 99.99
+2026-01-03 05:59:39,495 - INFO  - ([69] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+                Best: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_best.pth.tar
+
+2026-01-03 05:59:39,496 - INFO  - >>>>>>>> Epoch  70
+2026-01-03 05:59:42,375 - INFO  - Epoch: [70][50/97] Loss 0.1104 (0.0959) Top1 95.90 (96.65) LR 0.036377
+2026-01-03 05:59:47,002 - INFO  - Test:  Loss 0.1089 Top1 96.30 Top5 99.98
+2026-01-03 05:59:47,079 - INFO  - ([70] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+
+2026-01-03 05:59:47,098 - INFO  - >>>>>>>> Epoch  71
+2026-01-03 05:59:50,000 - INFO  - Epoch: [71][50/97] Loss 0.0929 (0.0984) Top1 97.07 (96.61) LR 0.036026
+2026-01-03 05:59:54,681 - INFO  - Test:  Loss 0.1107 Top1 96.18 Top5 99.97
+2026-01-03 05:59:54,774 - INFO  - ([71] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+
+2026-01-03 05:59:54,775 - INFO  - >>>>>>>> Epoch  72
+2026-01-03 05:59:57,652 - INFO  - Epoch: [72][50/97] Loss 0.1171 (0.0985) Top1 95.70 (96.52) LR 0.035673
+2026-01-03 06:00:02,270 - INFO  - Test:  Loss 0.1053 Top1 96.33 Top5 99.98
+2026-01-03 06:00:02,353 - INFO  - ([72] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+
+2026-01-03 06:00:02,354 - INFO  - >>>>>>>> Epoch  73
+2026-01-03 06:00:05,238 - INFO  - Epoch: [73][50/97] Loss 0.1335 (0.0870) Top1 95.51 (97.04) LR 0.035317
+2026-01-03 06:00:09,865 - INFO  - Test:  Loss 0.1156 Top1 95.98 Top5 99.97
+2026-01-03 06:00:09,946 - INFO  - ([73] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+
+2026-01-03 06:00:09,947 - INFO  - >>>>>>>> Epoch  74
+2026-01-03 06:00:12,830 - INFO  - Epoch: [74][50/97] Loss 0.1224 (0.0866) Top1 95.51 (96.93) LR 0.034959
+2026-01-03 06:00:17,455 - INFO  - Test:  Loss 0.0944 Top1 96.83 Top5 99.99
+2026-01-03 06:00:17,619 - INFO  - ([74] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+                Best: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_best.pth.tar
+
+2026-01-03 06:00:17,620 - INFO  - >>>>>>>> Epoch  75
+2026-01-03 06:00:20,491 - INFO  - Epoch: [75][50/97] Loss 0.1048 (0.0869) Top1 95.70 (97.00) LR 0.034598
+2026-01-03 06:00:25,054 - INFO  - Test:  Loss 0.0987 Top1 96.63 Top5 99.97
+2026-01-03 06:00:25,133 - INFO  - ([75] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+
+2026-01-03 06:00:25,134 - INFO  - >>>>>>>> Epoch  76
+2026-01-03 06:00:28,017 - INFO  - Epoch: [76][50/97] Loss 0.1054 (0.0907) Top1 97.07 (96.90) LR 0.034235
+2026-01-03 06:00:32,738 - INFO  - Test:  Loss 0.0971 Top1 96.70 Top5 99.98
+2026-01-03 06:00:32,859 - INFO  - ([76] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+
+2026-01-03 06:00:32,860 - INFO  - >>>>>>>> Epoch  77
+2026-01-03 06:00:35,764 - INFO  - Epoch: [77][50/97] Loss 0.0803 (0.0830) Top1 97.07 (97.14) LR 0.033869
+2026-01-03 06:00:40,468 - INFO  - Test:  Loss 0.0830 Top1 97.08 Top5 99.99
+2026-01-03 06:00:40,641 - INFO  - ([77] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+                Best: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_best.pth.tar
+
+2026-01-03 06:00:40,642 - INFO  - >>>>>>>> Epoch  78
+2026-01-03 06:00:43,522 - INFO  - Epoch: [78][50/97] Loss 0.0587 (0.0818) Top1 97.85 (97.26) LR 0.033502
+2026-01-03 06:00:48,190 - INFO  - Test:  Loss 0.1009 Top1 96.53 Top5 99.99
+2026-01-03 06:00:48,270 - INFO  - ([78] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+
+2026-01-03 06:00:48,271 - INFO  - >>>>>>>> Epoch  79
+2026-01-03 06:00:51,165 - INFO  - Epoch: [79][50/97] Loss 0.1164 (0.0857) Top1 95.51 (97.04) LR 0.033132
+2026-01-03 06:00:55,867 - INFO  - Test:  Loss 0.0911 Top1 96.90 Top5 100.00
+2026-01-03 06:00:56,010 - INFO  - ([79] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+
+2026-01-03 06:00:56,011 - INFO  - >>>>>>>> Epoch  80
+2026-01-03 06:00:58,929 - INFO  - Epoch: [80][50/97] Loss 0.0867 (0.0880) Top1 96.68 (96.99) LR 0.032760
+2026-01-03 06:01:03,581 - INFO  - Test:  Loss 0.0999 Top1 96.58 Top5 99.98
+2026-01-03 06:01:03,667 - INFO  - ([80] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+
+2026-01-03 06:01:03,668 - INFO  - >>>>>>>> Epoch  81
+2026-01-03 06:01:06,616 - INFO  - Epoch: [81][50/97] Loss 0.0808 (0.0886) Top1 96.88 (97.02) LR 0.032386
+2026-01-03 06:01:11,280 - INFO  - Test:  Loss 0.0763 Top1 97.47 Top5 99.98
+2026-01-03 06:01:11,441 - INFO  - ([81] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+                Best: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_best.pth.tar
+
+2026-01-03 06:01:11,441 - INFO  - >>>>>>>> Epoch  82
+2026-01-03 06:01:14,364 - INFO  - Epoch: [82][50/97] Loss 0.0975 (0.0800) Top1 97.07 (97.26) LR 0.032011
+2026-01-03 06:01:19,042 - INFO  - Test:  Loss 0.0806 Top1 97.13 Top5 99.99
+2026-01-03 06:01:19,183 - INFO  - ([82] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+
+2026-01-03 06:01:19,184 - INFO  - >>>>>>>> Epoch  83
+2026-01-03 06:01:22,095 - INFO  - Epoch: [83][50/97] Loss 0.0965 (0.0841) Top1 95.90 (97.13) LR 0.031634
+2026-01-03 06:01:26,847 - INFO  - Test:  Loss 0.1270 Top1 95.56 Top5 99.97
+2026-01-03 06:01:26,929 - INFO  - ([83] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+
+2026-01-03 06:01:26,930 - INFO  - >>>>>>>> Epoch  84
+2026-01-03 06:01:29,840 - INFO  - Epoch: [84][50/97] Loss 0.0657 (0.0870) Top1 96.68 (96.90) LR 0.031255
+2026-01-03 06:01:34,586 - INFO  - Test:  Loss 0.0762 Top1 97.40 Top5 99.99
+2026-01-03 06:01:34,666 - INFO  - ([84] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+
+2026-01-03 06:01:34,667 - INFO  - >>>>>>>> Epoch  85
+2026-01-03 06:01:37,567 - INFO  - Epoch: [85][50/97] Loss 0.0534 (0.0704) Top1 98.05 (97.62) LR 0.030874
+2026-01-03 06:01:42,171 - INFO  - Test:  Loss 0.0792 Top1 97.21 Top5 99.99
+2026-01-03 06:01:42,252 - INFO  - ([85] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+
+2026-01-03 06:01:42,253 - INFO  - >>>>>>>> Epoch  86
+2026-01-03 06:01:45,145 - INFO  - Epoch: [86][50/97] Loss 0.0654 (0.0805) Top1 98.44 (97.26) LR 0.030493
+2026-01-03 06:01:49,668 - INFO  - Test:  Loss 0.0929 Top1 96.78 Top5 99.99
+2026-01-03 06:01:49,749 - INFO  - ([86] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+
+2026-01-03 06:01:49,750 - INFO  - >>>>>>>> Epoch  87
+2026-01-03 06:01:52,632 - INFO  - Epoch: [87][50/97] Loss 0.0728 (0.0756) Top1 97.85 (97.38) LR 0.030110
+2026-01-03 06:01:57,235 - INFO  - Test:  Loss 0.0847 Top1 97.16 Top5 99.99
+2026-01-03 06:01:57,351 - INFO  - ([87] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+
+2026-01-03 06:01:57,352 - INFO  - >>>>>>>> Epoch  88
+2026-01-03 06:02:00,258 - INFO  - Epoch: [88][50/97] Loss 0.0764 (0.0718) Top1 97.66 (97.51) LR 0.029725
+2026-01-03 06:02:04,919 - INFO  - Test:  Loss 0.0794 Top1 97.29 Top5 99.99
+2026-01-03 06:02:05,002 - INFO  - ([88] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+
+2026-01-03 06:02:05,002 - INFO  - >>>>>>>> Epoch  89
+2026-01-03 06:02:07,892 - INFO  - Epoch: [89][50/97] Loss 0.0982 (0.0683) Top1 97.07 (97.63) LR 0.029340
+2026-01-03 06:02:12,629 - INFO  - Test:  Loss 0.0722 Top1 97.55 Top5 99.99
+2026-01-03 06:02:12,789 - INFO  - ([89] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+                Best: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_best.pth.tar
+
+2026-01-03 06:02:12,790 - INFO  - >>>>>>>> Epoch  90
+2026-01-03 06:02:15,669 - INFO  - Epoch: [90][50/97] Loss 0.0957 (0.0691) Top1 95.70 (97.66) LR 0.028953
+2026-01-03 06:02:20,269 - INFO  - Test:  Loss 0.0761 Top1 97.40 Top5 100.00
+2026-01-03 06:02:20,369 - INFO  - ([90] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+
+2026-01-03 06:02:20,370 - INFO  - >>>>>>>> Epoch  91
+2026-01-03 06:02:23,254 - INFO  - Epoch: [91][50/97] Loss 0.0563 (0.0672) Top1 98.05 (97.74) LR 0.028565
+2026-01-03 06:02:27,878 - INFO  - Test:  Loss 0.0871 Top1 97.04 Top5 99.99
+2026-01-03 06:02:27,970 - INFO  - ([91] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+
+2026-01-03 06:02:27,971 - INFO  - >>>>>>>> Epoch  92
+2026-01-03 06:02:30,838 - INFO  - Epoch: [92][50/97] Loss 0.0604 (0.0629) Top1 98.05 (97.95) LR 0.028177
+2026-01-03 06:02:35,426 - INFO  - Test:  Loss 0.0706 Top1 97.63 Top5 99.99
+2026-01-03 06:02:35,576 - INFO  - ([92] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+                Best: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_best.pth.tar
+
+2026-01-03 06:02:35,577 - INFO  - >>>>>>>> Epoch  93
+2026-01-03 06:02:38,440 - INFO  - Epoch: [93][50/97] Loss 0.0603 (0.0673) Top1 97.66 (97.70) LR 0.027788
+2026-01-03 06:02:43,024 - INFO  - Test:  Loss 0.0674 Top1 97.70 Top5 99.99
+2026-01-03 06:02:43,188 - INFO  - ([93] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+                Best: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_best.pth.tar
+
+2026-01-03 06:02:43,189 - INFO  - >>>>>>>> Epoch  94
+2026-01-03 06:02:46,048 - INFO  - Epoch: [94][50/97] Loss 0.0653 (0.0609) Top1 97.66 (97.95) LR 0.027398
+2026-01-03 06:02:50,667 - INFO  - Test:  Loss 0.0644 Top1 97.74 Top5 100.00
+2026-01-03 06:02:50,830 - INFO  - ([94] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+                Best: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_best.pth.tar
+
+2026-01-03 06:02:50,831 - INFO  - >>>>>>>> Epoch  95
+2026-01-03 06:02:53,761 - INFO  - Epoch: [95][50/97] Loss 0.0619 (0.0625) Top1 97.85 (97.88) LR 0.027008
+2026-01-03 06:02:58,603 - INFO  - Test:  Loss 0.0621 Top1 97.94 Top5 100.00
+2026-01-03 06:02:58,755 - INFO  - ([95] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+                Best: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_best.pth.tar
+
+2026-01-03 06:02:58,755 - INFO  - >>>>>>>> Epoch  96
+2026-01-03 06:03:01,629 - INFO  - Epoch: [96][50/97] Loss 0.0848 (0.0647) Top1 96.29 (97.88) LR 0.026617
+2026-01-03 06:03:06,329 - INFO  - Test:  Loss 0.0934 Top1 96.77 Top5 99.99
+2026-01-03 06:03:06,405 - INFO  - ([96] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+
+2026-01-03 06:03:06,406 - INFO  - >>>>>>>> Epoch  97
+2026-01-03 06:03:09,307 - INFO  - Epoch: [97][50/97] Loss 0.0415 (0.0588) Top1 98.63 (98.09) LR 0.026225
+2026-01-03 06:03:13,863 - INFO  - Test:  Loss 0.0486 Top1 98.31 Top5 100.00
+2026-01-03 06:03:14,028 - INFO  - ([97] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+                Best: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_best.pth.tar
+
+2026-01-03 06:03:14,029 - INFO  - >>>>>>>> Epoch  98
+2026-01-03 06:03:16,925 - INFO  - Epoch: [98][50/97] Loss 0.0815 (0.0628) Top1 98.05 (97.88) LR 0.025834
+2026-01-03 06:03:21,480 - INFO  - Test:  Loss 0.0666 Top1 97.64 Top5 100.00
+2026-01-03 06:03:21,560 - INFO  - ([98] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+
+2026-01-03 06:03:21,560 - INFO  - >>>>>>>> Epoch  99
+2026-01-03 06:03:24,429 - INFO  - Epoch: [99][50/97] Loss 0.0451 (0.0612) Top1 98.44 (97.97) LR 0.025442
+2026-01-03 06:03:29,080 - INFO  - Test:  Loss 0.0729 Top1 97.46 Top5 100.00
+2026-01-03 06:03:29,158 - INFO  - ([99] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+
+2026-01-03 06:03:29,158 - INFO  - >>>>>>>> Epoch 100
+2026-01-03 06:03:32,101 - INFO  - Epoch: [100][50/97] Loss 0.0545 (0.0597) Top1 97.85 (98.07) LR 0.025050
+2026-01-03 06:03:36,704 - INFO  - Test:  Loss 0.0468 Top1 98.47 Top5 100.00
+2026-01-03 06:03:36,895 - INFO  - ([100] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+                Best: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_best.pth.tar
+
+2026-01-03 06:03:36,896 - INFO  - >>>>>>>> Epoch 101
+2026-01-03 06:03:39,789 - INFO  - Epoch: [101][50/97] Loss 0.1053 (0.0543) Top1 95.90 (98.16) LR 0.024658
+2026-01-03 06:03:44,382 - INFO  - Test:  Loss 0.0543 Top1 98.20 Top5 100.00
+2026-01-03 06:03:44,466 - INFO  - ([101] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+
+2026-01-03 06:03:44,467 - INFO  - >>>>>>>> Epoch 102
+2026-01-03 06:03:47,333 - INFO  - Epoch: [102][50/97] Loss 0.0492 (0.0556) Top1 98.24 (98.16) LR 0.024266
+2026-01-03 06:03:52,028 - INFO  - Test:  Loss 0.0502 Top1 98.31 Top5 100.00
+2026-01-03 06:03:52,109 - INFO  - ([102] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+
+2026-01-03 06:03:52,110 - INFO  - >>>>>>>> Epoch 103
+2026-01-03 06:03:54,985 - INFO  - Epoch: [103][50/97] Loss 0.0300 (0.0518) Top1 98.63 (98.27) LR 0.023875
+2026-01-03 06:03:59,578 - INFO  - Test:  Loss 0.0605 Top1 97.96 Top5 100.00
+2026-01-03 06:03:59,654 - INFO  - ([103] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+
+2026-01-03 06:03:59,654 - INFO  - >>>>>>>> Epoch 104
+2026-01-03 06:04:02,541 - INFO  - Epoch: [104][50/97] Loss 0.0540 (0.0579) Top1 98.44 (98.09) LR 0.023483
+2026-01-03 06:04:07,097 - INFO  - Test:  Loss 0.0595 Top1 97.98 Top5 99.99
+2026-01-03 06:04:07,172 - INFO  - ([104] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+
+2026-01-03 06:04:07,173 - INFO  - >>>>>>>> Epoch 105
+2026-01-03 06:04:10,082 - INFO  - Epoch: [105][50/97] Loss 0.0485 (0.0514) Top1 98.83 (98.28) LR 0.023092
+2026-01-03 06:04:14,696 - INFO  - Test:  Loss 0.0526 Top1 98.25 Top5 99.99
+2026-01-03 06:04:14,775 - INFO  - ([105] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+
+2026-01-03 06:04:14,776 - INFO  - >>>>>>>> Epoch 106
+2026-01-03 06:04:17,662 - INFO  - Epoch: [106][50/97] Loss 0.0650 (0.0506) Top1 98.05 (98.27) LR 0.022702
+2026-01-03 06:04:22,211 - INFO  - Test:  Loss 0.0526 Top1 98.22 Top5 100.00
+2026-01-03 06:04:22,291 - INFO  - ([106] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+
+2026-01-03 06:04:22,291 - INFO  - >>>>>>>> Epoch 107
+2026-01-03 06:04:25,168 - INFO  - Epoch: [107][50/97] Loss 0.0455 (0.0486) Top1 98.24 (98.38) LR 0.022312
+2026-01-03 06:04:29,679 - INFO  - Test:  Loss 0.0407 Top1 98.65 Top5 100.00
+2026-01-03 06:04:29,846 - INFO  - ([107] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+                Best: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_best.pth.tar
+
+2026-01-03 06:04:29,847 - INFO  - >>>>>>>> Epoch 108
+2026-01-03 06:04:32,702 - INFO  - Epoch: [108][50/97] Loss 0.0482 (0.0458) Top1 98.44 (98.43) LR 0.021923
+2026-01-03 06:04:37,420 - INFO  - Test:  Loss 0.0440 Top1 98.49 Top5 100.00
+2026-01-03 06:04:37,502 - INFO  - ([108] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+
+2026-01-03 06:04:37,503 - INFO  - >>>>>>>> Epoch 109
+2026-01-03 06:04:40,366 - INFO  - Epoch: [109][50/97] Loss 0.0545 (0.0447) Top1 98.24 (98.52) LR 0.021535
+2026-01-03 06:04:45,015 - INFO  - Test:  Loss 0.0429 Top1 98.54 Top5 100.00
+2026-01-03 06:04:45,097 - INFO  - ([109] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+
+2026-01-03 06:04:45,098 - INFO  - >>>>>>>> Epoch 110
+2026-01-03 06:04:48,010 - INFO  - Epoch: [110][50/97] Loss 0.0471 (0.0400) Top1 98.44 (98.70) LR 0.021147
+2026-01-03 06:04:52,619 - INFO  - Test:  Loss 0.0473 Top1 98.40 Top5 99.99
+2026-01-03 06:04:52,700 - INFO  - ([110] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+
+2026-01-03 06:04:52,701 - INFO  - >>>>>>>> Epoch 111
+2026-01-03 06:04:55,585 - INFO  - Epoch: [111][50/97] Loss 0.0564 (0.0435) Top1 98.24 (98.55) LR 0.020760
+2026-01-03 06:05:00,081 - INFO  - Test:  Loss 0.0407 Top1 98.64 Top5 100.00
+2026-01-03 06:05:00,170 - INFO  - ([111] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+
+2026-01-03 06:05:00,170 - INFO  - >>>>>>>> Epoch 112
+2026-01-03 06:05:03,078 - INFO  - Epoch: [112][50/97] Loss 0.0507 (0.0444) Top1 97.46 (98.49) LR 0.020375
+2026-01-03 06:05:07,713 - INFO  - Test:  Loss 0.0326 Top1 98.94 Top5 100.00
+2026-01-03 06:05:07,872 - INFO  - ([112] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+                Best: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_best.pth.tar
+
+2026-01-03 06:05:07,873 - INFO  - >>>>>>>> Epoch 113
+2026-01-03 06:05:10,762 - INFO  - Epoch: [113][50/97] Loss 0.0757 (0.0412) Top1 97.66 (98.62) LR 0.019990
+2026-01-03 06:05:15,325 - INFO  - Test:  Loss 0.0398 Top1 98.68 Top5 100.00
+2026-01-03 06:05:15,405 - INFO  - ([113] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+
+2026-01-03 06:05:15,406 - INFO  - >>>>>>>> Epoch 114
+2026-01-03 06:05:18,285 - INFO  - Epoch: [114][50/97] Loss 0.0296 (0.0382) Top1 99.22 (98.77) LR 0.019607
+2026-01-03 06:05:23,031 - INFO  - Test:  Loss 0.0416 Top1 98.63 Top5 99.99
+2026-01-03 06:05:23,112 - INFO  - ([114] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+
+2026-01-03 06:05:23,112 - INFO  - >>>>>>>> Epoch 115
+2026-01-03 06:05:25,996 - INFO  - Epoch: [115][50/97] Loss 0.0415 (0.0402) Top1 97.85 (98.69) LR 0.019226
+2026-01-03 06:05:30,643 - INFO  - Test:  Loss 0.0412 Top1 98.63 Top5 100.00
+2026-01-03 06:05:30,723 - INFO  - ([115] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+
+2026-01-03 06:05:30,724 - INFO  - >>>>>>>> Epoch 116
+2026-01-03 06:05:33,617 - INFO  - Epoch: [116][50/97] Loss 0.0416 (0.0387) Top1 99.22 (98.68) LR 0.018845
+2026-01-03 06:05:38,248 - INFO  - Test:  Loss 0.0389 Top1 98.71 Top5 100.00
+2026-01-03 06:05:38,327 - INFO  - ([116] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+
+2026-01-03 06:05:38,328 - INFO  - >>>>>>>> Epoch 117
+2026-01-03 06:05:41,224 - INFO  - Epoch: [117][50/97] Loss 0.0343 (0.0403) Top1 98.83 (98.66) LR 0.018466
+2026-01-03 06:05:45,842 - INFO  - Test:  Loss 0.0393 Top1 98.75 Top5 100.00
+2026-01-03 06:05:45,923 - INFO  - ([117] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+
+2026-01-03 06:05:45,924 - INFO  - >>>>>>>> Epoch 118
+2026-01-03 06:05:48,809 - INFO  - Epoch: [118][50/97] Loss 0.0329 (0.0331) Top1 98.83 (98.96) LR 0.018089
+2026-01-03 06:05:53,396 - INFO  - Test:  Loss 0.0336 Top1 98.86 Top5 100.00
+2026-01-03 06:05:53,535 - INFO  - ([118] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+
+2026-01-03 06:05:53,536 - INFO  - >>>>>>>> Epoch 119
+2026-01-03 06:05:56,431 - INFO  - Epoch: [119][50/97] Loss 0.0220 (0.0274) Top1 99.22 (99.12) LR 0.017714
+2026-01-03 06:06:01,031 - INFO  - Test:  Loss 0.0320 Top1 98.98 Top5 100.00
+2026-01-03 06:06:01,206 - INFO  - ([119] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+                Best: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_best.pth.tar
+
+2026-01-03 06:06:01,207 - INFO  - >>>>>>>> Epoch 120
+2026-01-03 06:06:04,070 - INFO  - Epoch: [120][50/97] Loss 0.0131 (0.0290) Top1 99.80 (99.04) LR 0.017340
+2026-01-03 06:06:08,712 - INFO  - Test:  Loss 0.0317 Top1 98.96 Top5 100.00
+2026-01-03 06:06:08,796 - INFO  - ([120] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+
+2026-01-03 06:06:08,797 - INFO  - >>>>>>>> Epoch 121
+2026-01-03 06:06:11,698 - INFO  - Epoch: [121][50/97] Loss 0.0239 (0.0345) Top1 98.63 (98.86) LR 0.016968
+2026-01-03 06:06:16,335 - INFO  - Test:  Loss 0.0262 Top1 99.15 Top5 100.00
+2026-01-03 06:06:16,494 - INFO  - ([121] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+                Best: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_best.pth.tar
+
+2026-01-03 06:06:16,495 - INFO  - >>>>>>>> Epoch 122
+2026-01-03 06:06:19,376 - INFO  - Epoch: [122][50/97] Loss 0.0309 (0.0268) Top1 98.63 (99.18) LR 0.016598
+2026-01-03 06:06:23,962 - INFO  - Test:  Loss 0.0288 Top1 99.04 Top5 100.00
+2026-01-03 06:06:24,043 - INFO  - ([122] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+
+2026-01-03 06:06:24,043 - INFO  - >>>>>>>> Epoch 123
+2026-01-03 06:06:26,923 - INFO  - Epoch: [123][50/97] Loss 0.0469 (0.0313) Top1 98.05 (98.96) LR 0.016231
+2026-01-03 06:06:31,481 - INFO  - Test:  Loss 0.0264 Top1 99.15 Top5 100.00
+2026-01-03 06:06:31,631 - INFO  - ([123] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+                Best: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_best.pth.tar
+
+2026-01-03 06:06:31,631 - INFO  - >>>>>>>> Epoch 124
+2026-01-03 06:06:34,494 - INFO  - Epoch: [124][50/97] Loss 0.0237 (0.0293) Top1 99.22 (99.06) LR 0.015865
+2026-01-03 06:06:39,055 - INFO  - Test:  Loss 0.0315 Top1 98.98 Top5 100.00
+2026-01-03 06:06:39,132 - INFO  - ([124] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+
+2026-01-03 06:06:39,133 - INFO  - >>>>>>>> Epoch 125
+2026-01-03 06:06:42,054 - INFO  - Epoch: [125][50/97] Loss 0.0210 (0.0186) Top1 99.61 (99.48) LR 0.015502
+2026-01-03 06:06:46,691 - INFO  - Test:  Loss 0.0380 Top1 98.74 Top5 100.00
+2026-01-03 06:06:46,850 - INFO  - ([125] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+
+2026-01-03 06:06:46,850 - INFO  - >>>>>>>> Epoch 126
+2026-01-03 06:06:49,730 - INFO  - Epoch: [126][50/97] Loss 0.0200 (0.0287) Top1 99.80 (99.10) LR 0.015141
+2026-01-03 06:06:54,350 - INFO  - Test:  Loss 0.0198 Top1 99.39 Top5 100.00
+2026-01-03 06:06:54,512 - INFO  - ([126] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+                Best: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_best.pth.tar
+
+2026-01-03 06:06:54,512 - INFO  - >>>>>>>> Epoch 127
+2026-01-03 06:06:57,384 - INFO  - Epoch: [127][50/97] Loss 0.0405 (0.0255) Top1 99.22 (99.19) LR 0.014783
+2026-01-03 06:07:01,963 - INFO  - Test:  Loss 0.0255 Top1 99.18 Top5 100.00
+2026-01-03 06:07:02,047 - INFO  - ([127] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+
+2026-01-03 06:07:02,048 - INFO  - >>>>>>>> Epoch 128
+2026-01-03 06:07:04,973 - INFO  - Epoch: [128][50/97] Loss 0.0276 (0.0223) Top1 99.02 (99.27) LR 0.014427
+2026-01-03 06:07:09,609 - INFO  - Test:  Loss 0.0168 Top1 99.46 Top5 100.00
+2026-01-03 06:07:09,767 - INFO  - ([128] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+                Best: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_best.pth.tar
+
+2026-01-03 06:07:09,767 - INFO  - >>>>>>>> Epoch 129
+2026-01-03 06:07:12,652 - INFO  - Epoch: [129][50/97] Loss 0.0243 (0.0206) Top1 99.02 (99.34) LR 0.014074
+2026-01-03 06:07:17,221 - INFO  - Test:  Loss 0.0240 Top1 99.21 Top5 100.00
+2026-01-03 06:07:17,309 - INFO  - ([129] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+
+2026-01-03 06:07:17,309 - INFO  - >>>>>>>> Epoch 130
+2026-01-03 06:07:20,174 - INFO  - Epoch: [130][50/97] Loss 0.0285 (0.0266) Top1 98.83 (99.15) LR 0.013723
+2026-01-03 06:07:24,735 - INFO  - Test:  Loss 0.0167 Top1 99.52 Top5 100.00
+2026-01-03 06:07:24,897 - INFO  - ([130] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+                Best: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_best.pth.tar
+
+2026-01-03 06:07:24,898 - INFO  - >>>>>>>> Epoch 131
+2026-01-03 06:07:27,778 - INFO  - Epoch: [131][50/97] Loss 0.0107 (0.0220) Top1 99.61 (99.29) LR 0.013375
+2026-01-03 06:07:32,361 - INFO  - Test:  Loss 0.0162 Top1 99.50 Top5 100.00
+2026-01-03 06:07:32,444 - INFO  - ([131] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+
+2026-01-03 06:07:32,445 - INFO  - >>>>>>>> Epoch 132
+2026-01-03 06:07:35,316 - INFO  - Epoch: [132][50/97] Loss 0.0181 (0.0195) Top1 99.61 (99.44) LR 0.013030
+2026-01-03 06:07:39,898 - INFO  - Test:  Loss 0.0106 Top1 99.70 Top5 100.00
+2026-01-03 06:07:40,047 - INFO  - ([132] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+                Best: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_best.pth.tar
+
+2026-01-03 06:07:40,047 - INFO  - >>>>>>>> Epoch 133
+2026-01-03 06:07:42,910 - INFO  - Epoch: [133][50/97] Loss 0.0209 (0.0146) Top1 99.22 (99.57) LR 0.012688
+2026-01-03 06:07:47,564 - INFO  - Test:  Loss 0.0153 Top1 99.57 Top5 100.00
+2026-01-03 06:07:47,655 - INFO  - ([133] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+
+2026-01-03 06:07:47,656 - INFO  - >>>>>>>> Epoch 134
+2026-01-03 06:07:50,512 - INFO  - Epoch: [134][50/97] Loss 0.0195 (0.0157) Top1 99.41 (99.55) LR 0.012349
+2026-01-03 06:07:55,094 - INFO  - Test:  Loss 0.0124 Top1 99.65 Top5 100.00
+2026-01-03 06:07:55,173 - INFO  - ([134] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+
+2026-01-03 06:07:55,173 - INFO  - >>>>>>>> Epoch 135
+2026-01-03 06:07:58,048 - INFO  - Epoch: [135][50/97] Loss 0.0204 (0.0185) Top1 99.02 (99.36) LR 0.012014
+2026-01-03 06:08:02,635 - INFO  - Test:  Loss 0.0120 Top1 99.65 Top5 100.00
+2026-01-03 06:08:02,735 - INFO  - ([135] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+
+2026-01-03 06:08:02,736 - INFO  - >>>>>>>> Epoch 136
+2026-01-03 06:08:05,613 - INFO  - Epoch: [136][50/97] Loss 0.0288 (0.0178) Top1 99.02 (99.47) LR 0.011681
+2026-01-03 06:08:10,189 - INFO  - Test:  Loss 0.0099 Top1 99.72 Top5 100.00
+2026-01-03 06:08:10,351 - INFO  - ([136] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+                Best: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_best.pth.tar
+
+2026-01-03 06:08:10,351 - INFO  - >>>>>>>> Epoch 137
+2026-01-03 06:08:13,235 - INFO  - Epoch: [137][50/97] Loss 0.0060 (0.0111) Top1 100.00 (99.71) LR 0.011352
+2026-01-03 06:08:17,886 - INFO  - Test:  Loss 0.0168 Top1 99.47 Top5 100.00
+2026-01-03 06:08:18,014 - INFO  - ([137] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+
+2026-01-03 06:08:18,015 - INFO  - >>>>>>>> Epoch 138
+2026-01-03 06:08:20,903 - INFO  - Epoch: [138][50/97] Loss 0.0056 (0.0123) Top1 100.00 (99.63) LR 0.011026
+2026-01-03 06:08:25,535 - INFO  - Test:  Loss 0.0105 Top1 99.70 Top5 100.00
+2026-01-03 06:08:25,627 - INFO  - ([138] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+
+2026-01-03 06:08:25,628 - INFO  - >>>>>>>> Epoch 139
+2026-01-03 06:08:28,541 - INFO  - Epoch: [139][50/97] Loss 0.0051 (0.0122) Top1 100.00 (99.64) LR 0.010704
+2026-01-03 06:08:33,130 - INFO  - Test:  Loss 0.0099 Top1 99.74 Top5 100.00
+2026-01-03 06:08:33,288 - INFO  - ([139] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+                Best: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_best.pth.tar
+
+2026-01-03 06:08:33,288 - INFO  - >>>>>>>> Epoch 140
+2026-01-03 06:08:36,194 - INFO  - Epoch: [140][50/97] Loss 0.0125 (0.0111) Top1 99.41 (99.68) LR 0.010385
+2026-01-03 06:08:40,799 - INFO  - Test:  Loss 0.0093 Top1 99.75 Top5 100.00
+2026-01-03 06:08:40,973 - INFO  - ([140] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+                Best: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_best.pth.tar
+
+2026-01-03 06:08:40,974 - INFO  - >>>>>>>> Epoch 141
+2026-01-03 06:08:43,842 - INFO  - Epoch: [141][50/97] Loss 0.0047 (0.0088) Top1 100.00 (99.77) LR 0.010070
+2026-01-03 06:08:48,516 - INFO  - Test:  Loss 0.0070 Top1 99.81 Top5 100.00
+2026-01-03 06:08:48,665 - INFO  - ([141] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+                Best: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_best.pth.tar
+
+2026-01-03 06:08:48,665 - INFO  - >>>>>>>> Epoch 142
+2026-01-03 06:08:51,544 - INFO  - Epoch: [142][50/97] Loss 0.0061 (0.0092) Top1 99.80 (99.76) LR 0.009758
+2026-01-03 06:08:56,099 - INFO  - Test:  Loss 0.0054 Top1 99.87 Top5 100.00
+2026-01-03 06:08:56,271 - INFO  - ([142] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+                Best: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_best.pth.tar
+
+2026-01-03 06:08:56,272 - INFO  - >>>>>>>> Epoch 143
+2026-01-03 06:08:59,153 - INFO  - Epoch: [143][50/97] Loss 0.0029 (0.0079) Top1 100.00 (99.80) LR 0.009450
+2026-01-03 06:09:03,786 - INFO  - Test:  Loss 0.0044 Top1 99.90 Top5 100.00
+2026-01-03 06:09:03,937 - INFO  - ([143] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+                Best: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_best.pth.tar
+
+2026-01-03 06:09:03,938 - INFO  - >>>>>>>> Epoch 144
+2026-01-03 06:09:06,797 - INFO  - Epoch: [144][50/97] Loss 0.0034 (0.0080) Top1 100.00 (99.80) LR 0.009146
+2026-01-03 06:09:11,305 - INFO  - Test:  Loss 0.0049 Top1 99.89 Top5 100.00
+2026-01-03 06:09:11,382 - INFO  - ([144] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+
+2026-01-03 06:09:11,382 - INFO  - >>>>>>>> Epoch 145
+2026-01-03 06:09:14,266 - INFO  - Epoch: [145][50/97] Loss 0.0086 (0.0078) Top1 99.80 (99.79) LR 0.008846
+2026-01-03 06:09:18,837 - INFO  - Test:  Loss 0.0042 Top1 99.92 Top5 100.00
+2026-01-03 06:09:18,990 - INFO  - ([145] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+                Best: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_best.pth.tar
+
+2026-01-03 06:09:18,990 - INFO  - >>>>>>>> Epoch 146
+2026-01-03 06:09:21,866 - INFO  - Epoch: [146][50/97] Loss 0.0098 (0.0061) Top1 99.61 (99.86) LR 0.008550
+2026-01-03 06:09:26,443 - INFO  - Test:  Loss 0.0045 Top1 99.90 Top5 100.00
+2026-01-03 06:09:26,525 - INFO  - ([146] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+
+2026-01-03 06:09:26,526 - INFO  - >>>>>>>> Epoch 147
+2026-01-03 06:09:29,398 - INFO  - Epoch: [147][50/97] Loss 0.0055 (0.0060) Top1 100.00 (99.86) LR 0.008258
+2026-01-03 06:09:33,933 - INFO  - Test:  Loss 0.0032 Top1 99.94 Top5 100.00
+2026-01-03 06:09:34,097 - INFO  - ([147] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+                Best: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_best.pth.tar
+
+2026-01-03 06:09:34,098 - INFO  - >>>>>>>> Epoch 148
+2026-01-03 06:09:36,961 - INFO  - Epoch: [148][50/97] Loss 0.0021 (0.0048) Top1 100.00 (99.90) LR 0.007971
+2026-01-03 06:09:41,469 - INFO  - Test:  Loss 0.0032 Top1 99.94 Top5 100.00
+2026-01-03 06:09:41,627 - INFO  - ([148] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+                Best: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_best.pth.tar
+
+2026-01-03 06:09:41,627 - INFO  - >>>>>>>> Epoch 149
+2026-01-03 06:09:44,501 - INFO  - Epoch: [149][50/97] Loss 0.0089 (0.0048) Top1 99.80 (99.91) LR 0.007687
+2026-01-03 06:09:49,047 - INFO  - Test:  Loss 0.0032 Top1 99.95 Top5 100.00
+2026-01-03 06:09:49,209 - INFO  - ([149] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+                Best: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_best.pth.tar
+
+2026-01-03 06:09:49,210 - INFO  - >>>>>>>> Epoch 150
+2026-01-03 06:09:52,051 - INFO  - Epoch: [150][50/97] Loss 0.0015 (0.0048) Top1 100.00 (99.89) LR 0.007408
+2026-01-03 06:09:56,639 - INFO  - Test:  Loss 0.0028 Top1 99.96 Top5 100.00
+2026-01-03 06:09:56,832 - INFO  - ([150] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+                Best: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_best.pth.tar
+
+2026-01-03 06:09:56,833 - INFO  - >>>>>>>> Epoch 151
+2026-01-03 06:09:59,703 - INFO  - Epoch: [151][50/97] Loss 0.0021 (0.0041) Top1 100.00 (99.93) LR 0.007133
+2026-01-03 06:10:04,283 - INFO  - Test:  Loss 0.0025 Top1 99.97 Top5 100.00
+2026-01-03 06:10:04,478 - INFO  - ([151] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+                Best: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_best.pth.tar
+
+2026-01-03 06:10:04,478 - INFO  - >>>>>>>> Epoch 152
+2026-01-03 06:10:07,370 - INFO  - Epoch: [152][50/97] Loss 0.0021 (0.0034) Top1 100.00 (99.95) LR 0.006862
+2026-01-03 06:10:11,968 - INFO  - Test:  Loss 0.0020 Top1 99.98 Top5 100.00
+2026-01-03 06:10:12,122 - INFO  - ([152] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+                Best: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_best.pth.tar
+
+2026-01-03 06:10:12,123 - INFO  - >>>>>>>> Epoch 153
+2026-01-03 06:10:15,009 - INFO  - Epoch: [153][50/97] Loss 0.0037 (0.0042) Top1 100.00 (99.91) LR 0.006596
+2026-01-03 06:10:19,542 - INFO  - Test:  Loss 0.0020 Top1 99.97 Top5 100.00
+2026-01-03 06:10:19,621 - INFO  - ([153] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+
+2026-01-03 06:10:19,622 - INFO  - >>>>>>>> Epoch 154
+2026-01-03 06:10:22,520 - INFO  - Epoch: [154][50/97] Loss 0.0034 (0.0037) Top1 100.00 (99.94) LR 0.006335
+2026-01-03 06:10:27,069 - INFO  - Test:  Loss 0.0022 Top1 99.97 Top5 100.00
+2026-01-03 06:10:27,150 - INFO  - ([154] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+
+2026-01-03 06:10:27,151 - INFO  - >>>>>>>> Epoch 155
+2026-01-03 06:10:30,038 - INFO  - Epoch: [155][50/97] Loss 0.0044 (0.0034) Top1 99.80 (99.95) LR 0.006078
+2026-01-03 06:10:34,547 - INFO  - Test:  Loss 0.0024 Top1 99.96 Top5 100.00
+2026-01-03 06:10:34,623 - INFO  - ([155] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+
+2026-01-03 06:10:34,623 - INFO  - >>>>>>>> Epoch 156
+2026-01-03 06:10:37,496 - INFO  - Epoch: [156][50/97] Loss 0.0018 (0.0027) Top1 100.00 (99.98) LR 0.005826
+2026-01-03 06:10:42,058 - INFO  - Test:  Loss 0.0016 Top1 99.99 Top5 100.00
+2026-01-03 06:10:42,216 - INFO  - ([156] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+                Best: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_best.pth.tar
+
+2026-01-03 06:10:42,217 - INFO  - >>>>>>>> Epoch 157
+2026-01-03 06:10:45,075 - INFO  - Epoch: [157][50/97] Loss 0.0044 (0.0025) Top1 99.80 (99.97) LR 0.005578
+2026-01-03 06:10:49,545 - INFO  - Test:  Loss 0.0014 Top1 99.99 Top5 100.00
+2026-01-03 06:10:49,722 - INFO  - ([157] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+                Best: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_best.pth.tar
+
+2026-01-03 06:10:49,722 - INFO  - >>>>>>>> Epoch 158
+2026-01-03 06:10:52,566 - INFO  - Epoch: [158][50/97] Loss 0.0021 (0.0024) Top1 100.00 (99.98) LR 0.005336
+2026-01-03 06:10:57,143 - INFO  - Test:  Loss 0.0014 Top1 99.99 Top5 100.00
+2026-01-03 06:10:57,311 - INFO  - ([158] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+                Best: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_best.pth.tar
+
+2026-01-03 06:10:57,312 - INFO  - >>>>>>>> Epoch 159
+2026-01-03 06:11:00,173 - INFO  - Epoch: [159][50/97] Loss 0.0018 (0.0023) Top1 100.00 (99.97) LR 0.005098
+2026-01-03 06:11:04,671 - INFO  - Test:  Loss 0.0014 Top1 99.99 Top5 100.00
+2026-01-03 06:11:04,751 - INFO  - ([159] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+
+2026-01-03 06:11:04,751 - INFO  - >>>>>>>> Epoch 160
+2026-01-03 06:11:07,610 - INFO  - Epoch: [160][50/97] Loss 0.0016 (0.0023) Top1 100.00 (99.98) LR 0.004865
+2026-01-03 06:11:12,151 - INFO  - Test:  Loss 0.0013 Top1 100.00 Top5 100.00
+2026-01-03 06:11:12,311 - INFO  - ([160] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+                Best: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_best.pth.tar
+
+2026-01-03 06:11:12,312 - INFO  - >>>>>>>> Epoch 161
+2026-01-03 06:11:15,152 - INFO  - Epoch: [161][50/97] Loss 0.0019 (0.0024) Top1 100.00 (99.97) LR 0.004637
+2026-01-03 06:11:19,645 - INFO  - Test:  Loss 0.0014 Top1 99.99 Top5 100.00
+2026-01-03 06:11:19,722 - INFO  - ([161] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+
+2026-01-03 06:11:19,722 - INFO  - >>>>>>>> Epoch 162
+2026-01-03 06:11:22,593 - INFO  - Epoch: [162][50/97] Loss 0.0027 (0.0022) Top1 100.00 (99.99) LR 0.004414
+2026-01-03 06:11:27,154 - INFO  - Test:  Loss 0.0011 Top1 100.00 Top5 100.00
+2026-01-03 06:11:27,325 - INFO  - ([162] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+                Best: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_best.pth.tar
+
+2026-01-03 06:11:27,326 - INFO  - >>>>>>>> Epoch 163
+2026-01-03 06:11:30,198 - INFO  - Epoch: [163][50/97] Loss 0.0018 (0.0023) Top1 100.00 (99.97) LR 0.004197
+2026-01-03 06:11:34,775 - INFO  - Test:  Loss 0.0013 Top1 99.99 Top5 100.00
+2026-01-03 06:11:34,855 - INFO  - ([163] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+
+2026-01-03 06:11:34,856 - INFO  - >>>>>>>> Epoch 164
+2026-01-03 06:11:37,737 - INFO  - Epoch: [164][50/97] Loss 0.0015 (0.0017) Top1 100.00 (100.00) LR 0.003984
+2026-01-03 06:11:42,341 - INFO  - Test:  Loss 0.0011 Top1 99.99 Top5 100.00
+2026-01-03 06:11:42,421 - INFO  - ([164] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+
+2026-01-03 06:11:42,422 - INFO  - >>>>>>>> Epoch 165
+2026-01-03 06:11:45,339 - INFO  - Epoch: [165][50/97] Loss 0.0012 (0.0017) Top1 100.00 (99.98) LR 0.003777
+2026-01-03 06:11:49,898 - INFO  - Test:  Loss 0.0012 Top1 99.99 Top5 100.00
+2026-01-03 06:11:49,980 - INFO  - ([165] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+
+2026-01-03 06:11:49,981 - INFO  - >>>>>>>> Epoch 166
+2026-01-03 06:11:52,847 - INFO  - Epoch: [166][50/97] Loss 0.0038 (0.0022) Top1 99.80 (99.97) LR 0.003574
+2026-01-03 06:11:57,440 - INFO  - Test:  Loss 0.0011 Top1 99.99 Top5 100.00
+2026-01-03 06:11:57,520 - INFO  - ([166] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+
+2026-01-03 06:11:57,521 - INFO  - >>>>>>>> Epoch 167
+2026-01-03 06:12:00,387 - INFO  - Epoch: [167][50/97] Loss 0.0012 (0.0019) Top1 100.00 (99.98) LR 0.003378
+2026-01-03 06:12:04,911 - INFO  - Test:  Loss 0.0012 Top1 100.00 Top5 100.00
+2026-01-03 06:12:04,992 - INFO  - ([167] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+
+2026-01-03 06:12:04,993 - INFO  - >>>>>>>> Epoch 168
+2026-01-03 06:12:07,901 - INFO  - Epoch: [168][50/97] Loss 0.0018 (0.0021) Top1 100.00 (99.97) LR 0.003186
+2026-01-03 06:12:12,513 - INFO  - Test:  Loss 0.0011 Top1 100.00 Top5 100.00
+2026-01-03 06:12:12,697 - INFO  - ([168] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+                Best: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_best.pth.tar
+
+2026-01-03 06:12:12,698 - INFO  - >>>>>>>> Epoch 169
+2026-01-03 06:12:15,571 - INFO  - Epoch: [169][50/97] Loss 0.0018 (0.0018) Top1 100.00 (99.98) LR 0.003000
+2026-01-03 06:12:20,052 - INFO  - Test:  Loss 0.0010 Top1 100.00 Top5 100.00
+2026-01-03 06:12:20,211 - INFO  - ([169] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+                Best: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_best.pth.tar
+
+2026-01-03 06:12:20,211 - INFO  - >>>>>>>> Epoch 170
+2026-01-03 06:12:23,081 - INFO  - Epoch: [170][50/97] Loss 0.0012 (0.0019) Top1 100.00 (99.98) LR 0.002819
+2026-01-03 06:12:27,697 - INFO  - Test:  Loss 0.0011 Top1 100.00 Top5 100.00
+2026-01-03 06:12:27,823 - INFO  - ([170] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+
+2026-01-03 06:12:27,823 - INFO  - >>>>>>>> Epoch 171
+2026-01-03 06:12:30,674 - INFO  - Epoch: [171][50/97] Loss 0.0016 (0.0017) Top1 100.00 (100.00) LR 0.002644
+2026-01-03 06:12:35,249 - INFO  - Test:  Loss 0.0010 Top1 100.00 Top5 100.00
+2026-01-03 06:12:35,411 - INFO  - ([171] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+                Best: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_best.pth.tar
+
+2026-01-03 06:12:35,412 - INFO  - >>>>>>>> Epoch 172
+2026-01-03 06:12:38,265 - INFO  - Epoch: [172][50/97] Loss 0.0019 (0.0017) Top1 100.00 (99.98) LR 0.002475
+2026-01-03 06:12:42,852 - INFO  - Test:  Loss 0.0010 Top1 100.00 Top5 100.00
+2026-01-03 06:12:43,019 - INFO  - ([172] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+                Best: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_best.pth.tar
+
+2026-01-03 06:12:43,020 - INFO  - >>>>>>>> Epoch 173
+2026-01-03 06:12:45,898 - INFO  - Epoch: [173][50/97] Loss 0.0013 (0.0016) Top1 100.00 (100.00) LR 0.002310
+2026-01-03 06:12:50,408 - INFO  - Test:  Loss 0.0009 Top1 100.00 Top5 100.00
+2026-01-03 06:12:50,579 - INFO  - ([173] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+                Best: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_best.pth.tar
+
+2026-01-03 06:12:50,579 - INFO  - >>>>>>>> Epoch 174
+2026-01-03 06:12:53,441 - INFO  - Epoch: [174][50/97] Loss 0.0012 (0.0016) Top1 100.00 (99.98) LR 0.002152
+2026-01-03 06:12:58,046 - INFO  - Test:  Loss 0.0010 Top1 100.00 Top5 100.00
+2026-01-03 06:12:58,126 - INFO  - ([174] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+
+2026-01-03 06:12:58,127 - INFO  - >>>>>>>> Epoch 175
+2026-01-03 06:13:01,003 - INFO  - Epoch: [175][50/97] Loss 0.0012 (0.0019) Top1 100.00 (99.98) LR 0.001999
+2026-01-03 06:13:05,648 - INFO  - Test:  Loss 0.0010 Top1 100.00 Top5 100.00
+2026-01-03 06:13:05,736 - INFO  - ([175] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+
+2026-01-03 06:13:05,737 - INFO  - >>>>>>>> Epoch 176
+2026-01-03 06:13:08,608 - INFO  - Epoch: [176][50/97] Loss 0.0013 (0.0017) Top1 100.00 (99.99) LR 0.001852
+2026-01-03 06:13:13,142 - INFO  - Test:  Loss 0.0010 Top1 100.00 Top5 100.00
+2026-01-03 06:13:13,224 - INFO  - ([176] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+
+2026-01-03 06:13:13,225 - INFO  - >>>>>>>> Epoch 177
+2026-01-03 06:13:16,119 - INFO  - Epoch: [177][50/97] Loss 0.0013 (0.0015) Top1 100.00 (100.00) LR 0.001711
+2026-01-03 06:13:20,612 - INFO  - Test:  Loss 0.0010 Top1 100.00 Top5 100.00
+2026-01-03 06:13:20,780 - INFO  - ([177] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+                Best: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_best.pth.tar
+
+2026-01-03 06:13:20,781 - INFO  - >>>>>>>> Epoch 178
+2026-01-03 06:13:23,714 - INFO  - Epoch: [178][50/97] Loss 0.0012 (0.0015) Top1 100.00 (99.99) LR 0.001575
+2026-01-03 06:13:28,286 - INFO  - Test:  Loss 0.0010 Top1 100.00 Top5 100.00
+2026-01-03 06:13:28,362 - INFO  - ([178] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+
+2026-01-03 06:13:28,363 - INFO  - >>>>>>>> Epoch 179
+2026-01-03 06:13:31,231 - INFO  - Epoch: [179][50/97] Loss 0.0011 (0.0014) Top1 100.00 (99.99) LR 0.001445
+2026-01-03 06:13:35,779 - INFO  - Test:  Loss 0.0010 Top1 99.99 Top5 100.00
+2026-01-03 06:13:35,883 - INFO  - ([179] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+
+2026-01-03 06:13:35,884 - INFO  - >>>>>>>> Epoch 180
+2026-01-03 06:13:38,747 - INFO  - Epoch: [180][50/97] Loss 0.0027 (0.0015) Top1 100.00 (100.00) LR 0.001321
+2026-01-03 06:13:43,256 - INFO  - Test:  Loss 0.0010 Top1 100.00 Top5 100.00
+2026-01-03 06:13:43,332 - INFO  - ([180] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+
+2026-01-03 06:13:43,333 - INFO  - >>>>>>>> Epoch 181
+2026-01-03 06:13:46,200 - INFO  - Epoch: [181][50/97] Loss 0.0021 (0.0015) Top1 100.00 (100.00) LR 0.001203
+2026-01-03 06:13:50,677 - INFO  - Test:  Loss 0.0010 Top1 100.00 Top5 100.00
+2026-01-03 06:13:50,755 - INFO  - ([181] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+
+2026-01-03 06:13:50,756 - INFO  - >>>>>>>> Epoch 182
+2026-01-03 06:13:53,635 - INFO  - Epoch: [182][50/97] Loss 0.0016 (0.0015) Top1 100.00 (100.00) LR 0.001091
+2026-01-03 06:13:58,244 - INFO  - Test:  Loss 0.0009 Top1 100.00 Top5 100.00
+2026-01-03 06:13:58,410 - INFO  - ([182] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+                Best: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_best.pth.tar
+
+2026-01-03 06:13:58,410 - INFO  - >>>>>>>> Epoch 183
+2026-01-03 06:14:01,246 - INFO  - Epoch: [183][50/97] Loss 0.0013 (0.0015) Top1 100.00 (100.00) LR 0.000984
+2026-01-03 06:14:05,775 - INFO  - Test:  Loss 0.0009 Top1 100.00 Top5 100.00
+2026-01-03 06:14:05,942 - INFO  - ([183] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+                Best: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_best.pth.tar
+
+2026-01-03 06:14:05,942 - INFO  - >>>>>>>> Epoch 184
+2026-01-03 06:14:08,796 - INFO  - Epoch: [184][50/97] Loss 0.0020 (0.0014) Top1 100.00 (100.00) LR 0.000884
+2026-01-03 06:14:13,377 - INFO  - Test:  Loss 0.0009 Top1 100.00 Top5 100.00
+2026-01-03 06:14:13,546 - INFO  - ([184] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+                Best: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_best.pth.tar
+
+2026-01-03 06:14:13,547 - INFO  - >>>>>>>> Epoch 185
+2026-01-03 06:14:16,408 - INFO  - Epoch: [185][50/97] Loss 0.0019 (0.0015) Top1 100.00 (100.00) LR 0.000789
+2026-01-03 06:14:20,955 - INFO  - Test:  Loss 0.0009 Top1 100.00 Top5 100.00
+2026-01-03 06:14:21,156 - INFO  - ([185] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+                Best: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_best.pth.tar
+
+2026-01-03 06:14:21,157 - INFO  - >>>>>>>> Epoch 186
+2026-01-03 06:14:24,037 - INFO  - Epoch: [186][50/97] Loss 0.0011 (0.0014) Top1 100.00 (100.00) LR 0.000701
+2026-01-03 06:14:28,659 - INFO  - Test:  Loss 0.0010 Top1 100.00 Top5 100.00
+2026-01-03 06:14:28,749 - INFO  - ([186] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+
+2026-01-03 06:14:28,750 - INFO  - >>>>>>>> Epoch 187
+2026-01-03 06:14:31,621 - INFO  - Epoch: [187][50/97] Loss 0.0012 (0.0016) Top1 100.00 (99.98) LR 0.000618
+2026-01-03 06:14:36,307 - INFO  - Test:  Loss 0.0009 Top1 100.00 Top5 100.00
+2026-01-03 06:14:36,476 - INFO  - ([187] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+                Best: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_best.pth.tar
+
+2026-01-03 06:14:36,477 - INFO  - >>>>>>>> Epoch 188
+2026-01-03 06:14:39,333 - INFO  - Epoch: [188][50/97] Loss 0.0011 (0.0014) Top1 100.00 (99.99) LR 0.000542
+2026-01-03 06:14:43,909 - INFO  - Test:  Loss 0.0010 Top1 100.00 Top5 100.00
+2026-01-03 06:14:43,993 - INFO  - ([188] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+
+2026-01-03 06:14:43,994 - INFO  - >>>>>>>> Epoch 189
+2026-01-03 06:14:46,865 - INFO  - Epoch: [189][50/97] Loss 0.0021 (0.0016) Top1 100.00 (99.99) LR 0.000472
+2026-01-03 06:14:51,439 - INFO  - Test:  Loss 0.0010 Top1 100.00 Top5 100.00
+2026-01-03 06:14:51,515 - INFO  - ([189] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+
+2026-01-03 06:14:51,516 - INFO  - >>>>>>>> Epoch 190
+2026-01-03 06:14:54,388 - INFO  - Epoch: [190][50/97] Loss 0.0015 (0.0015) Top1 100.00 (100.00) LR 0.000407
+2026-01-03 06:14:58,986 - INFO  - Test:  Loss 0.0010 Top1 100.00 Top5 100.00
+2026-01-03 06:14:59,062 - INFO  - ([190] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+
+2026-01-03 06:14:59,062 - INFO  - >>>>>>>> Epoch 191
+2026-01-03 06:15:01,965 - INFO  - Epoch: [191][50/97] Loss 0.0012 (0.0014) Top1 100.00 (100.00) LR 0.000349
+2026-01-03 06:15:06,517 - INFO  - Test:  Loss 0.0010 Top1 100.00 Top5 100.00
+2026-01-03 06:15:06,736 - INFO  - ([191] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+                Best: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_best.pth.tar
+
+2026-01-03 06:15:06,737 - INFO  - >>>>>>>> Epoch 192
+2026-01-03 06:15:09,600 - INFO  - Epoch: [192][50/97] Loss 0.0011 (0.0014) Top1 100.00 (99.99) LR 0.000297
+2026-01-03 06:15:14,167 - INFO  - Test:  Loss 0.0010 Top1 100.00 Top5 100.00
+2026-01-03 06:15:14,247 - INFO  - ([192] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+
+2026-01-03 06:15:14,248 - INFO  - >>>>>>>> Epoch 193
+2026-01-03 06:15:17,117 - INFO  - Epoch: [193][50/97] Loss 0.0025 (0.0015) Top1 100.00 (99.99) LR 0.000251
+2026-01-03 06:15:21,619 - INFO  - Test:  Loss 0.0010 Top1 100.00 Top5 100.00
+2026-01-03 06:15:21,785 - INFO  - ([193] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+                Best: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_best.pth.tar
+
+2026-01-03 06:15:21,786 - INFO  - >>>>>>>> Epoch 194
+2026-01-03 06:15:24,659 - INFO  - Epoch: [194][50/97] Loss 0.0014 (0.0014) Top1 100.00 (100.00) LR 0.000211
+2026-01-03 06:15:29,183 - INFO  - Test:  Loss 0.0009 Top1 100.00 Top5 100.00
+2026-01-03 06:15:29,335 - INFO  - ([194] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+                Best: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_best.pth.tar
+
+2026-01-03 06:15:29,335 - INFO  - >>>>>>>> Epoch 195
+2026-01-03 06:15:32,215 - INFO  - Epoch: [195][50/97] Loss 0.0017 (0.0014) Top1 100.00 (100.00) LR 0.000177
+2026-01-03 06:15:36,785 - INFO  - Test:  Loss 0.0010 Top1 100.00 Top5 100.00
+2026-01-03 06:15:36,881 - INFO  - ([195] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+
+2026-01-03 06:15:36,882 - INFO  - >>>>>>>> Epoch 196
+2026-01-03 06:15:39,766 - INFO  - Epoch: [196][50/97] Loss 0.0013 (0.0013) Top1 100.00 (100.00) LR 0.000149
+2026-01-03 06:15:44,318 - INFO  - Test:  Loss 0.0010 Top1 100.00 Top5 100.00
+2026-01-03 06:15:44,476 - INFO  - ([196] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+                Best: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_best.pth.tar
+
+2026-01-03 06:15:44,477 - INFO  - >>>>>>>> Epoch 197
+2026-01-03 06:15:47,337 - INFO  - Epoch: [197][50/97] Loss 0.0017 (0.0015) Top1 100.00 (100.00) LR 0.000128
+2026-01-03 06:15:51,926 - INFO  - Test:  Loss 0.0009 Top1 100.00 Top5 100.00
+2026-01-03 06:15:52,080 - INFO  - ([197] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+                Best: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_best.pth.tar
+
+2026-01-03 06:15:52,081 - INFO  - >>>>>>>> Epoch 198
+2026-01-03 06:15:54,937 - INFO  - Epoch: [198][50/97] Loss 0.0009 (0.0014) Top1 100.00 (99.99) LR 0.000112
+2026-01-03 06:15:59,482 - INFO  - Test:  Loss 0.0009 Top1 100.00 Top5 100.00
+2026-01-03 06:15:59,561 - INFO  - ([198] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+
+2026-01-03 06:15:59,561 - INFO  - >>>>>>>> Epoch 199
+2026-01-03 06:16:02,426 - INFO  - Epoch: [199][50/97] Loss 0.0014 (0.0014) Top1 100.00 (100.00) LR 0.000103
+2026-01-03 06:16:06,988 - INFO  - Test:  Loss 0.0009 Top1 100.00 Top5 100.00
+2026-01-03 06:16:07,071 - INFO  - ([199] Epoch) Saving checkpoint to:
+             Current: /workspace/FATBETA/training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_checkpoint.pth.tar
+
