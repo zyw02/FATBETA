@@ -1,16 +1,16 @@
-# Experiment name - Basic quantization training ResNet18 on CIFAR10 (with nr_random_sample, no FAT)
-name: r18_c10_nude_std_bfat_pbs_rev
+# Experiment name - ResNet20 W8A8 quantization training on CIFAR10
+name: resnet20_g_analyze
 
 # Name of output directory. Checkpoints and logs will be saved at `pwd`/output_dir
 output_dir: training
 training_device: gpu
 
-# Basic quantization training with nr_random_sample settings
-num_random_path: 3  # Number of random paths for nr_random_sample during training
-target_bits: [6, 5, 4, 3, 2]
+# Target bits: fixed at 8-bit
+target_bits: [8, 7, 6, 5, 4, 3, 2]
+num_random_path: 3
 post_training_batchnorm_calibration: true
 information_distortion_mitigation: false
-enable_dynamic_bit_training: true
+enable_dynamic_bit_training: false
 kd: false
 
 # Dataset loader
@@ -18,14 +18,13 @@ dataloader:
   dataset: cifar10
   num_classes: 10
   path: ./data/cifar10
-  # Batch size for CIFAR10 on 11GB GPU
   batch_size: 128
-  workers: 4
+  workers: 8
   deterministic: true
 
 resume:
-  path: 
-  lean: false
+  path: /workspace/FATBETA/training/resnet20_c10_fp/resnet20_c10_fp_checkpoint.pth.tar
+  lean: true
 
 log:
   num_best_scores: 3
@@ -33,30 +32,29 @@ log:
 
 #============================ Model ============================================
 
-arch: resnet18
-pre_trained: false  # No pre-trained weights for CIFAR ResNet18
+arch: resnet20
+pre_trained: false
 
 #============================ Quantization =====================================
 
-# (default for all layers)
 quan:
   act:
     mode: lsq
-    bit: 2
+    bit: 8
     per_channel: false
     symmetric: false
     all_positive: true
 
   weight:
     mode: lsq
-    bit: 2
+    bit: 8
     per_channel: false
     symmetric: false
     all_positive: false
 
   excepts:
     excepts_bits_width: 8
-    # Specify quantized bit width for some layers, like this:
+    # Specified quantized bit width for some layers
     conv1:
       act:
         bit:
@@ -76,43 +74,37 @@ quan:
 
 #============================ Training / Evaluation ============================
 
-# Set to true if you want to evaluate trained model with nr_random_sample
 eval: false
-
-epochs: 100
-smoothing: 0.0
+epochs: 200
+smoothing: 0
 scale_gradient: false
 
 opt: sgd
-# Learning rate for CIFAR10 training
 lr: 0.1
 momentum: 0.9
-weight_decay: 0.0001
+weight_decay: 0.000025
 adaptive_region_weight_decay: 0
 
 sched: cosine
-min_lr: 0.0
+min_lr: 0.00001
 decay_rate: 0.1
-warmup_epochs: 0
-warmup_lr: 0.0
+warmup_epochs: 5
+warmup_lr: 0.00001
 decay_epochs: 30
 cooldown_epochs: 0
 
-ema_decay: 0.9997
-# ============================ BFAT 关键发现============================================
-# 目前基本可以确认，limit_norm是有害的，freeze_bn也有害
-# ============================ BFAT 关键发现============================================
+ema_decay: 0.999
 
-
+# ============================ BFAT ============================================
 bfat:
-  enabled: true
+  enabled: false
+  dual_bit: false
+  use_restricted_as_base: true # 一阶段加噪开关
+  all_bits: true              # 二阶段全位注入
   
-  pbs_enabled: true
-  pbs_start_epoch: 30
-  pbs_period: 1
-  pbs_flips: 1
-  all_bits: true            
-  ber: 0.02                  
+  ber: 0.002                   # 二阶段all_bits普适注入率
+  ber_base_restricted: 0.002   # 一阶段注入率
+  ber_msb: 0.002              # 二阶段MSB独立注入率
   
   loss_weight: 1.0
   loss_type: "direct_ce"
@@ -123,4 +115,4 @@ bfat:
   norm_ratio: 1.0
   
   freeze_bn: false
-  projection_mode: "orthogonal" # orthogonal: 强行正交，direction: 方向修正，cagrad: 寻找最佳妥协方向，none: 不进行投影
+  projection_mode: "orthogonal" # orthogonal: 强行正交

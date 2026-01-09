@@ -159,6 +159,7 @@ def main():
             configs.resume.path,
             "cuda",
             lean=configs.resume.lean,
+            strict=False,  # Allow missing quantization parameters when loading FP32 models
             optimizer=optimizer,
             override_optim=configs.eval,
             lr_scheduler=lr_scheduler,

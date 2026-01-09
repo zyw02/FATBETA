@@ -54,13 +54,43 @@ def find_modules_to_quantize(model, configs):
                 if isinstance(module, torch.nn.BatchNorm2d):
                     replaced_modules[name] = SwithableBatchNorm(module, module.num_features, None)
                 else:
-                    # print(name)
+                    # 1. Get specific layer config from excepts
+                    layer_spec = configs.quan.excepts[name]
+                    if not isinstance(layer_spec, dict):
+                        layer_spec = {}
+                    
+                    w_spec = layer_spec.get('weight', {})
+                    a_spec = layer_spec.get('act', {})
+                    
+                    # 2. Determine bits: weight default 8, act default 32 (8 for Linear)
+                    default_w_bit = 8
+                    default_a_bit = 8 if isinstance(module, torch.nn.Linear) else 32
+                    
+                    w_bit = w_spec.get('bit')
+                    if w_bit is None:
+                        w_bit = default_w_bit
+                        
+                    a_bit = a_spec.get('bit')
+                    if a_bit is None:
+                        a_bit = default_a_bit
+                    
+                    # 3. Handle all_positive: for excepts
+                    a_spec_final = dict(a_spec)
+                    if a_spec_final.get('all_positive') is None:
+                        # Only Conv2d in excepts (like conv1) defaults to False to handle normalized inputs
+                        # Linear in excepts (like fc) typically takes ReLU-ed features, so defaults to True
+                        if isinstance(module, torch.nn.Conv2d):
+                            a_spec_final['all_positive'] = False
+                        else:
+                            a_spec_final['all_positive'] = True
+                    
+                    # 4. Create quantized module
                     replaced_modules[name] = ops[type(module)](
                         module,
-                        bits_list=[8],
-                        quan_w_fn=quantizer(configs.quan.weight, scale_grad=getattr(configs, "scale_gradient", True)),
-                        quan_a_fn=quantizer(configs.quan.act, skip_quantization=False, scale_grad=getattr(configs, "scale_gradient", True)),
-                        fixed_bits=(8, 8) if isinstance(module, torch.nn.Linear) else (8, 32)
+                        bits_list=[w_bit],
+                        quan_w_fn=quantizer(configs.quan.weight, w_spec, scale_grad=getattr(configs, "scale_gradient", True)),
+                        quan_a_fn=quantizer(configs.quan.act, a_spec_final, scale_grad=getattr(configs, "scale_gradient", True)),
+                        fixed_bits=(w_bit, a_bit)
                     )
             else:
                 if isinstance(module, torch.nn.BatchNorm2d):

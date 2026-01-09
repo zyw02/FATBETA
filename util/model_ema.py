@@ -51,11 +51,12 @@ class ModelEma:
     def _load_checkpoint(self, checkpoint_path, reset_bits_cands=True):
         checkpoint = torch.load(checkpoint_path, map_location='cpu')
         assert isinstance(checkpoint, dict)
-        if 'state_dict_ema' in checkpoint:
-            new_state_dict = OrderedDict()
-            bits_cands_w = []
-            bits_cands_a = []
+        
+        bits_cands_w = []
+        bits_cands_a = []
 
+        if 'state_dict_ema' in checkpoint and checkpoint['state_dict_ema'] is not None:
+            new_state_dict = OrderedDict()
             # Get current model state dict to check shape compatibility
             model_state_dict = self.ema.state_dict()
 

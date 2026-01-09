@@ -1,0 +1,47 @@
+# Experiment name - ResNet56 floating-point training on CIFAR10
+name: resnet20_c10_fp
+output_dir: training
+training_device: gpu
+
+# Dataset loader
+dataloader:
+  dataset: cifar10
+  num_classes: 10
+  path: ./data/cifar10
+  batch_size: 128
+  workers: 8
+  deterministic: true
+
+resume:
+  path: 
+  lean: false
+
+log:
+  num_best_scores: 3
+  print_freq: 20
+
+#============================ Model ============================================
+
+arch: resnet20
+pre_trained: false
+
+#============================ Training / Evaluation ============================
+
+eval: false
+epochs: 200
+smoothing: 0
+
+opt: sgd
+lr: 0.1
+momentum: 0.9
+weight_decay: 0.0001
+
+sched: cosine
+min_lr: 0.0
+warmup_epochs: 5
+warmup_lr: 0.0001
+decay_rate: 0.1
+decay_epochs: 30
+cooldown_epochs: 0
+
+

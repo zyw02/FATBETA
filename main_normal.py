@@ -10,7 +10,7 @@ import torch.distributed as dist
 from model import create_model
 from util import (ProgressMonitor, TensorBoardMonitor, 
                   get_config, init_logger, set_global_seed, setup_print, load_checkpoint, save_checkpoint, preprocess_model, init_dataloader)
-from util.utils import copy_code
+from util.utils import copy_code, analyze_gradient_alignment
 from util.mpq import sample_min_cands, switch_bit_width
 from util.greedy_search import search, reset_bit_cands
 from util.model_ema import ModelEma
@@ -514,6 +514,17 @@ def main():
             perf_scoreboard.update(v_top1, v_top5, epoch)
             is_best = perf_scoreboard.is_best(epoch)
 
+            # --- [ANALYSIS] 每个 Epoch 结束分析不同位宽梯度的余弦相似度 ---
+            if is_master():
+                analyze_gradient_alignment(
+                    model=model,
+                    loader=train_loader,
+                    criterion=criterion,
+                    target_bits=configs.target_bits,
+                    configs=configs,
+                    logger=logger
+                )
+            
             # save main model
             save_checkpoint(epoch, configs.arch, model, target_model, optimizer,
                             {

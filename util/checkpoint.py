@@ -178,7 +178,7 @@ def save_checkpoint(epoch, arch, model, target_model, optimizer, extras=None, is
     logger.info(msg)
 
 
-def load_checkpoint(model:nn.Module, chkp_file, model_device=None, strict=True, lean=False, optimizer=None, override_optim=False, lr_scheduler=None, lr_scheduler_q=None, optimizer_q=None, output_corrector=None, corrector_optimizer=None, sensitive_restorer=None, sensitive_optimizer=None, learnable_olm_manager=None, olm_optimizer=None, search_olm_manager=None):
+def load_checkpoint(model:nn.Module, chkp_file, model_device=None, strict=True, lean=False, optimizer=None, override_optim=False, lr_scheduler=None, lr_scheduler_q=None, optimizer_q=None, output_corrector=None, corrector_optimizer=None, sensitive_restorer=None, sensitive_optimizer=None, learnable_olm_manager=None, olm_optimizer=None, search_olm_manager=None, use_ema=False):
     """Load a pyTorch training checkpoint.
     Args:
         model: the pyTorch model to which we will load the parameters.  You can
@@ -189,6 +189,7 @@ def load_checkpoint(model:nn.Module, chkp_file, model_device=None, strict=True, 
         lean: if set, read into model only 'state_dict' field
         model_device [str]: if set, call model.to($model_device)
                 This should be set to either 'cpu' or 'cuda'.
+        use_ema: if True and 'state_dict_ema' exists in checkpoint, load EMA weights instead of normal weights.
     :returns: updated model, optimizer, start_epoch
     """
     if not os.path.isfile(chkp_file):
@@ -196,8 +197,17 @@ def load_checkpoint(model:nn.Module, chkp_file, model_device=None, strict=True, 
 
     checkpoint = torch.load(chkp_file, map_location=lambda storage, loc: storage)
 
-    if 'state_dict' not in checkpoint:
-        raise ValueError('Checkpoint must contain model parameters')
+    # Use EMA if requested and available
+    state_dict_key = 'state_dict'
+    if use_ema:
+        if 'state_dict_ema' in checkpoint and checkpoint['state_dict_ema'] is not None:
+            state_dict_key = 'state_dict_ema'
+            logger.info("Using EMA weights ('state_dict_ema') from checkpoint")
+        else:
+            logger.warning("EMA weights requested but 'state_dict_ema' not found in checkpoint. Falling back to standard 'state_dict'.")
+
+    if state_dict_key not in checkpoint:
+        raise ValueError(f'Checkpoint must contain {state_dict_key}')
 
     extras = checkpoint.get('extras', None)
     arch = checkpoint.get('arch', '_nameless_')
@@ -232,14 +242,14 @@ def load_checkpoint(model:nn.Module, chkp_file, model_device=None, strict=True, 
     start_epoch = checkpoint_epoch + 1 if checkpoint_epoch is not None else 0
     
     for name, module in unwrapped_model.named_modules():
-        if isinstance(module, QuanConv2d) and hasattr(module, 'current_bit_cands') and name + '.' + 'current_bit_cands' in checkpoint['state_dict']:
-            module.current_bit_cands = torch.ones(len(checkpoint['state_dict'][name + '.' + 'current_bit_cands']), device=module.weight.device, dtype=torch.int32)
+        if isinstance(module, QuanConv2d) and hasattr(module, 'current_bit_cands') and name + '.' + 'current_bit_cands' in checkpoint[state_dict_key]:
+            module.current_bit_cands = torch.ones(len(checkpoint[state_dict_key][name + '.' + 'current_bit_cands']), device=module.weight.device, dtype=torch.int32)
         
-        if isinstance(module, QuanConv2d) and hasattr(module, 'current_bit_cands_w') and name + '.' + 'current_bit_cands_w' in checkpoint['state_dict']:
-            module.current_bit_cands_w = torch.ones(len(checkpoint['state_dict'][name + '.' + 'current_bit_cands_w']), device=module.weight.device, dtype=torch.int32) 
+        if isinstance(module, QuanConv2d) and hasattr(module, 'current_bit_cands_w') and name + '.' + 'current_bit_cands_w' in checkpoint[state_dict_key]:
+            module.current_bit_cands_w = torch.ones(len(checkpoint[state_dict_key][name + '.' + 'current_bit_cands_w']), device=module.weight.device, dtype=torch.int32) 
         
-        if isinstance(module, QuanConv2d) and hasattr(module, 'current_bit_cands_a') and name + '.' + 'current_bit_cands_a' in checkpoint['state_dict']:
-            module.current_bit_cands_a = torch.ones(len(checkpoint['state_dict'][name + '.' + 'current_bit_cands_a']), device=module.weight.device, dtype=torch.int32) 
+        if isinstance(module, QuanConv2d) and hasattr(module, 'current_bit_cands_a') and name + '.' + 'current_bit_cands_a' in checkpoint[state_dict_key]:
+            module.current_bit_cands_a = torch.ones(len(checkpoint[state_dict_key][name + '.' + 'current_bit_cands_a']), device=module.weight.device, dtype=torch.int32) 
             
         # if isinstance(module, QuanConv2d) 
 
@@ -248,7 +258,8 @@ def load_checkpoint(model:nn.Module, chkp_file, model_device=None, strict=True, 
     filtered_state_dict = {}
     model_state_dict = unwrapped_model.state_dict()
     
-    for key, value in checkpoint['state_dict'].items():
+    # 1. Standard key matching and shape check
+    for key, value in checkpoint[state_dict_key].items():
         if key in model_state_dict:
             if model_state_dict[key].shape == value.shape:
                 filtered_state_dict[key] = value
@@ -263,10 +274,28 @@ def load_checkpoint(model:nn.Module, chkp_file, model_device=None, strict=True, 
                 else:
                     logger.warning(f"Skipping parameter '{key}' due to shape mismatch: "
                                  f"checkpoint shape {value.shape} vs model shape {model_state_dict[key].shape}")
-        else:
-            # Key not in model, skip it
-            pass
     
+    # 2. Special mapping for SwithableBatchNorm (from standard BatchNorm2d in FP32 checkpoint)
+    from quan import SwithableBatchNorm
+    for name, module in unwrapped_model.named_modules():
+        if isinstance(module, SwithableBatchNorm):
+            # If the checkpoint has standard BN keys for this module name, map them to bn_list
+            for suffix in ['weight', 'bias', 'running_mean', 'running_var', 'num_batches_tracked']:
+                old_key = f"{name}.{suffix}"
+                if old_key in checkpoint[state_dict_key] and f"{name}.bn_list.0.0.{suffix}" not in filtered_state_dict:
+                    val = checkpoint[state_dict_key][old_key]
+                    # Map to ALL BNs in the switchable list (initialization)
+                    if hasattr(module, 'bn_list'):
+                        for i, row in enumerate(module.bn_list):
+                            for j, _ in enumerate(row):
+                                new_key = f"{name}.bn_list.{i}.{j}.{suffix}"
+                                if new_key in model_state_dict and model_state_dict[new_key].shape == val.shape:
+                                    filtered_state_dict[new_key] = val
+                    elif hasattr(module, 'bn'):
+                        new_key = f"{name}.bn.{suffix}"
+                        if new_key in model_state_dict and model_state_dict[new_key].shape == val.shape:
+                            filtered_state_dict[new_key] = val
+
     # Load filtered state dict
     missing_keys, unexpected_keys = unwrapped_model.load_state_dict(filtered_state_dict, strict=False)
     
@@ -311,7 +340,10 @@ def load_checkpoint(model:nn.Module, chkp_file, model_device=None, strict=True, 
                                 (chkp_file, len(missing_keys)))
             
 
-    model.cuda()
+    if model_device is not None:
+        model.to(model_device)
+    elif torch.cuda.is_available():
+        model.cuda()
 
     if output_corrector is not None and 'output_corrector' in checkpoint:
         try:

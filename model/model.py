@@ -1,6 +1,7 @@
 import logging
 from .mobilenetv2 import mobilenet_v2
-from .resnet_cifar import resnet18_cifar
+from .mc import mobilenet_v2 as mobilenet_v2_mc
+from .resnet_cifar import resnet18_cifar, resnet_cifar
 from .alexnet_cifar import alexnet_cifar
 import timm
 import torch
@@ -27,15 +28,26 @@ def create_model(arch, dataset='imagenet', pre_trained=True, dropout=0.2):
         elif arch == 'efficientnet_lite':
             model = timm.create_model('efficientnet_lite0', pretrained=True)
     elif dataset in ['cifar10', 'cifar100']:
-        if arch == 'resnet18':
-            # Use dedicated ResNet18 for CIFAR (properly designed for 32x32 input)
-            model = resnet18_cifar(num_classes=num_classes)
+        if arch.startswith('resnet'):
+            # Use dedicated ResNet for CIFAR from the updated factory
+            depth_str = arch.replace('resnet', '')
+            try:
+                depth = int(depth_str) if depth_str else 18
+                model = resnet_cifar(depth=depth, num_classes=num_classes, dataset=dataset)
+            except ValueError:
+                logger.error(f'Unsupported ResNet depth: {depth_str}')
+                exit(-1)
+                
             if pre_trained:
-                logger.warning('Pre-trained weights for CIFAR ResNet18 are not available, using random initialization')
+                logger.warning(f'Pre-trained weights for CIFAR {arch} are not available, using random initialization')
         elif arch == 'mobilenetv2':
             model = mobilenet_v2(pretrained=False, num_classes=num_classes, input_size=32, dropout=dropout)
             if pre_trained:
                 logger.warning('Pre-trained weights for CIFAR MobileNetV2 are not available, using random initialization')
+        elif arch == 'mobilenetv2_mc':
+            model = mobilenet_v2_mc(pretrained=False, num_classes=num_classes, input_size=32, dropout=dropout)
+            if pre_trained:
+                logger.warning('Pre-trained weights for CIFAR MobileNetV2 (MC) are not available, using random initialization')
         elif arch == 'alexnet':
             # Use dedicated AlexNet for CIFAR (properly designed for 32x32 input)
             model = alexnet_cifar(num_classes=num_classes)
