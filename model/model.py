@@ -1,7 +1,8 @@
 import logging
 from .mobilenetv2 import mobilenet_v2
 from .mobilenetv2_cifar import mobilenet_v2_cifar
-from .resnet_cifar import resnet18_cifar
+from .mobilenetv2_c10 import mobilenet_v2 as mobilenet_v2_c10
+from .resnet_cifar import resnet_cifar
 from .alexnet_cifar import alexnet_cifar
 import timm
 import torch
@@ -28,19 +29,27 @@ def create_model(arch, dataset='imagenet', pre_trained=True):
         elif arch == 'efficientnet_lite':
             model = timm.create_model('efficientnet_lite0', pretrained=True)
     elif dataset in ['cifar10', 'cifar100']:
-        if arch == 'resnet18':
-            # Use dedicated ResNet18 for CIFAR (properly designed for 32x32 input)
-            model = resnet18_cifar(num_classes=num_classes)
+        if arch.startswith('resnet'):
+            # Parse depth from arch name (e.g., resnet20 -> 20)
+            try:
+                depth = int(arch.replace('resnet', ''))
+            except ValueError:
+                depth = 18 # default
+            
+            model = resnet_cifar(depth=depth, num_classes=num_classes, dataset=dataset)
             if pre_trained:
-                logger.warning('Pre-trained weights for CIFAR ResNet18 are not available, using random initialization')
+                logger.warning(f'Pre-trained weights for {arch} ({dataset}) are not available, using random initialization')
+        
         elif arch == 'mobilenetv2':
-            model = mobilenet_v2(pretrained=False, num_classes=num_classes)
+            # Use the new mobilenetv2_c10 for CIFAR
+            model = mobilenet_v2_c10(pretrained=False, num_classes=num_classes, input_size=32)
             if pre_trained:
-                logger.warning('Pre-trained weights for CIFAR MobileNetV2 are not available, using random initialization')
+                logger.warning('Pre-trained weights for CIFAR MobileNetV2 (c10) are not available, using random initialization')
         elif arch == 'mobilenet_v2_cifar':
-            model = mobilenet_v2_cifar(n_class=num_classes)
+            # Use the new mobilenetv2_c10 for CIFAR version as well
+            model = mobilenet_v2_c10(pretrained=False, num_classes=num_classes, input_size=32)
             if pre_trained:
-                logger.warning('Pre-trained weights for CIFAR MobileNetV2 CIFAR version are not available, using random initialization')
+                logger.warning('Pre-trained weights for CIFAR MobileNetV2 (c10) are not available, using random initialization')
         elif arch == 'alexnet':
             # Use dedicated AlexNet for CIFAR (properly designed for 32x32 input)
             model = alexnet_cifar(num_classes=num_classes)

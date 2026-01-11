@@ -22,7 +22,7 @@ from util import (
 from util.utils import copy_code, create_optimizer_and_lr_scheduler
 from util.dist import logger_info, is_master, init_dist_nccl_backend
 from util.model_ema import ModelEma
-from util.fault_injector import FaultInjector
+from util.fault_injector_v2 import FaultInjectorV2 as FaultInjector
 from quan import find_modules_to_quantize, replace_module_by_names
 from util.mpq import switch_bit_width
 from process_nude import train, validate, PerformanceScoreboard
@@ -104,6 +104,14 @@ def main():
     model = replace_module_by_names(model, find_modules_to_quantize(model, configs))
     model.cuda()
 
+    # 记录模型结构到 log
+    if is_master():
+        logger_info(logger, "\n" + "="*50)
+        logger_info(logger, "FINAL QUANTIZED MODEL STRUCTURE")
+        logger_info(logger, "="*50)
+        logger_info(logger, str(model))
+        logger_info(logger, "="*50)
+
     # Create optimizer and scheduler (before DDP wrapping)
     optimizer, optimizer_q, lr_scheduler, lr_scheduler_q = create_optimizer_and_lr_scheduler(model, configs)
 
@@ -133,16 +141,29 @@ def main():
     logger_info(logger, f'[DEBUG] Dataloaders initialized: train={len(train_loader)}, val={len(val_loader)}, test={len(test_loader)}')
 
     # 3. Warm-up forward (initializes LSQ step size 's' based on random noise)
+    # 修复：执行 warm-up 前先设为 eval 模式，防止随机噪声污染 BN 层的 running_mean/var
     input_size = 32 if configs.dataloader.dataset in ["cifar10", "cifar100"] else 224
+    model.eval()
     with torch.no_grad():
         torch.manual_seed(0)
         model(torch.randn((8, 3, input_size, input_size)).cuda())
+    model.train()
     
     # 4. Initialize EMA AFTER loading and warm-up
     # ...
     # Now EMA starts with correct weights AND correctly initialized quantization parameters
     ema_resume = configs.resume.path if (configs.resume.path and os.path.exists(configs.resume.path) and not configs.resume.lean) else ''
     target_model = ModelEma(model, decay=configs.ema_decay, resume=ema_resume)
+    
+    # 【核心修复：消除 EMA 10% Acc 的滞后黑洞】
+    # 强制让 EMA 模型在 QAT 开始前与主模型参数完全同步一次
+    # 这能确保 EMA 继承了主模型加载的预训练权重、正确的 BN 统计量以及初始化好的量化步长 s
+    with torch.no_grad():
+        msd = model.state_dict()
+        for k, v in target_model.ema.state_dict().items():
+            if k in msd:
+                v.copy_(msd[k])
+    
     # Ensure EMA is also at max bit-width
     switch_bit_width(target_model.ema, quan_scheduler=configs.quan, wbit=max_bit, abits=max_bit)
 
@@ -184,6 +205,18 @@ def main():
     
     # 6. DDP wrapping (LAST STEP)
     if configs.distributed:
+        # 自定义同步 BN 逻辑，因为 SwithableBatchNorm 包含嵌套结构
+        def convert_to_sync_bn(module):
+            for name, child in module.named_children():
+                if isinstance(child, torch.nn.BatchNorm2d):
+                    # 这里的 child 可能在 SwithableBatchNorm 的 bn_list 里
+                    setattr(module, name, torch.nn.SyncBatchNorm.convert_sync_batchnorm(child))
+                else:
+                    convert_to_sync_bn(child)
+        
+        logger_info(logger, "[NUDE] Converting all BN layers to SyncBatchNorm (including nested ones in SwithableBN)...")
+        convert_to_sync_bn(model)
+        
         model = DistributedDataParallel(model, device_ids=[configs.local_rank], find_unused_parameters=True)
 
     # Build a master-only eval loader once to avoid per-epoch worker spawn overhead

@@ -1,0 +1,90 @@
+adaptive_region_weight_decay: 0
+arch: resnet56
+bfat:
+  all_bits: true
+  ber: 0.001
+  ber_base_restricted: 0.02
+  ber_msb: 0.01
+  dual_bit: false
+  enabled: true
+  freeze_bn: false
+  limit_norm: false
+  loss_type: direct_ce
+  loss_weight: 1.0
+  norm_ratio: 1.0
+  projection_base: combined
+  projection_mode: orthogonal
+  use_restricted_as_base: true
+  weight_limit_ratio: 0.5
+  weight_relative_limit: false
+cooldown_epochs: 0
+dataloader:
+  batch_size: 128
+  dataset: cifar10
+  deterministic: true
+  num_classes: 10
+  path: ./data/cifar10
+  workers: 8
+decay_epochs: 30
+decay_rate: 0.1
+ema_decay: 0.999
+enable_dynamic_bit_training: false
+epochs: 200
+eval: false
+information_distortion_mitigation: false
+kd: false
+log:
+  num_best_scores: 3
+  print_freq: 20
+lr: 0.4
+min_lr: 4.0e-05
+momentum: 0.9
+name: r56_b.0010_base.0200_msb.0100
+num_random_path: 1
+opt: sgd
+output_dir: training
+post_training_batchnorm_calibration: true
+pre_trained: false
+quan:
+  act:
+    all_positive: true
+    bit: 8
+    mode: lsq
+    per_channel: false
+    symmetric: false
+  excepts:
+    bn1:
+      act:
+        bit: null
+      weight:
+        bit: null
+    conv1:
+      act:
+        all_positive: false
+        bit: null
+      weight:
+        bit: null
+    excepts_bits_width: 8
+    fc:
+      act:
+        bit: null
+      weight:
+        bit: null
+  weight:
+    all_positive: false
+    bit: 8
+    mode: lsq
+    per_channel: false
+    symmetric: false
+resume:
+  lean: true
+  path: training/resnet56_c10_fp/resnet56_c10_fp_checkpoint.pth.tar
+scale_gradient: false
+sched: cosine
+smoothing: 0
+target_bits:
+- 8
+training_device: gpu
+warmup_epochs: 5
+warmup_lr: 4.0e-05
+weight_decay: 0.0001

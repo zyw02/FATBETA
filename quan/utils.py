@@ -51,13 +51,32 @@ def find_modules_to_quantize(model, configs):
                 if isinstance(module, torch.nn.BatchNorm2d):
                     replaced_modules[name] = SwithableBatchNorm(module, module.num_features, None)
                 else:
-                    # print(name)
+                    # 获取该层特定的配置
+                    layer_cfg = configs.quan.excepts[name]
+                    w_cfg = layer_cfg.get('weight', {})
+                    a_cfg = layer_cfg.get('act', {})
+                    
+                    # --- 智能约定逻辑 ---
+                    # 1. 权重位宽：没写则默认为 8
+                    w_bit = w_cfg.get('bit')
+                    if w_bit is None:
+                        w_bit = 8
+                    
+                    # 2. 激活位宽：没写则 Linear 默认为 8, Conv 默认为 None (32-bit)
+                    a_bit = a_cfg.get('bit')
+                    if a_bit is None:
+                        a_bit = 8 if isinstance(module, torch.nn.Linear) else None
+                    
+                    # 3. 决定是否跳过量化器
+                    skip_w = (w_bit is None)
+                    skip_a = (a_bit is None)
+
                     replaced_modules[name] = ops[type(module)](
                         module,
-                        bits_list=[8],
-                        quan_w_fn=quantizer(configs.quan.weight, scale_grad=getattr(configs, "scale_gradient", True)),
-                        quan_a_fn=quantizer(configs.quan.act, skip_quantization=False, scale_grad=getattr(configs, "scale_gradient", True)),
-                        fixed_bits=(8, 8) if isinstance(module, torch.nn.Linear) else (8, 32)
+                        bits_list=[w_bit if w_bit is not None else 32],
+                        quan_w_fn=quantizer(configs.quan.weight, this_cfg=w_cfg, skip_quantization=skip_w, scale_grad=getattr(configs, "scale_gradient", True)),
+                        quan_a_fn=quantizer(configs.quan.act, this_cfg=a_cfg, skip_quantization=skip_a, scale_grad=getattr(configs, "scale_gradient", True)),
+                        fixed_bits=(w_bit, a_bit)
                     )
             else:
                 if isinstance(module, torch.nn.BatchNorm2d):

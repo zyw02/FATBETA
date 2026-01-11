@@ -338,67 +338,81 @@ def train(
         # Ensure bits are kept at max for dynamic layers
         _force_max_bitwidth(model, configs)
 
-        # 1. Clean forward pass
-        outputs = model(inputs)
-        
-        # Capture clean feature if needed
-        clean_feature = None
-        if use_bfat and bfat_hook is not None:
-            clean_feature = bfat_hook.feature.clone().detach()
-
-        ce_loss = criterion(outputs, targets)
-        srqat_loss = _compute_srqat_scale_penalty(outputs, targets, model, configs, epoch)
-        loss = ce_loss + srqat_loss
-        
-        proj_mode = getattr(bfat_cfg, 'projection_mode', 'direction') if use_bfat else "direction"
-
-        # 2. 获取基准梯度 (Base Gradient for Projection)
+        # 1. Base Forward Pass (Clean or Restricted)
+        # 优化点：如果 use_restricted_base 为 True，直接执行受限加噪的前向传播，减少一次冗余的 Clean Forward
         use_restricted_base = getattr(bfat_cfg, 'use_restricted_as_base', False) if use_bfat else False
+        proj_mode = getattr(bfat_cfg, 'projection_mode', 'direction') if use_bfat else "direction"
         clean_grads = {}
 
-        if use_bfat and proj_mode != "none":
-            if use_restricted_base:
-                # === 模式：使用受限故障注入梯度作为基准 ===
-                # 备份原有 injector 状态
-                old_state = {
-                    'only_msb': fault_injector.only_msb,
-                    'skip_msb': fault_injector.skip_msb,
-                    'skip_msbn': getattr(fault_injector, 'skip_msbn', False),
-                    'all_bits': getattr(fault_injector, 'all_bits', False),
-                    'ber': fault_injector.ber,
-                    'seed': fault_injector.seed
-                }
+        if use_restricted_base:
+            # === 模式：使用受限故障注入作为基准 (优化性能，合并 Forward) ===
+            # 备份原有 injector 状态
+            old_state = {
+                'only_msb': fault_injector.only_msb,
+                'skip_msb': fault_injector.skip_msb,
+                'skip_msbn': getattr(fault_injector, 'skip_msbn', False),
+                'all_bits': getattr(fault_injector, 'all_bits', False),
+                'ber': fault_injector.ber,
+                'seed': fault_injector.seed,
+                'seed_list': fault_injector.seed_list
+            }
 
-                # 配置受限注入：跳过高两位 (skip_msbn)，且 BER 单独配置
-                fault_injector.only_msb = False
-                fault_injector.skip_msb = False
-                fault_injector.skip_msbn = True
-                fault_injector.all_bits = False
-                fault_injector.ber = getattr(bfat_cfg, 'ber_base_restricted', 0.01)
-                # 使用一个独特的种子偏移，避免与后续攻击梯度种子重合
-                fault_injector.seed = num_updates + batch_idx * 10 + 555 
-                
-                fault_injector.enable()
-                fault_injector.reset_forward_seed()
-                outputs_res = model(inputs)
-                loss_res = criterion(outputs_res, targets) + srqat_loss
-                loss_res.backward()
-                
-                # 捕获基准梯度
+            # 配置受限注入：跳过高两位 (skip_msbn)，且 BER 单独配置
+            fault_injector.only_msb = False
+            fault_injector.skip_msb = False
+            fault_injector.skip_msbn = True
+            fault_injector.all_bits = False
+            fault_injector.ber = getattr(bfat_cfg, 'ber_base_restricted', 0.01)
+            fault_injector.seed_list = None
+            # 使用一个独特的种子偏移，避免与后续攻击梯度种子重合
+            fault_injector.seed = num_updates + batch_idx * 10 + 555 
+            
+            fault_injector.enable()
+            fault_injector.reset_forward_seed()
+            
+            # 这里的 outputs 是受限注入的结果，它将作为后续计算的基准
+            outputs = model(inputs)
+            
+            # 捕获特征 (这是受限状态下的特征，作为后续攻击对比的 base)
+            clean_feature = None
+            if use_bfat and bfat_hook is not None:
+                clean_feature = bfat_hook.feature.clone().detach()
+
+            ce_loss = criterion(outputs, targets)
+            srqat_loss = _compute_srqat_scale_penalty(outputs, targets, model, configs, epoch)
+            loss = ce_loss + srqat_loss # 这里的 loss 就是受限注入的 Loss
+            
+            # 如果需要梯度投影，计算基准梯度 (Clean Grads 现在实际上是 Restricted Grads)
+            if proj_mode != "none":
+                loss.backward()
                 for p in model.parameters():
                     if p.requires_grad and p.grad is not None:
                         clean_grads[p] = p.grad.clone()
                 
-                # 清理并还原状态
+                # 重置梯度，准备后续的攻击梯度计算
                 optimizer.zero_grad()
                 if optimizer_q is not None:
                     optimizer_q.zero_grad()
-                
-                fault_injector.disable()
-                for k, v in old_state.items():
-                    setattr(fault_injector, k, v)
-            else:
-                # === 模式：传统 Clean 梯度作为基准 ===
+            
+            # 还原 injector 状态
+            fault_injector.disable()
+            for k, v in old_state.items():
+                setattr(fault_injector, k, v)
+        else:
+            # === 传统模式：执行标准 Clean Forward ===
+            outputs = model(inputs)
+            
+            # Capture clean feature
+            clean_feature = None
+            if use_bfat and bfat_hook is not None:
+                clean_feature = bfat_hook.feature.clone().detach()
+
+            ce_loss = criterion(outputs, targets)
+            srqat_loss = _compute_srqat_scale_penalty(outputs, targets, model, configs, epoch)
+            loss = ce_loss + srqat_loss
+            
+            if use_bfat and proj_mode != "none":
+                # 计算标准 Clean 梯度
                 loss.backward()
                 for p in model.parameters():
                     if p.requires_grad and p.grad is not None:
@@ -407,9 +421,9 @@ def train(
                 optimizer.zero_grad()
                 if optimizer_q is not None:
                     optimizer_q.zero_grad()
-        elif not use_bfat:
-            # === BFAT 禁用时：直接执行 clean backward ===
-            loss.backward()
+            elif not use_bfat:
+                # 不使用 BFAT 时，直接执行常规反传
+                loss.backward()
 
         # 3. BFAT 攻击梯度捕获与投影
         if use_bfat and fault_injector is not None:

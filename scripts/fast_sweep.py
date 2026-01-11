@@ -35,12 +35,12 @@ def evaluate_model(model, dataloader, device, limit=None):
     return 100. * correct / total if total > 0 else 0.0
 
 def main():
-    parser = argparse.ArgumentParser(description='Fast MobileNetV2 BER Sweep (In-process)')
-    parser.add_argument('--bits', type=int, default=6)
+    parser = argparse.ArgumentParser(description='Fast R20 BER Sweep (In-process)')
+    parser.add_argument('--bits', type=int, default=8)
     parser.add_argument('--seed', type=int, default=42)
-    parser.add_argument('--ckpt', type=str, default="/workspace/FATBETA/training/mobilenetv2_cifar_nude_bfat/mobilenetv2_cifar_nude_bfat_checkpoint.pth.tar")
-    parser.add_argument('--config', type=str, default="configs/training/train_mobilenetv2_cifar_qat.yaml")
-    parser.add_argument('--bers', type=str, default="1e-4,1e-3,2e-3,4e-3,8e-3,1e-2,1.2e-2,1.4e-2,1.8e-2,2e-2")
+    parser.add_argument('--ckpt', type=str, default="/workspace/FATBETA/training/resnet56_baseline/resnet56_baseline_checkpoint.pth.tar")
+    parser.add_argument('--config', type=str, default="configs/training/r20.yaml")
+    parser.add_argument('--bers', type=str, default="0.0,1e-6,1e-5,1e-4,1e-3,2e-3,4e-3,8e-3,1e-2,2e-2,3e-2,4e-2,5e-2")
     parser.add_argument('--no_ema', action='store_true')
     parser.add_argument('--limit', type=int, default=None, help='Limit number of batches for evaluation')
     args = parser.parse_args()
@@ -101,7 +101,7 @@ def main():
     C_RESET, C_BOLD, C_TITLE = "\033[0m", "\033[1m", "\033[36m"
     C_COL1, C_COL2, C_COL3 = "\033[32m", "\033[33m", "\033[35m"
     ema_status = "Standard" if args.no_ema else "EMA"
-    print(f"\n{C_BOLD}{C_TITLE}Fast MobileNetV2 W{bits}A{bits} {ema_status} BER Sweep{C_RESET}")
+    print(f"\n{C_BOLD}{C_TITLE}Fast {config.arch.upper()} W{bits}A{bits} {ema_status} BER Sweep{C_RESET}")
     if args.limit: print(f"Using partial test set: first {args.limit} batches")
     print(f"{'BER':<10} | {C_COL1}{'All Bits':<12}{C_RESET} | {C_COL2}{'Skip MSB':<12}{C_RESET} | {C_COL3}{'Only MSB':<12}{C_RESET}")
     print("-" * 55)

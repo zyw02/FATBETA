@@ -1,5 +1,5 @@
 # Experiment name - QAT for MobileNetV2 on CIFAR10 using NUDE
-name: mobilenetv2_cifar_nude_bfat_v3
+name: mobilenetv2_cifar_nude_bfat_v6
 
 # Name of output directory. Checkpoints and logs will be saved at `pwd`/output_dir
 output_dir: training
@@ -19,13 +19,15 @@ dataloader:
   num_classes: 10
   path: ./data
   batch_size: 128  # Per GPU (Total batch size will be 128 * 4 = 512)
-  workers: 4
+  workers: 12
   deterministic: true
 
 # 🌟 Crucial: Loading your pre-trained floating point model
 resume:
-  path: training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_best.pth.tar
-  lean: true  # Must be true to initialize QAT from FP weights and ignore optimizer state
+  # path: training/mobilenetv2_cifar_pretrain/mobilenetv2_cifar_pretrain_best.pth.tar
+  # lean: true  # Must be true to initialize QAT from FP weights and ignore optimizer state
+  path: training/mb_c10_pretrain/mb_c10_pretrain_checkpoint.pth.tar
+  lean: true
 
 log:
   num_best_scores: 3
@@ -78,28 +80,28 @@ quan:
 
 eval: false
 
-epochs: 150
-smoothing: 0.1
+epochs: 200
+smoothing: 0
 scale_gradient: false
 dropout: 0.2
 
 opt: sgd
-lr: 0.01  # Lower learning rate for QAT
+lr: 0.04  # Lower learning rate for QAT
 momentum: 0.9
-weight_decay: 0.00004
+weight_decay: 0.000025
 
 sched: cosine
 min_lr: 0.00001
 decay_rate: 0.1
-warmup_epochs: 5
-warmup_lr: 0.0001
+warmup_epochs: 0
+warmup_lr: 0.00001
 decay_epochs: 30
 cooldown_epochs: 0
 
 ema_decay: 0.9997
 
 bfat:
-  enabled: true
+  enabled: false
   dual_bit: false
   use_restricted_as_base: true # 一阶段加噪开关
   all_bits: true              # 二阶段全位注入：如果为 true，则对参数的所有位注入故障

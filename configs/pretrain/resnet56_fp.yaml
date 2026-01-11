@@ -1,7 +1,5 @@
-# Experiment name
-name: mb_c10_pretrain
-
-# Name of output directory. Checkpoints and logs will be saved at `pwd`/output_dir
+# Experiment name - ResNet56 floating-point training on CIFAR10
+name: resnet56_c10_fp
 output_dir: training
 training_device: gpu
 
@@ -9,9 +7,9 @@ training_device: gpu
 dataloader:
   dataset: cifar10
   num_classes: 10
-  path: ./data
+  path: ./data/cifar10
   batch_size: 128
-  workers: 12
+  workers: 8
   deterministic: true
 
 resume:
@@ -20,31 +18,30 @@ resume:
 
 log:
   num_best_scores: 3
-  print_freq: 50
+  print_freq: 20
 
 #============================ Model ============================================
 
-arch: mobilenetv2
+arch: resnet56
 pre_trained: false
 
 #============================ Training / Evaluation ============================
 
 eval: false
-
-epochs: 150
+epochs: 200
 smoothing: 0
-dropout: 0.2
 
 opt: sgd
 lr: 0.1
 momentum: 0.9
-weight_decay: 0.000025
+weight_decay: 0.0001
 
 sched: cosine
-min_lr: 0.00001
+min_lr: 0.0
+warmup_epochs: 5
+warmup_lr: 0.0001
 decay_rate: 0.1
-warmup_epochs: 0
-warmup_lr: 0.001
 decay_epochs: 30
 cooldown_epochs: 0
+
 

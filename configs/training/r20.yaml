@@ -1,0 +1,119 @@
+# Experiment name - ResNet20 W8A8 quantization training on CIFAR10
+name: resnet56_bfat_noscale
+
+# Name of output directory. Checkpoints and logs will be saved at `pwd`/output_dir
+output_dir: training
+training_device: gpu
+
+# Target bits: fixed at 8-bit
+target_bits: [8]
+num_random_path: 1
+post_training_batchnorm_calibration: true
+information_distortion_mitigation: false
+enable_dynamic_bit_training: false
+kd: false
+
+# Dataset loader
+dataloader:
+  dataset: cifar10
+  num_classes: 10
+  path: ./data/cifar10
+  batch_size: 128
+  workers: 8
+  deterministic: true
+
+resume:
+  path: training/resnet56_c10_fp/resnet56_c10_fp_checkpoint.pth.tar
+  lean: true
+
+log:
+  num_best_scores: 3
+  print_freq: 20
+
+#============================ Model ============================================
+
+arch: resnet56
+pre_trained: false
+
+#============================ Quantization =====================================
+
+quan:
+  act:
+    mode: lsq
+    bit: 8
+    per_channel: false
+    symmetric: false
+    all_positive: true
+
+  weight:
+    mode: lsq
+    bit: 8
+    per_channel: false
+    symmetric: false
+    all_positive: false
+
+  excepts:
+    excepts_bits_width: 8
+    # Specified quantized bit width for some layers
+    conv1:
+      act:
+        bit:
+        all_positive: false
+      weight:
+        bit:
+    bn1:
+      act:
+        bit:
+      weight:
+        bit:
+    fc:
+      act:
+        bit:
+      weight:
+        bit:
+
+#============================ Training / Evaluation ============================
+
+eval: false
+epochs: 200
+smoothing: 0
+scale_gradient: false
+
+opt: sgd
+lr: 0.4
+momentum: 0.9
+weight_decay: 0.0001
+adaptive_region_weight_decay: 0
+
+sched: cosine
+min_lr: 0.00004
+decay_rate: 0.1
+warmup_epochs: 5
+warmup_lr: 0.00004
+decay_epochs: 30
+cooldown_epochs: 0
+
+ema_decay: 0.999
+
+# ============================ BFAT ============================================
+bfat:
+  enabled: true
+  dual_bit: false
+  use_restricted_as_base: true # 一阶段加噪开关
+  all_bits: true              # 二阶段全位注入
+  
+  ber: 0.002                   # 二阶段all_bits普适注入率
+  ber_base_restricted: 0.002   # 一阶段注入率
+  ber_msb: 0.002              # 二阶段MSB独立注入率
+  
+  loss_weight: 1.0
+  loss_type: "direct_ce"
+  projection_base: "combined"
+  limit_norm: false
+  weight_relative_limit: false
+  weight_limit_ratio: 0.5
+  norm_ratio: 1.0
+  
+  freeze_bn: false
+  projection_mode: "orthogonal" # orthogonal: 强行正交
+
