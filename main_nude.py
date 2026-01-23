@@ -25,7 +25,7 @@ from util.model_ema import ModelEma
 from util.fault_injector_v2 import FaultInjectorV2 as FaultInjector
 from quan import find_modules_to_quantize, replace_module_by_names
 from util.mpq import switch_bit_width
-from process_nude import train, validate, PerformanceScoreboard
+from process_nude import train, validate, PerformanceScoreboard, ThesisLogger
 
 
 def init_logger_and_monitor(configs, script_dir):
@@ -214,8 +214,11 @@ def main():
                 else:
                     convert_to_sync_bn(child)
         
-        logger_info(logger, "[NUDE] Converting all BN layers to SyncBatchNorm (including nested ones in SwithableBN)...")
-        convert_to_sync_bn(model)
+        if getattr(configs, 'sync_bn', True):
+            logger_info(logger, "[NUDE] Converting all BN layers to SyncBatchNorm (including nested ones in SwithableBN)...")
+            convert_to_sync_bn(model)
+        else:
+            logger_info(logger, "[NUDE] SyncBatchNorm DISABLED by config. Using Standard (Local) BatchNorm.")
         
         model = DistributedDataParallel(model, device_ids=[configs.local_rank], find_unused_parameters=True)
 
@@ -238,6 +241,15 @@ def main():
     switch_bit_width(target_model.ema, quan_scheduler=configs.quan, wbit=max_bit, abits=max_bit)
 
     perf = PerformanceScoreboard(configs.log.num_best_scores)
+
+    # --- Thesis Logging Setup ---
+    thesis_logger = None
+    thesis_cfg = getattr(configs, 'thesis_logging', None)
+    if thesis_cfg is not None and getattr(thesis_cfg, 'enabled', False):
+        thesis_output_dir = os.path.join(str(log_dir), getattr(thesis_cfg, 'output_dir', 'thesis_logs'))
+        thesis_log_freq = getattr(thesis_cfg, 'log_frequency', 10)
+        thesis_logger = ThesisLogger(output_dir=thesis_output_dir, enabled=True, log_frequency=thesis_log_freq)
+        logger_info(logger, f'📊 [NUDE] Thesis Logging ENABLED, output: {thesis_output_dir}')
 
     if configs.eval:
         eval_model = target_model.ema.module if hasattr(target_model.ema, 'module') else target_model.ema
@@ -279,6 +291,7 @@ def main():
             nr_random_sample=0,
             optimizer_q=optimizer_q,
             fault_injector=fault_injector,
+            thesis_logger=thesis_logger,
         )
 
         # Validate on EMA model (all ranks run; master updates scoreboard)

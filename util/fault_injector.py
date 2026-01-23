@@ -579,182 +579,265 @@ class FaultInjector:
                         if not should_inject:
                             return orig_fn(x, bits, is_activation=is_activation, **kwargs)
                         
-                        # 调试信息：对于格雷码层，添加调试输出
-                        is_gray_layer = layer_name_str in self.gray_code_layers
-                        if is_gray_layer:
-                            import sys
-                            print(f"[DEBUG] Processing gray code layer: {layer_name_str}, bits={bits}, shape={x.shape}", file=sys.stderr, flush=True)
+                        # BN-Folding Aware Logic
+                        # Check if this layer has a coupled BN layer and we can retrieve its parameters
+                        fused_scale_factor = None
+                        bn_params = None
                         
-                        # Call original quantization
-                        # Note: For fixed_bits layers, bits will be fixed_bits[0] (e.g., 8)
-                        # For dynamic layers, bits will be from the search config (e.g., 3, 4, 5, etc.)
-                        x_q = orig_fn(x, bits, is_activation=is_activation, **kwargs)
+                        # Only try to fuse if it's a QuanConv2d (or its quantizer) and has BN layer
+                        if hasattr(module_instance, 'get_fused_bn_params'):
+                            bn_params = module_instance.get_fused_bn_params()
+                        elif hasattr(module_instance, 'parent_layer') and hasattr(module_instance.parent_layer, 'get_fused_bn_params'):
+                            bn_params = module_instance.parent_layer.get_fused_bn_params()
                         
-                        if is_gray_layer:
-                            import sys
-                            print(f"[DEBUG] Quantization completed for {layer_name_str}, x_q shape={x_q.shape}", file=sys.stderr, flush=True)
-                        
-                        # Get scale (clip_value) from quantizer
-                        # The bits parameter here is the actual bit-width for this layer
-                        # (8 for fixed_bits layers, or the configured value for dynamic layers)
-                        try:
-                            scale = quantizer_instance.get_scale(bits, detach=True)
-                            if scale is None:
-                                return x_q
+                        if bn_params is not None:
+                            gamma, running_var, eps = bn_params
+                            # Ensure parameters are on the same device
+                            if gamma.device != x.device:
+                                gamma = gamma.to(x.device)
+                                running_var = running_var.to(x.device)
                             
+                            # Calculate fusion scale s = gamma / sqrt(var + eps)
+                            # detach() is crucial: we treat this as a constant scaling factor for fault simulation
+                            std = torch.sqrt(running_var + eps)
+                            fused_scale_factor = (gamma / std).detach()
+                            
+                            # Reshape for broadcasting: [C_out, 1, 1, 1] for Conv2d
+                            if fused_scale_factor.dim() == 1:
+                                fused_scale_factor = fused_scale_factor.view(-1, 1, 1, 1)
+                            
+
+                        
+                        # -------------------------------------------------------------------------
+                        # CASE 1: BN-Folding Enabled (Virtual Fusion)
+                        # -------------------------------------------------------------------------
+                        if fused_scale_factor is not None:
+                            # 1. Virtual Fusion: W_fused = W * s_bn
+                            # Note: x is the original weight W
+                            w_fused = x * fused_scale_factor
+                            
+                            # 2. Get original quantizer scale (s_original)
+                            # We need to know what scale the quantizer WOULD have used for W
+                            # Since we can't easily peek inside without running it, we rely on the
+                            # quantizer to support passing an explicit scale.
+                            
+                            # However, LSQ quantizer learns 's'.
+                            # If we just pass w_fused to quan_w_fn, it uses s_original, which is too small for W_fused.
+                            # We must provide s_target = s_original * s_bn.
+                            
+                            # Get s_original
+                            s_original = quantizer_instance.get_scale(bits, detach=True)
+                            
+                            # Reshape s_original for broadcasting if needed
+                            if s_original.dim() == 1:
+                                while s_original.dim() < x.dim():
+                                    s_original = s_original.unsqueeze(-1)
+                                    
+                            # Calculate s_target
+                            s_target = s_original * fused_scale_factor.abs() # Use abs() for scale to avoid negative scale issues
+                            
+
+                            
+                            # 3. Quantize Fused Weight: Q(W_fused)
+                            # We pass s_target as the explicit scale to use.
+                            # Filter out 'scale' from kwargs if present to avoid "multiple values for keyword argument" error
+                            kwargs_no_scale = {k: v for k, v in kwargs.items() if k != 'scale'}
+                            q_fused = orig_fn(w_fused, bits, is_activation=is_activation, scale=s_target, **kwargs_no_scale)
+                            
+
+
+                            # 4. Inject Faults: Q'(W_fused)
+                            # We reuse the logic below but apply it to q_fused instead of q_x
+                            # We temporarily swap x for w_fused in the injection logic
+                            # But wait, the injection logic below calls orig_fn again. 
+                            # Let's extract the injection part or restructure.
+                            
+                            # ... Let's use the common injection helper _inject_on_quantized_tensor
+                            
+                            # Common Injection Params logic (Seed selection etc)
                             # Select seed for this forward pass
-                            # Priority logic:
-                            # 1. If use_random_flip_in_training is True and we're in training mode,
-                            #    use None (completely random, no seed) for maximum randomization
-                            # 2. If not in training mode AND self.seed was explicitly set (e.g., from eval_with_fault_injection.py),
-                            #    use it directly (for evaluation trials with different seeds).
-                            #    This ensures each trial uses a different seed.
-                            # 3. Otherwise, if seed_list is provided:
-                            #    - Training: round-robin (轮询) through seed_list to ensure all seeds are used
-                            #    - Inference: use seed from seed_list in order (for reproducibility)
-                            # 4. Otherwise: use self.seed (original behavior)
-                            # 
-                            # Important: To ensure each layer gets a different mask even with the same base seed,
-                            # we combine the base seed with a hash of the layer name.
-                            # This ensures:
-                            # 1. Determinism: same layer_name + same base_seed → same mask
-                            # 2. Layer diversity: different layers get different masks even with same base_seed
-                            
-                            # For training with random flip: use None seed for complete randomization
-                            # This applies both to normal training mode and restorer training mode
                             if (is_training and self.use_random_flip_in_training) or is_restorer_training:
-                                selected_seed = None  # Completely random, no seed-based determinism
+                                selected_seed = None 
                             elif not is_training and self.seed is not None:
-                                # Check if seed was explicitly set (not just from seed_list default)
-                                # In eval_with_fault_injection.py, we pass seed=selected_seed explicitly,
-                                # and seed_list is also passed. We want to use the explicit seed.
-                                # Simple heuristic: if seed_list exists and seed equals seed_list[0] and
-                                # _current_seed_index is 0, it might be from seed_list default.
-                                # But if _current_seed_index is 0 and we're in eval, it's likely explicit.
-                                # Actually, simpler: in eval mode, if seed is set, always use it directly.
                                 base_seed = self.seed
-                                # Use deterministic hash (hashlib.md5) instead of Python's hash() which may vary between runs
                                 layer_hash = int(hashlib.md5(layer_name_str.encode()).hexdigest()[:8], 16) % (2**31)
                                 selected_seed = base_seed + layer_hash
                             elif self.seed_list is not None:
                                 if is_training:
-                                    # Training: round-robin through seed_list to ensure all seeds are used
-                                    # Each forward pass uses the next seed in the list, cycling through all seeds
-                                    # Important: All layers in the same forward should use the same base_seed
                                     if self._current_forward_seed is None:
-                                        # This is the first layer in this forward pass, select a new base_seed
                                         self._current_forward_seed = self.seed_list[self._current_seed_index % len(self.seed_list)]
-                                        # 统计seed使用频率
                                         if self._current_forward_seed in self._seed_usage_count:
                                             self._seed_usage_count[self._current_forward_seed] += 1
                                         self._current_seed_index += 1
                                     base_seed = self._current_forward_seed
                                 else:
-                                    # Inference: use seed from seed_list in order
                                     base_seed = self.seed_list[self._current_seed_index % len(self.seed_list)]
                                     self._current_seed_index += 1
-                                
-                                # Combine base_seed with layer_name hash to ensure each layer gets different mask
-                                # This ensures determinism: same layer_name + same base_seed → same mask
-                                # Use deterministic hash (hashlib.md5) instead of Python's hash() which may vary between runs
                                 layer_hash = int(hashlib.md5(layer_name_str.encode()).hexdigest()[:8], 16) % (2**31)
                                 selected_seed = base_seed + layer_hash
                             else:
-                                # If no seed_list, use self.seed but still combine with layer_name for diversity
                                 if self.seed is not None:
-                                    # Use deterministic hash (hashlib.md5) instead of Python's hash() which may vary between runs
                                     layer_hash = int(hashlib.md5(layer_name_str.encode()).hexdigest()[:8], 16) % (2**31)
                                     selected_seed = self.seed + layer_hash
                                 else:
                                     selected_seed = None
-                            
-                            # Inject faults on quantized weights
-                            # Fault injection respects the layer's bit-width:
-                            # - Fixed_bits layers (first/last): 8-bit → flip bits in [-128, 127] range
-                            # - Dynamic layers: their configured bit-width → flip bits in corresponding range
-                            # Pass layer_name for:
-                            # 1. Gray code layers (needed for gray code check)
-                            # 2. OLM layers (needed for OLM encoding check)
-                            # 3. Position-based mask (if enabled)
-                            # 4. Statistics tracking (but use None for mask generation to avoid slow hash computation)
+
+
                             is_gray_layer = (self.gray_code_layers and layer_name_str in self.gray_code_layers)
                             is_olm_layer = (self.olm_layers and layer_name_str in self.olm_layers)
-                            
-                            if is_gray_layer or is_olm_layer:
-                                # Gray code or OLM encoding needs layer_name for encoding/decoding
+                            if is_gray_layer or is_olm_layer or self.use_position_based_mask:
                                 layer_name_for_mask = layer_name_str
-                            elif self.use_position_based_mask:
-                                layer_name_for_mask = layer_name_str  # Needed for position-based mask
                             else:
-                                layer_name_for_mask = None  # Use fast random mask generation
-                            
-                            # Always pass layer_name for statistics (separate from mask generation)
+                                layer_name_for_mask = None
                             layer_name_for_stats = layer_name_str
-                            
-                            if is_gray_layer:
-                                import sys
-                                print(f"[DEBUG] Calling _inject_on_quantized_tensor for {layer_name_str}...", file=sys.stderr, flush=True)
-                            
-                            x_faulted = self._inject_on_quantized_tensor(
-                                x_q, int(bits), scale, layer_name=layer_name_for_mask, forward_seed=selected_seed, layer_name_for_stats=layer_name_for_stats
+
+                            # Inject on Fused Weight
+                            q_fused_faulted = self._inject_on_quantized_tensor(
+                                q_fused, int(bits), s_target, layer_name=layer_name_for_mask, forward_seed=selected_seed, layer_name_for_stats=layer_name_for_stats
                             )
                             
+
+
+                            # 5. Calculate Delta in Fused Domain
+                            
+                            # 5. Calculate Delta in Fused Domain
+                            delta_fused = q_fused_faulted - q_fused
+                            
+                            # 6. Back-project Delta to Original Domain
+                            # delta_unfused = delta_fused / s_bn
+                            # Note: s_bn can be negative (when gamma < 0), we preserve the sign
+                            # Avoid division by zero with simple clamp
+                            delta_unfused = delta_fused / torch.clamp(fused_scale_factor, min=-1e8, max=1e8)
+                            
+
+
+                            # 7. Get Original Quantized Weight (Without Faults)
+                            
+                            # 7. Get Original Quantized Weight (Without Faults)
+                            # This is what the forward pass NORMALLY does
+                            q_orig = orig_fn(x, bits, is_activation=is_activation, **kwargs)
+                            
+                            # 8. Add Projected Error
+                            # For training stability (gradient preservation), we add the error to the detached result
+                            # But wait, we want gradients to flow through q_orig normally.
+                            # So: result = q_orig + delta_unfused.detach()
+                            # We detach delta because the fault process itself is not differentiable (discrete flips)
+                            # And we don't want to backprop through the BN statistics used for injection simulation
+                            
+                            if not is_training:
+                                # In eval mode, just adding is fine
+                                return q_orig + delta_unfused
+                            else:
+                                # In training mode
+                                return q_orig + delta_unfused.detach()
+
+                        # -------------------------------------------------------------------------
+                        # CASE 2: Normal Injection (No BN Folding)
+                        # -------------------------------------------------------------------------
+                        else:
+                            # Original logic for non-fused layers (like Linear, or Conv without BN)
+                            
+                            # 调试信息：对于格雷码层，添加调试输出
+                            is_gray_layer = layer_name_str in self.gray_code_layers
                             if is_gray_layer:
                                 import sys
-                                print(f"[DEBUG] Fault injection completed for {layer_name_str}, preparing return...", file=sys.stderr, flush=True)
+                                print(f"[DEBUG] Processing gray code layer: {layer_name_str}, bits={bits}, shape={x.shape}", file=sys.stderr, flush=True)
                             
-                            # Optional debug: print flip ratio once per layer (跳过，避免阻塞)
-                            # if self._trace_once and layer_name_str not in self._traced_layers:
-                            #     try:
-                            #         # Estimate flip ratio by regenerating mask with same parameters
-                            #         N = (x_q.view(-1)).numel()
-                            #         k_bits = int(bits)
-                            #         mask = self._generate_flip_mask(N, k_bits, device=(x_q.device if self.device is None else self.device), layer_name=layer_name_arg, mask_seed=selected_seed)
-                            #         flip_ratio = float(mask.float().mean().item())
-                            #         print(f"[FaultInjector TRACE] layer={layer_name_str}, bits={k_bits}, ber={self.ber:.2e}, flip_ratio={flip_ratio:.4f}")
-                            #     except Exception:
-                            #         pass
-                            #     self._traced_layers.add(layer_name_str)
+                            # Call original quantization
+                            x_q = orig_fn(x, bits, is_activation=is_activation, **kwargs)
                             
-                            # Preserve gradients: forward uses faulted value, backward uses original
                             if is_gray_layer:
                                 import sys
-                                print(f"[DEBUG] Computing gradient-preserving return for {layer_name_str}...", file=sys.stderr, flush=True)
-                                print(f"[DEBUG] x_faulted: shape={x_faulted.shape}, device={x_faulted.device}, dtype={x_faulted.dtype}, requires_grad={x_faulted.requires_grad}", file=sys.stderr, flush=True)
-                                print(f"[DEBUG] x_q: shape={x_q.shape}, device={x_q.device}, dtype={x_q.dtype}, requires_grad={x_q.requires_grad}", file=sys.stderr, flush=True)
+                                print(f"[DEBUG] Quantization completed for {layer_name_str}, x_q shape={x_q.shape}", file=sys.stderr, flush=True)
                             
-                            # 简化梯度保留计算，避免可能的阻塞
-                            # 确保所有张量在同一个设备上
-                            if x_faulted.device != x_q.device:
+                            try:
+                                scale = quantizer_instance.get_scale(bits, detach=True)
+                                if scale is None:
+                                    return x_q
+                                
+                                # Select seed for this forward pass (Same logic as above, copied for standalone path)
+                                if (is_training and self.use_random_flip_in_training) or is_restorer_training:
+                                    selected_seed = None 
+                                elif not is_training and self.seed is not None:
+                                    base_seed = self.seed
+                                    layer_hash = int(hashlib.md5(layer_name_str.encode()).hexdigest()[:8], 16) % (2**31)
+                                    selected_seed = base_seed + layer_hash
+                                elif self.seed_list is not None:
+                                    if is_training:
+                                        if self._current_forward_seed is None:
+                                            self._current_forward_seed = self.seed_list[self._current_seed_index % len(self.seed_list)]
+                                            if self._current_forward_seed in self._seed_usage_count:
+                                                self._seed_usage_count[self._current_forward_seed] += 1
+                                            self._current_seed_index += 1
+                                        base_seed = self._current_forward_seed
+                                    else:
+                                        base_seed = self.seed_list[self._current_seed_index % len(self.seed_list)]
+                                        self._current_seed_index += 1
+                                    layer_hash = int(hashlib.md5(layer_name_str.encode()).hexdigest()[:8], 16) % (2**31)
+                                    selected_seed = base_seed + layer_hash
+                                else:
+                                    if self.seed is not None:
+                                        layer_hash = int(hashlib.md5(layer_name_str.encode()).hexdigest()[:8], 16) % (2**31)
+                                        selected_seed = self.seed + layer_hash
+                                    else:
+                                        selected_seed = None
+                                
+                                is_gray_layer = (self.gray_code_layers and layer_name_str in self.gray_code_layers)
+                                is_olm_layer = (self.olm_layers and layer_name_str in self.olm_layers)
+                                
+                                if is_gray_layer or is_olm_layer:
+                                    layer_name_for_mask = layer_name_str
+                                elif self.use_position_based_mask:
+                                    layer_name_for_mask = layer_name_str  
+                                else:
+                                    layer_name_for_mask = None 
+                                
+                                layer_name_for_stats = layer_name_str
+                                
                                 if is_gray_layer:
                                     import sys
-                                    print(f"[DEBUG] Device mismatch! Moving x_faulted from {x_faulted.device} to {x_q.device}", file=sys.stderr, flush=True)
-                                x_faulted = x_faulted.to(x_q.device)
-                            
-                            # 在 eval 模式下，直接返回故障值，不需要梯度保留
-                            # 这样可以避免不必要的计算图构建，提升性能
-                            if not is_training:
-                                result = x_faulted
-                            else:
-                                # 训练模式下，保留梯度：forward 使用故障值，backward 使用原始值
-                                x_faulted_detached = x_faulted.detach()
-                                x_q_detached = x_q.detach()
-                                diff = x_q - x_q_detached
-                                result = x_faulted_detached + diff
-                            
-                            if is_gray_layer:
-                                import sys
-                                print(f"[DEBUG] Return value computed: shape={result.shape}, device={result.device}, dtype={result.dtype}, requires_grad={result.requires_grad}", file=sys.stderr, flush=True)
-                                print(f"[DEBUG] Returning from wrapped_quan_forward for {layer_name_str}...", file=sys.stderr, flush=True)
-                            
-                            return result
-                        except Exception as e:
-                            # On any failure, gracefully fall back
-                            # 添加调试信息（仅在启用统计时打印，避免性能影响）
-                            if self.enable_statistics and layer_name_str in self.gray_code_layers:
-                                import sys
-                                print(f"[FaultInjector ERROR] Layer {layer_name_str} failed: {e}", file=sys.stderr, flush=True)
-                            return x_q
+                                    print(f"[DEBUG] Calling _inject_on_quantized_tensor for {layer_name_str}...", file=sys.stderr, flush=True)
+                                
+                                x_faulted = self._inject_on_quantized_tensor(
+                                    x_q, int(bits), scale, layer_name=layer_name_for_mask, forward_seed=selected_seed, layer_name_for_stats=layer_name_for_stats
+                                )
+                                
+                                if is_gray_layer:
+                                    import sys
+                                    print(f"[DEBUG] Fault injection completed for {layer_name_str}, preparing return...", file=sys.stderr, flush=True)
+                                
+                                # Preserve gradients: forward uses faulted value, backward uses original
+                                if is_gray_layer:
+                                    import sys
+                                    print(f"[DEBUG] Computing gradient-preserving return for {layer_name_str}...", file=sys.stderr, flush=True)
+                                    print(f"[DEBUG] x_faulted: shape={x_faulted.shape}, device={x_faulted.device}, dtype={x_faulted.dtype}, requires_grad={x_faulted.requires_grad}", file=sys.stderr, flush=True)
+                                    print(f"[DEBUG] x_q: shape={x_q.shape}, device={x_q.device}, dtype={x_q.dtype}, requires_grad={x_q.requires_grad}", file=sys.stderr, flush=True)
+                                
+                                if x_faulted.device != x_q.device:
+                                    if is_gray_layer:
+                                        import sys
+                                        print(f"[DEBUG] Device mismatch! Moving x_faulted from {x_faulted.device} to {x_q.device}", file=sys.stderr, flush=True)
+                                    x_faulted = x_faulted.to(x_q.device)
+                                
+                                if not is_training:
+                                    result = x_faulted
+                                else:
+                                    x_faulted_detached = x_faulted.detach()
+                                    x_q_detached = x_q.detach()
+                                    diff = x_q - x_q_detached
+                                    result = x_faulted_detached + diff
+                                
+                                if is_gray_layer:
+                                    import sys
+                                    print(f"[DEBUG] Return value computed: shape={result.shape}, device={result.device}, dtype={result.dtype}, requires_grad={result.requires_grad}", file=sys.stderr, flush=True)
+                                    print(f"[DEBUG] Returning from wrapped_quan_forward for {layer_name_str}...", file=sys.stderr, flush=True)
+                                
+                                return result
+                            except Exception as e:
+                                if self.enable_statistics and layer_name_str in self.gray_code_layers:
+                                    import sys
+                                    print(f"[FaultInjector ERROR] Layer {layer_name_str} failed: {e}", file=sys.stderr, flush=True)
+                                return x_q
                     
                     return wrapped_quan_forward
                 
@@ -947,14 +1030,13 @@ class FaultInjector:
         
         # Step 2: 如果使用格雷码或OLM，将整数码转换为编码空间
         if use_gray_code:
-            import sys
-            print(f"[DEBUG _inject] Step 2: Converting to gray code, code shape={code.shape}, device={code.device}, target device={device}", file=sys.stderr, flush=True)
+
             # 确保在正确的设备上操作
             if code.device != device:
                 code = code.to(device)
             # 向量化：G = B ^ (B >> 1)
             code = code ^ (code >> 1)
-            print(f"[DEBUG _inject] Step 2 completed: gray code shape={code.shape}, device={code.device}", file=sys.stderr, flush=True)
+
         elif use_olm:
             # OLM编码：将量化值映射到编码空间
             # 需要先将code_shifted（0到n_levels）转换回原始量化值范围（thd_neg到thd_pos）
@@ -981,6 +1063,8 @@ class FaultInjector:
         mask_seed = forward_seed if forward_seed is not None else self.seed
         flip_mask = self._generate_flip_mask(N, k, device, layer_name=layer_name, mask_seed=mask_seed)
         
+
+
         # 统计实际翻转的bit数（延迟统计，避免GPU-CPU同步阻塞）
         # 默认关闭统计功能以提升性能，需要时可以通过enable_statistics=True启用
         if self.enable_statistics:
@@ -1017,8 +1101,7 @@ class FaultInjector:
         
         # Step 4: 如果使用格雷码或OLM，将编码转换回二进制整数码
         if use_gray_code:
-            import sys
-            print(f"[DEBUG _inject] Step 4: Converting gray to binary, k={k}, flat_faulted shape={flat_faulted.shape}, device={flat_faulted.device}, target device={device}", file=sys.stderr, flush=True)
+
             # 确保在正确的设备上操作
             if flat_faulted.device != device:
                 flat_faulted = flat_faulted.to(device)
@@ -1046,7 +1129,7 @@ class FaultInjector:
                 for i in range(8, min(k, 16)):
                     binary = binary ^ (gray_orig >> i)
             flat_faulted = binary
-            print(f"[DEBUG _inject] Step 4 completed: binary shape={flat_faulted.shape}, device={flat_faulted.device}", file=sys.stderr, flush=True)
+
         elif use_olm:
             # OLM解码：将编码映射回量化值
             code_to_value = self.olm_code_to_value[layer_name]

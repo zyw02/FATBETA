@@ -2,9 +2,9 @@ adaptive_region_weight_decay: 0
 arch: resnet56
 bfat:
   all_bits: true
-  ber: 0.001
-  ber_base_restricted: 0.01
-  ber_msb: 0.01
+  ber: 0.005
+  ber_base_restricted: 0.005
+  ber_msb: 0.02
   dual_bit: false
   enabled: true
   freeze_bn: false
@@ -24,22 +24,22 @@ dataloader:
   deterministic: true
   num_classes: 10
   path: ./data/cifar10
-  workers: 8
+  workers: 16
 decay_epochs: 30
 decay_rate: 0.1
-ema_decay: 0.999
+ema_decay: 0.9997
 enable_dynamic_bit_training: false
-epochs: 200
+epochs: 150
 eval: false
 information_distortion_mitigation: false
 kd: false
 log:
   num_best_scores: 3
   print_freq: 20
-lr: 0.4
-min_lr: 4.0e-05
+lr: 0.08
+min_lr: 1.0e-05
 momentum: 0.9
-name: r56_b.0010_base.0100_msb.0100
+name: r56_b.0050_base.0050_msb.0200
 num_random_path: 1
 opt: sgd
 output_dir: training
@@ -86,5 +86,5 @@ target_bits:
 - 8
 training_device: gpu
 warmup_epochs: 5
-warmup_lr: 4.0e-05
-weight_decay: 0.0001
+warmup_lr: 1.0e-05
+weight_decay: 2.5e-05

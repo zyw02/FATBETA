@@ -42,14 +42,22 @@ def create_optimizer_and_lr_scheduler(model, configs):
             lr = getattr(configs, 'q_lr', 1e-5)
         )
 
-        optimizer = torch.optim.SGD(
-            [
-                {'params' : weight_parameters, 'weight_decay': configs.weight_decay, 'lr': configs.lr},
-                {'params' : other_parameters, 'lr': configs.lr},
-            ],
-            nesterov=True,
-            momentum=configs.momentum
-        )
+        if getattr(configs, 'opt', 'sgd') == 'adamw':
+            optimizer = torch.optim.AdamW(
+                [
+                    {'params' : weight_parameters, 'weight_decay': configs.weight_decay, 'lr': configs.lr},
+                    {'params' : other_parameters, 'lr': configs.lr, 'weight_decay': 0.0},
+                ],
+            )
+        else:
+            optimizer = torch.optim.SGD(
+                [
+                    {'params' : weight_parameters, 'weight_decay': configs.weight_decay, 'lr': configs.lr},
+                    {'params' : other_parameters, 'lr': configs.lr},
+                ],
+                nesterov=True,
+                momentum=configs.momentum
+            )
 
         # lr_scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=configs.epochs, eta_min=0)
         lr_scheduler, _ = create_scheduler(configs, optimizer)

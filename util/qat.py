@@ -69,6 +69,57 @@ def set_forward_hook_for_conv_linear_layers(model, activations_container: list):
     
     return hooks
 
+def link_conv_bn(model):
+    """
+    Find Conv-BN pairs and link them for BN-Folding Aware Fault Injection.
+    Sets 'bn_layer' attribute on QuanConv2d layers.
+    """
+    print("Linking Conv-BN pairs for BN-Folding Aware Fault Injection...")
+    linked_count = 0
+    
+    # We can reuse the logic from set_bit_width which uses model_profiling to find pairs
+    try:
+        # model_profiling returns (bitops, model_size, quantized_layers, bns)
+        # Note: model_profiling needs to be called with return_layers=True
+        # created just for this purpose to ensure exact matching logic
+        from .utils import model_profiling
+        _, _, layers, bns = model_profiling(model, return_layers=True)
+        
+        for layer, bn in zip(layers, bns):
+            # layer is QuanConv2d or QuanLinear
+            # bn is SwitchableBatchNorm or None
+            
+            if isinstance(layer, QuanConv2d) and bn is not None:
+                layer.bn_layer = bn
+                # Attach parent layer reference to quantizer so FaultInjector wrapper can access it
+                if hasattr(layer, 'quan_w_fn'):
+                    layer.quan_w_fn.parent_layer = layer
+                linked_count += 1
+                
+    except Exception as e:
+        print(f"Warning: Failed to use model_profiling for linking: {e}")
+        # Fallback: Simple sequential scan
+        params_set = 0
+        last_conv = None
+        for name, module in model.named_modules():
+            if isinstance(module, QuanConv2d):
+                last_conv = module
+            elif isinstance(module, SwithableBatchNorm) and last_conv is not None:
+                # Assume this BN belongs to the last Conv
+                # This is a heuristic and might be fragile for complex paths
+                # But typically Conv is immediately followed by BN
+                if last_conv.bn_layer is None:
+                    last_conv.bn_layer = module
+                    # Attach parent layer reference to quantizer so FaultInjector wrapper can access it
+                    if hasattr(last_conv, 'quan_w_fn'):
+                        last_conv.quan_w_fn.parent_layer = last_conv
+                    linked_count += 1
+                last_conv = None # Reset
+            elif isinstance(module, (torch.nn.Linear, QuanLinear)):
+                 last_conv = None # Optimization: BN usually doesn't cross other layers
+        
+    print(f"Linked {linked_count} Conv-BN pairs.")
+
 def profile_layerwise_quantization_metric(model: nn.Module, proportion=0.25):
     num_shifed_ls = []
 

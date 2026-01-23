@@ -3,8 +3,8 @@ arch: resnet56
 bfat:
   all_bits: true
   ber: 0.005
-  ber_base_restricted: 0.005
-  ber_msb: 0.01
+  ber_base_restricted: 0.02
+  ber_msb: 0.005
   dual_bit: false
   enabled: true
   freeze_bn: false
@@ -39,7 +39,7 @@ log:
 lr: 0.08
 min_lr: 1.0e-05
 momentum: 0.9
-name: r56_b.0050_base.0050_msb.0100
+name: r56_b.0050_base.0200_msb.0050
 num_random_path: 1
 opt: sgd
 output_dir: training

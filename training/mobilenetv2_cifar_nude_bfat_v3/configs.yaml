@@ -23,7 +23,7 @@ dataloader:
   deterministic: true
   num_classes: 10
   path: ./data
-  workers: 4
+  workers: 8
 decay_epochs: 30
 decay_rate: 0.1
 device: cuda:0

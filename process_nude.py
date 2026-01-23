@@ -1,5 +1,8 @@
 import logging
 import time
+import os
+import json
+from collections import defaultdict
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -14,6 +17,179 @@ from util.mpq import switch_bit_width
 __all__ = ["train", "validate", "PerformanceScoreboard"]
 
 logger = logging.getLogger()
+
+
+# ================= 论文实验数据日志记录器 (Thesis Logging) =================
+class ThesisLogger:
+    """
+    论文实验数据日志记录器。
+    收集以下表格所需的数据：
+    - 表4.1: 梯度幅值统计 (||g_clean||, ||g_rob||, 比值)
+    - 表4.2: 分层几何相容性统计 (cos φ between g_clean and g_rob)
+    """
+    
+    # 层分组映射 (根据 ResNet 结构)
+    LAYER_GROUPS = {
+        'conv1': ['conv1', 'layer1.0.conv1'],  # 浅层卷积
+        'layer3': ['layer3'],  # 深层卷积
+        'fc': ['fc', 'linear'],  # 全连接层
+    }
+    
+    def __init__(self, output_dir: str, enabled: bool = False, log_frequency: int = 10):
+        self.enabled = enabled
+        self.log_frequency = log_frequency
+        self.log_file = None
+        
+        if enabled:
+            os.makedirs(output_dir, exist_ok=True)
+            log_path = os.path.join(output_dir, 'thesis_metrics.jsonl')
+            self.log_file = open(log_path, 'a')
+            logger_info(logger, f"📊 [ThesisLogger] 已启用，日志文件: {log_path}")
+        
+        # 每个 epoch 的累积统计
+        self.reset_epoch_stats()
+    
+    def reset_epoch_stats(self):
+        """重置 epoch 级别的累积统计"""
+        self.epoch_gradient_norms = []  # [(g_clean_norm, g_rob_norm, ratio), ...]
+        self.epoch_layer_cosines = defaultdict(list)  # {layer_group: [cos_phi, ...]}
+    
+    def _classify_layer(self, param_name: str) -> str:
+        """根据参数名称分类到对应的层组"""
+        for group_name, patterns in self.LAYER_GROUPS.items():
+            for pattern in patterns:
+                if pattern in param_name:
+                    return group_name
+        return 'other'
+    
+    def log_gradient_stats(self, epoch: int, batch_idx: int, clean_grads: dict, bfat_grads: dict, model: nn.Module):
+        """
+        记录梯度统计数据 (表4.1 和 表4.2)
+        """
+        if not self.enabled or batch_idx % self.log_frequency != 0:
+            return
+        
+        # --- 表4.1: 全局梯度范数统计 ---
+        g_clean_norm_sq = sum(torch.sum(g.to(torch.float64) ** 2) for g in clean_grads.values())
+        g_rob_norm_sq = sum(torch.sum(g.to(torch.float64) ** 2) for g in bfat_grads.values())
+        g_clean_norm = torch.sqrt(g_clean_norm_sq + 1e-12).item()
+        g_rob_norm = torch.sqrt(g_rob_norm_sq + 1e-12).item()
+        ratio = g_rob_norm / (g_clean_norm + 1e-12)
+        
+        self.epoch_gradient_norms.append((g_clean_norm, g_rob_norm, ratio))
+        
+        # --- 表4.2: 分层余弦相似度统计 ---
+        # 建立参数到名称的映射
+        param_to_name = {p: n for n, p in model.named_parameters()}
+        
+        layer_group_grads = defaultdict(lambda: {'clean': [], 'bfat': []})
+        
+        for p, g_c in clean_grads.items():
+            if p in bfat_grads:
+                g_b = bfat_grads[p]
+                param_name = param_to_name.get(p, 'unknown')
+                layer_group = self._classify_layer(param_name)
+                
+                # 计算该参数的余弦相似度
+                g_c_flat = g_c.flatten().to(torch.float64)
+                g_b_flat = g_b.flatten().to(torch.float64)
+                dot = torch.dot(g_c_flat, g_b_flat)
+                norm_c = torch.norm(g_c_flat)
+                norm_b = torch.norm(g_b_flat)
+                cos_phi = (dot / (norm_c * norm_b + 1e-12)).item()
+                
+                self.epoch_layer_cosines[layer_group].append(cos_phi)
+        
+        # 写入日志
+        if self.log_file:
+            record = {
+                'type': 'batch_stats',
+                'epoch': epoch,
+                'batch': batch_idx,
+                'g_clean_norm': g_clean_norm,
+                'g_rob_norm': g_rob_norm,
+                'ratio': ratio,
+            }
+            self.log_file.write(json.dumps(record) + '\n')
+    
+    def flush_epoch_summary(self, epoch: int):
+        """每个 epoch 结束时输出汇总统计"""
+        if not self.enabled:
+            return
+        
+        import numpy as np
+        
+        # --- 表4.1 汇总 ---
+        if self.epoch_gradient_norms:
+            norms = np.array(self.epoch_gradient_norms)
+            table4_1 = {
+                'g_clean_mean': float(np.mean(norms[:, 0])),
+                'g_clean_std': float(np.std(norms[:, 0])),
+                'g_rob_mean': float(np.mean(norms[:, 1])),
+                'g_rob_std': float(np.std(norms[:, 1])),
+                'ratio_mean': float(np.mean(norms[:, 2])),
+                'ratio_min': float(np.min(norms[:, 2])),
+                'ratio_max': float(np.max(norms[:, 2])),
+            }
+        else:
+            table4_1 = {}
+        
+        # --- 表4.2 汇总 ---
+        table4_2 = {}
+        all_cosines = []
+        for layer_group, cosines in self.epoch_layer_cosines.items():
+            if cosines:
+                arr = np.array(cosines)
+                all_cosines.extend(cosines)
+                table4_2[layer_group] = {
+                    'mean': float(np.mean(arr)),
+                    'std': float(np.std(arr)),
+                    'min': float(np.min(arr)),
+                    'conflict_rate': float(np.mean(arr < 0)),  # cos φ < 0 的比例
+                }
+        
+        # 全网络平均
+        if all_cosines:
+            arr_all = np.array(all_cosines)
+            table4_2['network_avg'] = {
+                'mean': float(np.mean(arr_all)),
+                'std': float(np.std(arr_all)),
+                'min': float(np.min(arr_all)),
+                'conflict_rate': float(np.mean(arr_all < 0)),
+            }
+        
+        # 写入汇总日志
+        if self.log_file:
+            summary = {
+                'type': 'epoch_summary',
+                'epoch': epoch,
+                'table4_1': table4_1,
+                'table4_2': table4_2,
+            }
+            self.log_file.write(json.dumps(summary) + '\n')
+            self.log_file.flush()
+        
+        # 打印关键信息
+        if table4_1:
+            logger_info(logger, f"📊 [ThesisLogger] Epoch {epoch} | "
+                       f"||g_clean||={table4_1['g_clean_mean']:.4f} | "
+                       f"||g_rob||={table4_1['g_rob_mean']:.4f} | "
+                       f"ratio={table4_1['ratio_mean']:.2f}")
+        if 'network_avg' in table4_2:
+            avg = table4_2['network_avg']
+            logger_info(logger, f"📊 [ThesisLogger] Epoch {epoch} | "
+                       f"cos(φ) mean={avg['mean']:.4f} | "
+                       f"min={avg['min']:.4f} | "
+                       f"conflict={avg['conflict_rate']*100:.1f}%")
+        
+        # 重置累积统计
+        self.reset_epoch_stats()
+    
+    def close(self):
+        """关闭日志文件"""
+        if self.log_file:
+            self.log_file.close()
+            self.log_file = None
 
 
 # ---------------- SR-QAT: Penalty-based Scale-Constrained QAT ----------------
@@ -277,6 +453,7 @@ def train(
     output_corrector=None,
     corrector_optimizer=None,
     device=None,
+    thesis_logger=None,
 ):
     """
     NUDE training (with optional SR-QAT):
@@ -411,7 +588,11 @@ def train(
             srqat_loss = _compute_srqat_scale_penalty(outputs, targets, model, configs, epoch)
             loss = ce_loss + srqat_loss
             
-            if use_bfat and proj_mode != "none":
+            # 强制分离 Backward 的条件：开启了 BFAT 且 (非 none 模式 或 开启了论文日志)
+            # 这样才能拿到独立的 g_clean 和 g_rob 用于记录
+            force_split_backward = use_bfat and (proj_mode != "none" or thesis_logger is not None)
+
+            if force_split_backward:
                 # 计算标准 Clean 梯度
                 loss.backward()
                 for p in model.parameters():
@@ -577,16 +758,16 @@ def train(
                     sim = F.cosine_similarity(f_c, f_f, dim=1).mean()
                     loss_bfat = (1 - sim) * getattr(bfat_cfg, 'loss_weight', 1.0)
 
-                if proj_mode == "none":
-                    # [叠加模式] 直接将两个 loss 相加后进行一次反向传播
+                if proj_mode == "none" and thesis_logger is None:
+                    # [叠加模式-原始逻辑] 仅在不需要记录论文数据时，为了性能才合并反传
                     (loss + loss_bfat).backward()
                 else:
-                    # [投影模式] 独立反传 BFAT loss 以便捕获其梯度
+                    # [投影模式 OR 论文日志模式] 独立反传 BFAT loss 以便捕获其梯度
                     loss_bfat.backward()
 
-                # Capture BFAT Gradients (仅在非叠加模式下需要)
+                # Capture BFAT Gradients (仅在非叠加模式下需要，或者为了论文记录强行需要)
                 bfat_grads = {}
-                if proj_mode != "none":
+                if proj_mode != "none" or thesis_logger is not None:
                     for p in model.parameters():
                         if p.requires_grad and p.grad is not None:
                             bfat_grads[p] = p.grad.clone()
@@ -609,6 +790,10 @@ def train(
                     if isinstance(m, (nn.BatchNorm2d, nn.BatchNorm1d, SwithableBatchNorm)):
                         m.train()
 
+            # --- Thesis Logging: 记录梯度统计 (表4.1, 表4.2) ---
+            if thesis_logger is not None and clean_grads and bfat_grads:
+                thesis_logger.log_gradient_stats(epoch, batch_idx, clean_grads, bfat_grads, model)
+
             # 4. Projection and Merge
             # 如果是叠加模式，梯度已经在 p.grad 中了，不需要再处理
             if proj_mode != "none":
@@ -626,18 +811,32 @@ def train(
                     weight_limit_ratio=weight_limit_ratio
                 )
 
-                for p in model.parameters():
-                    if p.requires_grad:
-                        g_c = clean_grads.get(p, None)
-                        g_b_proj = projected_bfat.get(p, None)
-                        
+            for p in model.parameters():
+                if p.requires_grad:
+                    g_c = clean_grads.get(p, None)
+                    
+                    if proj_mode != "none":
+                         # 投影模式：使用投影后的梯度
+                        g_b_target = projected_bfat.get(p, None)
+                    else:
+                        # None模式：如果有论文日志，这里需要手动叠加 g_rob (因为前面分离了backward)
+                        # 如果没有论文日志，前面是一次性backward，这里 clean_grads 为空，p.grad 已经是和了，不需要操作
+                        if thesis_logger is not None:
+                            g_b_target = bfat_grads.get(p, None)
+                        else:
+                            g_b_target = None
+
+                    # 应用梯度叠加
+                    if g_c is not None or g_b_target is not None:
+                        # 只要走了分离式 backward (force_split_backward=True)，就需要手动 set p.grad
                         g_final = None
                         if g_c is not None:
                             g_final = g_c
-                        if g_b_proj is not None:
-                            g_final = g_final + g_b_proj if g_final is not None else g_b_proj
+                        if g_b_target is not None:
+                            g_final = g_final + g_b_target if g_final is not None else g_b_target
                         
-                        p.grad = g_final
+                        if g_final is not None:
+                            p.grad = g_final
 
         nn.utils.clip_grad_value_(model.parameters(), 1.0)
 
@@ -690,6 +889,10 @@ def train(
 
     if bfat_hook is not None:
         bfat_hook.remove()
+
+    # --- Thesis Logging: 输出 epoch 汇总统计 ---
+    if thesis_logger is not None:
+        thesis_logger.flush_epoch_summary(epoch)
 
     return meters["top1"].avg, meters["top5"].avg, meters["loss"].avg
 

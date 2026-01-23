@@ -20,6 +20,7 @@ class QuanConv2d(torch.nn.Conv2d):
         self.weight = torch.nn.Parameter(m.weight.detach())
 
         self.output_size = None
+        self.bn_layer = None  # Reference to the coupled BN layer for BN folding
         self.fixed_bits = fixed_bits
 
         self.split_aw_cands = split_aw_cands
@@ -143,6 +144,45 @@ class QuanConv2d(torch.nn.Conv2d):
 
         self.output_size = out.shape[-1]**2
         return out
+
+    def get_fused_bn_params(self):
+        """
+        Get BN parameters for fusion: gamma, running_var, eps
+        Handles both SwitchableBatchNorm and standard BatchNorm2d
+        """
+        if self.bn_layer is None:
+            return None
+        
+        bn = self.bn_layer
+        
+        # Handle SwitchableBatchNorm
+        if isinstance(bn, SwithableBatchNorm):
+            if bn.bits_list is not None:
+                # Find the correct BN instance based on current bit configuration
+                if self.fixed_bits is not None:
+                    w_bits, a_bits = self.fixed_bits
+                else:
+                    # Should be set by set_sampled_bit or during forward
+                    if self.bits is None:
+                         # Fallback or error? For now return None if bits not set
+                         return None
+                    w_bits, a_bits = self.bits
+                
+                try:
+                    i = bn.bits_list.index(w_bits)
+                    j = bn.bits_list.index(a_bits)
+                    target_bn = bn.bn_list[i][j]
+                except ValueError:
+                    # If bits not in list (e.g. durante search), fallback to first or return None
+                     return None
+            else:
+                target_bn = bn.bn
+        elif isinstance(bn, torch.nn.BatchNorm2d):
+            target_bn = bn
+        else:
+             return None
+             
+        return target_bn.weight, target_bn.running_var, target_bn.eps
 
 class QuanLinear(torch.nn.Linear):
     def __init__(self, m: torch.nn.Linear, bits_list=[], quan_w_fn=None, quan_a_fn=None, fixed_bits=None, split_aw_cands=False):

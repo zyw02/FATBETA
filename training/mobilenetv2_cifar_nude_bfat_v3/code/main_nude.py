@@ -22,7 +22,7 @@ from util import (
 from util.utils import copy_code, create_optimizer_and_lr_scheduler
 from util.dist import logger_info, is_master, init_dist_nccl_backend
 from util.model_ema import ModelEma
-from util.fault_injector import FaultInjector
+from util.fault_injector_v2 import FaultInjectorV2 as FaultInjector
 from quan import find_modules_to_quantize, replace_module_by_names
 from util.mpq import switch_bit_width
 from process_nude import train, validate, PerformanceScoreboard

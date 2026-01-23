@@ -3,8 +3,8 @@ arch: resnet56
 bfat:
   all_bits: true
   ber: 0.005
-  ber_base_restricted: 0.005
-  ber_msb: 0.01
+  ber_base_restricted: 0.001
+  ber_msb: 0.001
   dual_bit: false
   enabled: true
   freeze_bn: false
@@ -27,22 +27,22 @@ dataloader:
   workers: 16
 decay_epochs: 30
 decay_rate: 0.1
-ema_decay: 0.9997
+ema_decay: 0.998
 enable_dynamic_bit_training: false
-epochs: 150
+epochs: 200
 eval: false
 information_distortion_mitigation: false
 kd: false
 log:
   num_best_scores: 3
   print_freq: 20
-lr: 0.08
+lr: 0.8
 min_lr: 1.0e-05
 momentum: 0.9
-name: r56_b.0050_base.0050_msb.0100
+name: rescue_clean_king_lr0.8
 num_random_path: 1
 opt: sgd
-output_dir: training
+output_dir: training_rescue
 post_training_batchnorm_calibration: true
 pre_trained: false
 quan:
@@ -82,6 +82,7 @@ resume:
 scale_gradient: false
 sched: cosine
 smoothing: 0
+sync_bn: false
 target_bits:
 - 8
 training_device: gpu

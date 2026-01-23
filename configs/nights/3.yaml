@@ -1,5 +1,5 @@
 # Experiment name - ResNet20 W8A8 quantization training on CIFAR10
-name: r56_no_res_ortho_bfat_c10
+name: r56_collapse_zone_p025_bfat_c10
 
 # Name of output directory. Checkpoints and logs will be saved at `pwd`/output_dir
 output_dir: training/texp
@@ -102,9 +102,9 @@ bfat:
   use_restricted_as_base: false # 一阶段加噪开关
   all_bits: true              # 二阶段全位注入
   
-  ber: 0.01                   # 二阶段all_bits普适注入率
+  ber: 0.025                   # 二阶段all_bits普适注入率
   ber_base_restricted: 0.005   # 一阶段注入率
-  ber_msb: 0.01              # 二阶段MSB独立注入率
+  ber_msb: 0.025              # 二阶段MSB独立注入率
   
   loss_weight: 1.0
   loss_type: "direct_ce"
@@ -115,7 +115,7 @@ bfat:
   norm_ratio: 1.0
   
   freeze_bn: false
-  projection_mode: "orthogonal" # orthogonal: 强行正交
+  projection_mode: "none" # orthogonal: 强行正交
 
 # ============================ Thesis Logging (论文实验数据采集) ==============
 thesis_logging:

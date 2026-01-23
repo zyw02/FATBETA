@@ -56,12 +56,19 @@ def create_model(arch, dataset='imagenet', pre_trained=True):
             if pre_trained:
                 logger.warning('Pre-trained weights for CIFAR AlexNet are not available, using random initialization')
         else:
-            logger.error('Model architecture `%s` for `%s` dataset is not supported' % (arch, dataset))
-            exit(-1)
+            # Fallback to generic timm model creation
+            try:
+                model = timm.create_model(arch, pretrained=pre_trained, num_classes=num_classes)
+            except Exception as e:
+                logger.error(f'Model architecture `{arch}` not found in custom list or timm: {e}')
+                exit(-1)
 
     if model is None:
-        logger.error('Model architecture `%s` for `%s` dataset is not supported' % (arch, dataset))
-        exit(-1)
+        try:
+            model = timm.create_model(arch, pretrained=pre_trained, num_classes=num_classes)
+        except Exception as e:
+            logger.error('Model architecture `%s` for `%s` dataset is not supported. Timm failed with: %s' % (arch, dataset, e))
+            exit(-1)
 
     msg = 'Created `%s` model for `%s` dataset (num_classes=%d)' % (arch, dataset, num_classes)
     msg += '\n          Use pre-trained model = %s' % pre_trained

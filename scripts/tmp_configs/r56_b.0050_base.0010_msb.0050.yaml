@@ -24,7 +24,7 @@ dataloader:
   deterministic: true
   num_classes: 10
   path: ./data/cifar10
-  workers: 8
+  workers: 16
 decay_epochs: 30
 decay_rate: 0.1
 ema_decay: 0.999
@@ -36,8 +36,8 @@ kd: false
 log:
   num_best_scores: 3
   print_freq: 20
-lr: 0.4
-min_lr: 4.0e-05
+lr: 0.6
+min_lr: 1.0e-05
 momentum: 0.9
 name: r56_b.0050_base.0010_msb.0050
 num_random_path: 1
@@ -86,5 +86,5 @@ target_bits:
 - 8
 training_device: gpu
 warmup_epochs: 5
-warmup_lr: 4.0e-05
-weight_decay: 0.0001
+warmup_lr: 1.0e-05
+weight_decay: 2.5e-05

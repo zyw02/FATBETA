@@ -14,7 +14,7 @@ from util.utils import copy_code
 from util.mpq import sample_min_cands, switch_bit_width
 from util.greedy_search import search, reset_bit_cands
 from util.model_ema import ModelEma
-from util.qat import get_quantized_layers
+from util.qat import get_quantized_layers, link_conv_bn
 from util.loss_ops import DistributionLoss
 from util.utils import create_optimizer_and_lr_scheduler
 from util.dist import logger_info, is_master, init_dist_nccl_backend, tbmonitor_add_scalars
@@ -82,6 +82,10 @@ def main():
 
     logger_info(logger, 'Inserted quantizers into the original model')
     model = replace_module_by_names(model, find_modules_to_quantize(model, configs))
+
+    # Link Conv-BN pairs for BN-Folding Aware Fault Injection
+    # This must be done after replace_module_by_names
+    link_conv_bn(model)
 
     model.eval()
 

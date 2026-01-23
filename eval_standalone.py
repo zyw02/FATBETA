@@ -47,9 +47,10 @@ def main():
     
     # 4. 加载 Checkpoint
     # 如果是测试 resnet56_fp，请手动修改此处的 checkpoint_path 或通过环境变量传入
-    checkpoint_path = '/workspace/FATBETA/training/resnet56_c10_fp/resnet56_c10_fp_checkpoint.pth.tar'
+    # checkpoint_path = '/workspace/FATBETA/training/resnet56_c10_fp/resnet56_c10_fp_checkpoint.pth.tar'
     if not is_quantized and 'resnet56' in config.arch:
-        checkpoint_path = 'training/resnet56_c10_fp/resnet56_c10_fp_checkpoint.pth.tar'
+        # Use the C100 FP best checkpoint as requested
+        checkpoint_path = '/workspace/FATBETA/training/resnet56_c100_fp/resnet56_c100_fp_checkpoint.pth.tar'
         
     print(f"==> Loading checkpoint: {checkpoint_path}")
     # load_checkpoint 内部会处理 EMA 的选择，并打印加载详情
