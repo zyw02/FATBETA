@@ -237,9 +237,9 @@ def set_global_seed(seed):
     np.random.seed(seed)
     torch.manual_seed(seed)
     if torch.cuda.is_available():
-        # 禁用 TF32 以提高数值精度和可复现性（量化研究推荐）
-        torch.backends.cuda.matmul.allow_tf32 = False
-        torch.backends.cudnn.allow_tf32 = False
+        # 开启 TF32 以加速矩阵乘法（在 Ampere 及以后架构如 RTX 30/40/50 系列上显著加速）
+        torch.backends.cuda.matmul.allow_tf32 = True
+        torch.backends.cudnn.allow_tf32 = True
         
         torch.backends.cudnn.benchmark = False
         name = torch.cuda.get_device_name(0).lower()

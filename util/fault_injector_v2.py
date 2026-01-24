@@ -96,7 +96,7 @@ class FaultInjectorV2(FaultInjector):
         return x_faulted
 
     def _generate_bitwise_parallel_mask(self, shape, k, device, layer_name, mask_seed):
-        """生成高效的整数位掩码"""
+        """生成高效的整数位掩码 - 针对 5090 优化的向量化版本"""
         p = float(self.ber or 0.0)
         
         # 如果是 position_based，回退到旧逻辑
@@ -112,30 +112,47 @@ class FaultInjectorV2(FaultInjector):
         if mask_seed is not None:
             generator.manual_seed(mask_seed)
         
+        # 针对 5090 优化：一次性生成大张量，减少 kernel 启动次数
+        # 如果是全位注入且没有特殊位需求，可以直接一次性生成
+        if not (self.bfat_dual_bit or self.bfat_bit_index is not None or self.only_msb or self.skip_msb or self.skip_msbn or self.ber_msb is not None):
+            # 通用 BER 模式优化：一次性生成 [shape, k] 的随机数
+            full_shape = list(shape) + [k]
+            rand_tensor = torch.rand(full_shape, generator=generator, device=device)
+            mask_bits = (rand_tensor < p).to(torch.int64)
+            bit_weights = (1 << torch.arange(k, device=device, dtype=torch.int64))
+            return (mask_bits * bit_weights).sum(-1)
+
         mask_integer = torch.zeros(shape, dtype=torch.int64, device=device)
         
-        # 针对不同模式生成位掩码
+        # 针对特殊模式，利用 5090 的并行能力
         if self.bfat_dual_bit:
             p_msb = self.ber_msb if self.ber_msb is not None else p
             p_s_msb = self.ber_secondary_msb if self.ber_secondary_msb is not None else p
-            mask_integer |= (torch.rand(shape, generator=generator, device=device) < p_msb).to(torch.int64) << (k - 1)
-            mask_integer |= (torch.rand(shape, generator=generator, device=device) < p_s_msb).to(torch.int64) << (k - 2)
+            # 合并随机数生成：一次性生成两个通道
+            rands = torch.rand(list(shape) + [2], generator=generator, device=device)
+            mask_integer |= (rands[..., 0] < p_msb).to(torch.int64) << (k - 1)
+            mask_integer |= (rands[..., 1] < p_s_msb).to(torch.int64) << (k - 2)
         elif self.bfat_bit_index is not None:
             idx = min(self.bfat_bit_index, k - 1)
             mask_integer |= (torch.rand(shape, generator=generator, device=device) < p).to(torch.int64) << idx
         elif self.only_msb:
             mask_integer |= (torch.rand(shape, generator=generator, device=device) < p).to(torch.int64) << (k - 1)
         else:
-            # 通用 BER 模式
-            for i in range(k):
-                if self.skip_msb and i == k - 1: continue
-                if self.skip_msbn and i >= k - 2: continue
-                
-                prob = p
-                if i == k - 1 and self.ber_msb is not None: prob = self.ber_msb
-                
-                bit_mask = (torch.rand(shape, generator=generator, device=device) < prob).to(torch.int64)
-                mask_integer |= (bit_mask << i)
+            # 带有 skip 或特定位 BER 的模式：使用向量化掩码过滤
+            full_shape = list(shape) + [k]
+            rand_tensor = torch.rand(full_shape, generator=generator, device=device)
+            
+            # 构建概率矩阵
+            probs = torch.full((k,), p, device=device)
+            if self.ber_msb is not None: probs[k-1] = self.ber_msb
+            if self.skip_msb: probs[k-1] = 0.0
+            if self.skip_msbn: 
+                probs[k-1] = 0.0
+                if k >= 2: probs[k-2] = 0.0
+            
+            mask_bits = (rand_tensor < probs).to(torch.int64)
+            bit_weights = (1 << torch.arange(k, device=device, dtype=torch.int64))
+            mask_integer = (mask_bits * bit_weights).sum(-1)
         
         return mask_integer
 
