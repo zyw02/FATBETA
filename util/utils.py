@@ -237,6 +237,10 @@ def set_global_seed(seed):
     np.random.seed(seed)
     torch.manual_seed(seed)
     if torch.cuda.is_available():
+        # 禁用 TF32 以提高数值精度和可复现性（量化研究推荐）
+        torch.backends.cuda.matmul.allow_tf32 = False
+        torch.backends.cudnn.allow_tf32 = False
+        
         torch.backends.cudnn.benchmark = False
         name = torch.cuda.get_device_name(0).lower()
         if ('2080' in name) and ('ti' in name):

@@ -2,11 +2,12 @@ import os
 import tarfile
 import shutil
 
-TRAIN_SRC_DIR = '/workspace/FATBETA/data/ILSVRC2012_img_train.tar'
-TRAIN_DEST_DIR = '/workspace/FATBETA/data/imagenet/train'
-VAL_SRC_DIR = '/workspace/FATBETA/data/ILSVRC2012_img_val.tar'
-VAL_DEST_DIR = '/workspace/FATBETA/data/imagenet/val'
-DEV_KIT_DIR = '/workspace/FATBETA/data/ILSVRC2012_devkit_t12'
+TRAIN_SRC_DIR = '/root/autodl-pub/ImageNet/ILSVRC2012/ILSVRC2012_img_train.tar'
+TRAIN_DEST_DIR = '/root/autodl-tmp/FATBETA/data/imagenet/train'
+VAL_SRC_DIR = '/root/autodl-pub/ImageNet/ILSVRC2012/ILSVRC2012_img_val.tar'
+VAL_DEST_DIR = '/root/autodl-tmp/FATBETA/data/imagenet/val'
+DEV_KIT_SRC_DIR = '/root/autodl-pub/ImageNet/ILSVRC2012/ILSVRC2012_devkit_t12.tar.gz'
+DEV_KIT_DIR = '/root/autodl-tmp/FATBETA/data/imagenet/ILSVRC2012_devkit_t12'
 
 
 def extract_train():
@@ -48,6 +49,20 @@ def extract_val():
         names = tar.getnames()
         for name in names:
             tar.extract(name, VAL_DEST_DIR)
+
+
+def extract_devkit():
+    if not os.path.exists(DEV_KIT_SRC_DIR):
+        print(f"Dev kit tar not found at {DEV_KIT_SRC_DIR}, skipping extraction.")
+        return
+
+    dest_parent = os.path.dirname(DEV_KIT_DIR)
+    if not os.path.isdir(dest_parent):
+        os.makedirs(dest_parent)
+
+    print(f"Extracting dev kit to {dest_parent}...")
+    with tarfile.open(DEV_KIT_SRC_DIR, "r:gz") as tar:
+        tar.extractall(path=dest_parent)
 
 
 def process_val():
@@ -118,6 +133,7 @@ if __name__ == '__main__':
     # I'll modify the main block to only do process_val for this specific run, or make the extraction check.
     # I added checks in the functions above.
     
-    # extract_train() 
-    # extract_val()
+    extract_train() 
+    extract_val()
+    extract_devkit()
     process_val()
