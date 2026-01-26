@@ -9,6 +9,8 @@ import logging
 import torch
 import yaml
 import os
+import time
+from datetime import timedelta, datetime
 from pathlib import Path
 from timm.loss import LabelSmoothingCrossEntropy
 from torch.nn.parallel import DistributedDataParallel
@@ -239,8 +241,10 @@ def main():
         logger_info(logger, 'Total epoch: %d, Start epoch %d', configs.epochs, start_epoch)
         
         v_top1, v_top5, v_loss = 0, 0, 0
+        training_start_time = time.time()
 
         for epoch in range(start_epoch, configs.epochs):
+            epoch_start_time = time.time()
             if configs.distributed:
                 train_sampler.set_epoch(epoch)
 
@@ -280,6 +284,22 @@ def main():
                 lr_scheduler_q=lr_scheduler_q, 
                 optimizer_q=optimizer_q
             )
+
+            # Time monitoring
+            epoch_end_time = time.time()
+            epoch_duration = epoch_end_time - epoch_start_time
+            
+            elapsed_time = epoch_end_time - training_start_time
+            epochs_done = epoch - start_epoch + 1
+            avg_epoch_time = elapsed_time / epochs_done
+            remaining_epochs = configs.epochs - (epoch + 1)
+            eta_seconds = avg_epoch_time * remaining_epochs
+            
+            etc_time = datetime.now() + timedelta(seconds=eta_seconds)
+            
+            logger_info(logger, 'Epoch %d duration: %s', epoch, str(timedelta(seconds=int(epoch_duration))))
+            logger_info(logger, 'Estimated completion time (ETC): %s', etc_time.strftime('%Y-%m-%d %H:%M:%S'))
+            logger_info(logger, 'Time remaining: %s', str(timedelta(seconds=int(eta_seconds))))
 
             # if epoch % 20 == 0:
             #     save_checkpoint(
