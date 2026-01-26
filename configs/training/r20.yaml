@@ -1,5 +1,5 @@
 # Experiment name - ResNet20 W8A8 quantization training on CIFAR10
-name: r56_8card_test_lr
+name: r56_c10_gs_test
 
 # Name of output directory. Checkpoints and logs will be saved at `pwd`/output_dir
 output_dir: training/texp
@@ -7,7 +7,7 @@ training_device: gpu
 
 # Target bits: fixed at 8-bit
 target_bits: [8,7,6,5,4,3,2]
-num_random_path: 1
+num_random_path: 3
 post_training_batchnorm_calibration: true
 information_distortion_mitigation: false
 enable_dynamic_bit_training: false
@@ -23,7 +23,7 @@ dataloader:
   deterministic: true
 
 resume:
-  path: training/resnet56_c10_fp/resnet56_c10_fp_checkpoint.pth.tar
+  path: training/resnet56_c10_fp_checkpoint.pth.tar
   lean: true
 
 log:

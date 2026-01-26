@@ -197,10 +197,18 @@ def main():
                                                 output_corrector=output_corrector, corrector_optimizer=corrector_optimizer)
         reset_bn_cands = not (getattr(configs, "eval", False) or getattr(configs, "search", False))
         
-        w_cands, a_cands = target_model._load_checkpoint(configs.resume.path, )
-        q_layers_ema, _ = get_quantized_layers(target_model.ema)
-        for idx, layer in enumerate(q_layers_ema):
-            layer.set_bit_cands(w_cands[idx], a_cands[idx])
+        w_cands, a_cands = target_model._load_checkpoint(configs.resume.path)
+        if len(w_cands) > 0 and len(a_cands) > 0:
+            q_layers_ema, _ = get_quantized_layers(target_model.ema)
+            for idx, layer in enumerate(q_layers_ema):
+                layer.set_bit_cands(w_cands[idx], a_cands[idx])
+        else:
+            logger_info(logger, "No EMA weights or bit candidates found in checkpoint, syncing EMA with main model")
+            with torch.no_grad():
+                msd = model.state_dict()
+                for k, v in target_model.ema.state_dict().items():
+                    if k in msd:
+                        v.copy_(msd[k])
 
     criterion = LabelSmoothingCrossEntropy(configs.smoothing).cuda() if configs.smoothing > 0. else \
         torch.nn.CrossEntropyLoss().cuda()

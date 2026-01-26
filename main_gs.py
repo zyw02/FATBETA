@@ -59,7 +59,7 @@ def main():
     init_dist_nccl_backend(configs)
 
     assert configs.rank >= 0, 'ERROR IN RANK'
-    assert configs.distributed
+    # assert configs.distributed
 
     logger, log_dir, pymonitor, tbmonitor = init_logger_and_monitor(configs, script_dir)
     monitors = [pymonitor, tbmonitor]
@@ -70,44 +70,22 @@ def main():
     teacher_model = None
     using_distillation = configs.kd
     if using_distillation:
-        teacher_model = create_model('resnet101')
+        teacher_model = create_model('resnet101', dataset=configs.dataloader.dataset)
         teacher_model.eval()
 
-    model = create_model(configs.arch, pre_trained=configs.pre_trained) 
+    model = create_model(configs.arch, dataset=configs.dataloader.dataset, pre_trained=configs.pre_trained) 
     model = preprocess_model(model, configs)
 
     logger_info(logger, 'Inserted quantizers into the original model')
     model = replace_module_by_names(model, find_modules_to_quantize(model, configs))
 
+    model.cuda()
     model.eval()
 
-    wrap_the_model_with_ddp = lambda x: DistributedDataParallel(
-        x.cuda(), device_ids=[configs.local_rank], find_unused_parameters=True
-    )
-    
-    model = wrap_the_model_with_ddp(model)
-    if using_distillation:
-        teacher_model = wrap_the_model_with_ddp(teacher_model)
-
-    # ------------- data --------------
-    train_loader, val_loader, test_loader, train_sampler, val_sampler = init_dataloader(
-        configs.dataloader, arch=configs.arch
-    )
-
-    enable_linear_scaling_rule = False
-    if enable_linear_scaling_rule:
-        configs.lr = configs.lr * dist.get_world_size() * configs.dataloader.batch_size / 512
-        configs.min_lr = configs.min_lr * dist.get_world_size() * configs.dataloader.batch_size / 512
-        configs.warmup_lr = configs.warmup_lr * dist.get_world_size() * configs.dataloader.batch_size / 512
-
+    # ------------- optimizer --------------
     optimizer, optimizer_q, lr_scheduler, lr_scheduler_q = create_optimizer_and_lr_scheduler(model, configs)
 
     start_epoch = 0
-
-    model(torch.randn((1, 3, 224, 224)).cuda())
-
-    target_model = ModelEma(model, decay=configs.ema_decay)
-    
     if configs.resume.path and os.path.exists(configs.resume.path):
         model, start_epoch, _ = load_checkpoint(
             model, configs.resume.path, 'cuda', 
@@ -118,11 +96,49 @@ def main():
             lr_scheduler_q=lr_scheduler_q, 
             optimizer_q=optimizer_q
         )
-        
+        # Ensure training starts from epoch 0 if it's a pre-trained FP model
+        if configs.resume.lean:
+            start_epoch = 0
+            logger_info(logger, f"Loaded pre-trained weights from {configs.resume.path}. Starting fresh experiment from Epoch 0.")
+
+    # ------------- warmup for quantizer initialization --------------
+    # Use correct input size based on dataset
+    input_size = 32 if configs.dataloader.dataset in ['cifar10', 'cifar100'] else 224
+    logger_info(logger, f'Performing quantizer initialization warmup with input size {input_size}x{input_size}...')
+    with torch.no_grad():
+        model(torch.randn((8, 3, input_size, input_size)).cuda())
+
+    # ------------- EMA --------------
+    target_model = ModelEma(model, decay=configs.ema_decay)
+    # Force EMA sync with main model after potential checkpoint loading and warmup
+    with torch.no_grad():
+        msd = model.state_dict()
+        for k, v in target_model.ema.state_dict().items():
+            if k in msd:
+                v.copy_(msd[k])
+    
+    # Load EMA bit candidates if available
+    if configs.resume.path and os.path.exists(configs.resume.path):
         w_cands, a_cands = target_model._load_checkpoint(configs.resume.path)
-        q_layers_ema, _ = get_quantized_layers(target_model.ema)
-        for idx, layer in enumerate(q_layers_ema):
-            layer.set_bit_cands(w_cands[idx], a_cands[idx])
+        if len(w_cands) > 0 and len(a_cands) > 0:
+            q_layers_ema, _ = get_quantized_layers(target_model.ema)
+            for idx, layer in enumerate(q_layers_ema):
+                layer.set_bit_cands(w_cands[idx], a_cands[idx])
+
+    # ------------- DDP --------------
+    if configs.distributed:
+        model = DistributedDataParallel(
+            model, device_ids=[configs.local_rank], find_unused_parameters=True
+        )
+        if teacher_model is not None:
+            teacher_model = DistributedDataParallel(
+                teacher_model.cuda(), device_ids=[configs.local_rank], find_unused_parameters=True
+            )
+
+    # ------------- data --------------
+    train_loader, val_loader, test_loader, train_sampler, val_sampler = init_dataloader(
+        configs.dataloader, arch=configs.arch
+    )
 
     criterion = LabelSmoothingCrossEntropy(configs.smoothing).cuda() if configs.smoothing > 0. else \
         torch.nn.CrossEntropyLoss().cuda()
@@ -265,15 +281,15 @@ def main():
                 optimizer_q=optimizer_q
             )
 
-            if epoch % 20 == 0:
-                save_checkpoint(
-                    epoch, configs.arch, model, target_model, optimizer, 
-                    {'top1': v_top1, 'top5': v_top5}, 
-                    False, f'epoch_{str(epoch)}_checkpoint.pth.tar', log_dir, 
-                    lr_scheduler=lr_scheduler, 
-                    lr_scheduler_q=lr_scheduler_q, 
-                    optimizer_q=optimizer_q
-                )
+            # if epoch % 20 == 0:
+            #     save_checkpoint(
+            #         epoch, configs.arch, model, target_model, optimizer, 
+            #         {'top1': v_top1, 'top5': v_top5}, 
+            #         False, f'epoch_{str(epoch)}_checkpoint.pth.tar', log_dir, 
+            #         lr_scheduler=lr_scheduler, 
+            #         lr_scheduler_q=lr_scheduler_q, 
+            #         optimizer_q=optimizer_q
+            #     )
 
     if configs.local_rank == 0:
         tbmonitor.writer.close()
