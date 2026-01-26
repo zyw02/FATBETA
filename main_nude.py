@@ -370,6 +370,9 @@ def main():
 
         if lr_scheduler is not None:
             lr_scheduler.step(epoch + 1)
+        
+        if lr_scheduler_q is not None:
+            lr_scheduler_q.step()
 
 
 if __name__ == "__main__":

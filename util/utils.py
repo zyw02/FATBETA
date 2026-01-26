@@ -362,3 +362,122 @@ def copy_code(logger, src=None, dst="./code/", exclude_dirs=None, exclude_files=
             logger.info(f"Code backup completed. Code saved to: {dst}")
         except Exception as e:
             logger.error(f"Error during code backup: {e}")
+
+def analyze_gradient_alignment(model, loader, criterion, target_bits, configs, logger, num_batches=4):
+    """
+    分析不同位宽下的梯度与最大位宽（主梯度方向）之间的余弦相似度。
+    um_batches 个 batch 的平均梯度以提高统计稳定性。
+    """
+    import torch.nn.functional as F
+    from util.mpq import switch_bit_width
+    from util.dist import logger_info
+    from quan.func import QuanConv2d, QuanLinear
+    
+    # 1. 筛选真正的动态量化层 (排除 excepts)
+    dynamic_layers = []
+    layer_names = []
+    quan_scheduler = configs.quan
+    
+    for name, module in model.named_modules():
+        if isinstance(module, (QuanConv2d, QuanLinear)):
+            if name not in quan_scheduler.excepts:
+                dynamic_layers.append(module)
+                layer_names.append(name)
+    
+    if len(dynamic_layers) == 0:
+        logger.warning("⚠️ [Gradient Alignment] No dynamic quantized layers found!")
+        return
+
+    model.eval()
+    device = next(model.parameters()).device
+    
+    # 预先取 num_batches 个 batch
+    batches = []
+    data_iter = iter(loader)
+    for _ in range(num_batches):
+        try:
+            batches.append(next(data_iter))
+        except StopIteration:
+            break
+    
+    if not batches:
+        logger_info(logger, "⚠ [Gradient Alignment] Loader is empty!")
+        return
+
+    bit_grads = {}
+    sorted_bits = sorted(target_bits, reverse=True)
+    max_bit = sorted_bits[0]
+    
+    logger_info(logger, f"📊 [Gradient Alignment Analysis] (Dynamic Layers Only) Max Bit: {max_bit}, Others: {sorted_bits[1:]}, Batches: {len(batches)}")
+    
+    for b in sorted_bits:
+        # 切换位宽
+        switch_bit_width(model, quan_scheduler=quan_scheduler, wbit=b, abits=b)
+        
+        # 累积梯度的容器
+        accum_layer_grads = [torch.zeros_like(layer.weight.data).view(-1) for layer in dynamic_layers]
+        
+        for inputs, targets in batches:
+            inputs, targets = inputs.to(device), targets.to(device)
+            model.zero_grad()
+            outputs = model(inputs)
+            loss = criterion(outputs, targets)
+            loss.backward()
+            
+            # 累加权重梯度
+            for i, layer in enumerate(dynamic_layers):
+                if hasattr(layer, 'weight') and layer.weight.grad is not None:
+                    accum_layer_grads[i] += layer.weight.grad.clone().detach().view(-1)
+        
+        # 记录该位宽下的平均梯度（累加即可，相似度计算对尺度不敏感）
+        bit_grads[b] = accum_layer_grads
+
+    # 2. 计算余弦相似度
+    results = {} 
+    max_grads = bit_grads[max_bit]
+    
+    for b in sorted_bits[1:]:
+        sims = []
+        curr_grads = bit_grads[b]
+        for i in range(len(max_grads)):
+            g_max = max_grads[i]
+            g_curr = curr_grads[i]
+            
+            # 计算余弦相似度
+            norm_max = torch.norm(g_max)
+            norm_curr = torch.norm(g_curr)
+            
+            if norm_max > 1e-10 and norm_curr > 1e-10:
+                dot = torch.dot(g_max, g_curr)
+                sim = (dot / (norm_max * norm_curr)).item()
+                sims.append(sim)
+            else:
+                sims.append(None)
+        results[b] = sims
+
+    # 3. 打印结果
+    logger_info(logger, "-" * 70)
+    header = f"{'Layer Name':<20} | " + " | ".join([f"Bit {b:1d}" for b in sorted_bits[1:]])
+    logger_info(logger, header)
+    logger_info(logger, "-" * 70)
+    
+    for i, name in enumerate(layer_names):
+        # 截断过长的名称
+        short_name = name[-20:] if len(name) > 20 else name
+        row = f"{short_name:<20} | "
+        row += " | ".join([f"{results[b][i]:.4f}" if results[b][i] is not None else " N/A  " for b in sorted_bits[1:]])
+        logger_info(logger, row)
+    
+    avg_sims = {}
+    for b in sorted_bits[1:]:
+        valid_sims = [s for s in results[b] if s is not None]
+        avg_sims[b] = sum(valid_sims) / len(valid_sims) if valid_sims else 0.0
+        
+    avg_row = f"{'AVERAGE':<20} | " + " | ".join([f"{avg_sims[b]:.4f}" for b in sorted_bits[1:]])
+    logger_info(logger, "-" * 70)
+    logger_info(logger, avg_row)
+    logger_info(logger, "-" * 70)
+    
+    switch_bit_width(model, quan_scheduler=quan_scheduler, wbit=max_bit, abits=max_bit)
+    model.train()
+    return results

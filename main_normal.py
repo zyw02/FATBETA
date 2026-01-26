@@ -1,3 +1,4 @@
+
 import logging
 import torch
 import yaml
@@ -66,7 +67,7 @@ def main():
     setup_print(is_master=(configs.local_rank == 0))
     
     # Backup code for experiment reproducibility (similar to SAQ)
-    if not configs.eval and not configs.search:
+    if is_master() and not configs.eval and not configs.search:
         code_dst = os.path.join(log_dir, "code")
         copy_code(logger, src=str(script_dir), dst=code_dst)
     
@@ -217,14 +218,14 @@ def main():
     print(model)
     logger_info(logger, '[DEBUG] Model structure printed')
     
-    logger_info(logger, f'[DEBUG] Switching bit width for model to {target_bit_width}...')
+    logger_info(logger, f'[DEBUG] Switching bit width for model to {max_bit_width_cand}...')
     switch_bit_width(model, quan_scheduler=configs.quan, 
-                     wbit=target_bit_width, abits=target_bit_width)
+                     wbit=max_bit_width_cand, abits=max_bit_width_cand)
     logger_info(logger, '[DEBUG] Model bit width switched')
     
-    logger_info(logger, f'[DEBUG] Switching bit width for EMA model to {target_bit_width}...')
+    logger_info(logger, f'[DEBUG] Switching bit width for EMA model to {max_bit_width_cand}...')
     switch_bit_width(target_model.ema, quan_scheduler=configs.quan, 
-                     wbit=target_bit_width, abits=target_bit_width)
+                     wbit=max_bit_width_cand, abits=max_bit_width_cand)
     logger_info(logger, '[DEBUG] EMA model bit width switched')
 
     # 初始化故障注入器（支持 FAT 和 BFAT）
