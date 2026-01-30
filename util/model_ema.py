@@ -108,20 +108,54 @@ class ModelEma:
         return bits_cands_w, bits_cands_a
 
     def update(self, model):
-        # correct a mismatch in state dict keys
-        needs_module = hasattr(model, 'module') and not self.ema_has_module
+        """
+        OPTIMIZED: EMA update using vectorized foreach operations.
+        Reduces kernel launch overhead significantly.
+        """
+        # Build cache on first call
+        if not hasattr(self, '_ema_list'):
+            self._build_update_cache(model)
+        
+        # Vectorized update using foreach operations
         with torch.no_grad():
-            msd = model.state_dict()
-            for k, ema_v in self.ema.state_dict().items():
-                if needs_module:
-                    k = 'module.' + k
-                model_v = msd[k].detach()
-                if self.device:
-                    model_v = model_v.to(device=self.device)
-                
-                if 'current_bit_cands' in k:
-                    continue
-                ema_v.copy_(ema_v * self.decay + (1. - self.decay) * model_v)
+            decay = self.decay
+            one_minus_decay = 1.0 - decay
+            
+            # self._ema_list = [decay * e for e in self._ema_list]
+            torch._foreach_mul_(self._ema_list, decay)
+            # self._ema_list = [e + (1-decay) * m for e, m in zip(self._ema_list, self._model_list)]
+            torch._foreach_add_(self._ema_list, self._model_list, alpha=one_minus_decay)
+    
+    def _build_update_cache(self, model):
+        """Build cached list of parameters for vectorized EMA updates."""
+        # Unwrap DDP if needed
+        unwrapped_model = model.module if hasattr(model, 'module') else model
+        
+        # Build mapping of parameters and buffers
+        model_params = dict(unwrapped_model.named_parameters())
+        model_buffers = dict(unwrapped_model.named_buffers())
+        
+        ema_params = dict(self.ema.named_parameters())
+        ema_buffers = dict(self.ema.named_buffers())
+        
+        self._ema_list = []
+        self._model_list = []
+        
+        # Match parameters
+        for name, ema_p in ema_params.items():
+            if name in model_params:
+                self._ema_list.append(ema_p.data)
+                self._model_list.append(model_params[name].data)
+        
+        # Match buffers (excluding bit candidates and non-float types)
+        for name, ema_b in ema_buffers.items():
+            if 'current_bit_cands' in name:
+                continue
+            if name in model_buffers:
+                # Only update float buffers (skip init_state which is Long)
+                if ema_b.is_floating_point():
+                    self._ema_list.append(ema_b.data)
+                    self._model_list.append(model_buffers[name].data)
 
 
 class ModelEmaV2(nn.Module):

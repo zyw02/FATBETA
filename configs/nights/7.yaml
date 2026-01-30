@@ -1,5 +1,5 @@
 # Experiment name - ResNet20 W8A8 quantization training on CIFAR10
-name: r20_c10_gs_path2_random
+name: r20_c10_gs_path0_random
 
 # Name of output directory. Checkpoints and logs will be saved at `pwd`/output_dir
 output_dir: training/gs
@@ -7,7 +7,7 @@ training_device: gpu
 
 # Target bits: fixed at 8-bit
 target_bits: [8,7,6,5,4,3,2]
-num_random_path: 2
+num_random_path: 0
 post_training_batchnorm_calibration: true
 information_distortion_mitigation: false
 enable_dynamic_bit_training: false

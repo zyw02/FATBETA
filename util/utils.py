@@ -294,14 +294,15 @@ def update_meter(meter, loss, QE_loss, dist_loss, IDM_loss, acc1, acc5, size, ba
         reduced_data = reduce_tensor(data, world_size)
     else:
         reduced_data = data
-    reduced_loss, reduced_top1, reduced_top5, reduced_QE_loss, reduced_dist_loss, reduced_IDM_loss = reduced_data
+    # Batch transfer to CPU to minimize synchronization
+    reduced_vals = reduced_data.cpu().tolist()
     
-    meter['dist_loss'].update(reduced_dist_loss.item(), size)
-    meter['IDM_loss'].update(reduced_IDM_loss.item(), size)
-    meter['QE_loss'].update(reduced_QE_loss.item(), size)
-    meter['loss'].update(reduced_loss.item(), size)
-    meter['top1'].update(reduced_top1.item(), size)
-    meter['top5'].update(reduced_top5.item(), size)
+    meter['loss'].update(reduced_vals[0], size)
+    meter['top1'].update(reduced_vals[1], size)
+    meter['top5'].update(reduced_vals[2], size)
+    meter['QE_loss'].update(reduced_vals[3], size)
+    meter['dist_loss'].update(reduced_vals[4], size)
+    meter['IDM_loss'].update(reduced_vals[5], size)
     meter['batch_time'].update(batch_time)
 
 

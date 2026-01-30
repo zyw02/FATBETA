@@ -1,13 +1,13 @@
 # Experiment name - ResNet20 W8A8 quantization training on CIFAR10
-name: r20_c10_gs_path2_random
+name: r20_c10_gno_full
 
 # Name of output directory. Checkpoints and logs will be saved at `pwd`/output_dir
-output_dir: training/gs
+output_dir: training/gno_full
 training_device: gpu
 
 # Target bits: fixed at 8-bit
 target_bits: [8,7,6,5,4,3,2]
-num_random_path: 2
+num_random_path: 1
 post_training_batchnorm_calibration: true
 information_distortion_mitigation: false
 enable_dynamic_bit_training: false
@@ -96,16 +96,19 @@ cooldown_epochs: 0
 
 ema_decay: 0.999
 
+# ============================ GNO ============================================
+gno_alpha: 1.0  # ENABLE GNO
+
 # ============================ BFAT ============================================
 bfat:
   enabled: false
   dual_bit: false
-  use_restricted_as_base: false # 一阶段加噪开关
-  all_bits: true              # 二阶段全位注入
+  use_restricted_as_base: false 
+  all_bits: true              
   
-  ber: 0.01                   # 二阶段all_bits普适注入率
-  ber_base_restricted: 0.005   # 一阶段注入率
-  ber_msb: 0.01              # 二阶段MSB独立注入率
+  ber: 0.01                   
+  ber_base_restricted: 0.005  
+  ber_msb: 0.01              
   
   loss_weight: 1.0
   loss_type: "direct_ce"
@@ -116,11 +119,10 @@ bfat:
   norm_ratio: 1.0
   
   freeze_bn: false
-  projection_mode: "orthogonal" # orthogonal: 强行正交
+  projection_mode: "orthogonal" 
 
-# ============================ Thesis Logging (论文实验数据采集) ==============
+# ============================ Thesis Logging =================================
 thesis_logging:
-  enabled: false              # 开启后记录论文表格所需数据
-  output_dir: "thesis_logs"   # 相对于实验日志目录 (output_dir/name/thesis_logs)
-  log_frequency: 10           # 每 N 个 batch 记录一次
-
+  enabled: false              
+  output_dir: "thesis_logs"   
+  log_frequency: 10           

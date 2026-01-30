@@ -46,15 +46,19 @@ def evaluate_model(model, dataloader, device, limit=None):
 
 def main():
     parser = argparse.ArgumentParser(description='Fast R20 BER Sweep (DDP)')
-    parser.add_argument('--bits', type=int, default=8)
+    parser.add_argument('--bits', type=int, default=6)
     parser.add_argument('--seeds', type=str, default="200,201,202,203,204", help='Comma-separated list of seeds')
     # parser.add_argument('--ckpts', type=str, nargs='+', default=["/workspace/FATBETA/training/texp/r56_w_res_ortho_bfat_c10/r56_w_res_ortho_bfat_c10_checkpoint.pth.tar",
     #                                                              "/workspace/FATBETA/training/texp/r56_baseline_bfat_c10/r56_baseline_bfat_c10_checkpoint.pth.tar",
     #                                                              "/workspace/FATBETA/training/texp/r56_w_res_direction_bfat_c10/r56_w_res_direction_bfat_c10_checkpoint.pth.tar"])
     # parser.add_argument('--ckpts', type=str, nargs='+', default=["/workspace/FATBETA/training/texp/deit_res_golden_ortho_checkpoint.pth.tar"])
-    parser.add_argument('--ckpts', type=str, nargs='+', default=["/workspace/FATBETA/training/texp/r56_bucket_c10/r56_bucket_c10_checkpoint.pth.tar"])
-    parser.add_argument('--config', type=str, default="configs/training/r20.yaml")
-    parser.add_argument('--bers', type=str, default="0.0,1e-6,1e-5,1e-4,1e-3,2e-3,4e-3,8e-3,1e-2,1.5e-2,2e-2,2.5e-2,3e-2,3.5e-2,4e-2,4.5e-2,5e-2,5.5e-2,6e-2,6.5e-2,7e-2,7.5e-2,8e-2,8.5e-2,9e-2,9.5e-2,1e-1,2e-1,4e-1,5e-1")
+    parser.add_argument('--ckpts', type=str, nargs='+', default=["/workspace/FATBETA/training/gs/r20_c10_gs_bfat_orthogonal/r20_c10_gs_bfat_orthogonal_checkpoint.pth.tar",
+                                                                 "/workspace/FATBETA/training/gs/r20_c10_gs_bfat_direction/r20_c10_gs_bfat_direction_checkpoint.pth.tar",
+                                                                 "/workspace/FATBETA/training/gs/r20_c10_gs_path0_random/r20_c10_gs_path0_random_checkpoint.pth.tar",
+                                                                 "/workspace/FATBETA/training/gs/r20_c10_gs_path3_random/r20_c10_gs_path3_random_checkpoint.pth.tar"
+                                                                 ])
+    parser.add_argument('--config', type=str, default="configs/nights/2.yaml")
+    parser.add_argument('--bers', type=str, default="0.0,1e-6,1e-5,1e-4,1e-3,2e-3,4e-3,8e-3,1e-2,1.5e-2,2e-2,2.5e-2,3e-2,3.5e-2,4e-2,4.5e-2,5e-2,6e-2,7e-2,8e-2,9e-2,1e-1")
     parser.add_argument('--no_ema', action='store_true')
     parser.add_argument('--limit', type=int, default=None, help='Limit number of batches per GPU')
     parser.add_argument('--log', type=str, default="results200_g.log", help='Path to log file')
@@ -116,8 +120,8 @@ def main():
             print(f"\n{C_BOLD}Processing Checkpoint: {ckpt_path}{C_RESET}")
             if log_f:
                 log_f.write(f"Checkpoint: {ckpt_path}\n")
-                log_f.write(f"{'BER':<10} | {'All Bits':<15} | {'Skip MSB':<15} | {'Only MSB':<15}\n")
-                log_f.write("-" * 65 + "\n")
+                log_f.write(f"{'BER':<10} | {'All Bits':<15}\n")
+                log_f.write("-" * 30 + "\n")
 
             # 5. Warm-up (Populate output_size etc.)
             print("Warm-up forward pass...")
@@ -155,36 +159,32 @@ def main():
             injector.enable()
             print(f"{C_BOLD}{C_TITLE}Fast {config.arch.upper()} W{bits}A{bits} {ema_status} BER Sweep ({seed_str}){C_RESET}")
             if args.limit: print(f"Using partial test set: first {args.limit} batches per GPU")
-            print(f"{'BER':<10} | {C_COL1}{'All Bits':<15}{C_RESET} | {C_COL2}{'Skip MSB':<15}{C_RESET} | {C_COL3}{'Only MSB':<15}{C_RESET}")
-            print("-" * 65)
+            print(f"{'BER':<10} | {C_COL1}{'All Bits':<15}{C_RESET}")
+            print("-" * 30)
 
             # Sweep Loop
             for ber in bers:
-                mode_data = [[], [], []]
+                results = []
                 injector.ber = ber
                 
                 for seed in seeds:
                     injector.seed = seed
-                    for i, (skip_msb, only_msb) in enumerate([(False, False), (True, False), (False, True)]):
-                        injector.skip_msb = skip_msb
-                        injector.only_msb = only_msb
-                        acc = evaluate_model(model, test_loader, device, limit=args.limit)
-                        mode_data[i].append(acc)
+                    # Only "All Bits" mode
+                    injector.skip_msb = False
+                    injector.only_msb = False
+                    acc = evaluate_model(model, test_loader, device, limit=args.limit)
+                    results.append(acc)
                 
-                row_results = []
-                plain_results = []
-                for data in mode_data:
-                    mean = sum(data) / len(data)
-                    std = 0.0
-                    if len(data) > 1:
-                        variance = sum((x - mean) ** 2 for x in data) / (len(data) - 1)
-                        std = variance ** 0.5
-                    row_results.append(f"{mean:6.2f}±{std:<5.2f}")
-                    plain_results.append(f"{mean:6.2f}±{std:<5.2f}")
+                mean = sum(results) / len(results)
+                std = 0.0
+                if len(results) > 1:
+                    variance = sum((x - mean) ** 2 for x in results) / (len(results) - 1)
+                    std = variance ** 0.5
                 
-                print(f"{ber:<10} | {C_COL1}{row_results[0]:<15}{C_RESET} | {C_COL2}{row_results[1]:<15}{C_RESET} | {C_COL3}{row_results[2]:<15}{C_RESET}")
+                res_str = f"{mean:6.2f}±{std:<5.2f}"
+                print(f"{ber:<10} | {C_COL1}{res_str:<15}{C_RESET}")
                 if log_f and is_master():
-                    log_f.write(f"{ber:<10} | {plain_results[0]:<15} | {plain_results[1]:<15} | {plain_results[2]:<15}\n")
+                    log_f.write(f"{ber:<10} | {res_str:<15}\n")
                     log_f.flush()
 
             if log_f and is_master():

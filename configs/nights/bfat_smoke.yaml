@@ -1,0 +1,35 @@
+# Architecture
+arch: resnet20
+# Training optimization
+# bit_width_list: [8, 4]
+target_bits: [8, 4]
+
+# BFAT Configuration (Active Defense)
+bfat:
+  enabled: true
+  start_epoch: 0       # Start immediately for testing
+  all_bits: true       # Single shot all-bits injection
+  ber: 0.01            # 1% error rate
+  projection_mode: "orthogonal"
+  loss_weight: 1.0
+
+# General settings
+epochs: 1              # Just 1 epoch
+start_bit_width: 8
+num_random_path: 1     # Stochastic robustness sampling
+sensitivity_aware_sampling: false
+
+# Data
+dataloader:
+  dataset: cifar10
+  batch_size: 128
+  num_workers: 4
+  path: /data/cifar10
+
+# Logging
+log:
+  print_freq: 10
+  num_best_scores: 1
+
+output_dir: training/bfat_smoke_test
+name: bfat_smoke

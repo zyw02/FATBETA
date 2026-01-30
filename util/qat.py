@@ -223,56 +223,76 @@ def freeze_layers(metric, model, org_cands, ratio=0.25, point_wise_min=2, depth_
             
             module.set_bit_cands(new_cands)
 
+# Global cache for auxiliary_quantized_loss
+_auxiliary_loss_cache = {}
+
+def _get_quanconv_layers(model):
+    """Get cached list of QuanConv2d layers with LsqQuan quantizers."""
+    model_id = id(model.module if hasattr(model, 'module') else model)
+    
+    if model_id not in _auxiliary_loss_cache:
+        layers = []
+        unwrapped = model.module if hasattr(model, 'module') else model
+        for _, module in unwrapped.named_modules():
+            if isinstance(module, QuanConv2d):
+                w_quantizer = module.quan_w_fn
+                if isinstance(w_quantizer, LsqQuan):
+                    layers.append(module)
+        _auxiliary_loss_cache[model_id] = layers
+    
+    return _auxiliary_loss_cache[model_id]
+
+
 def auxiliary_quantized_loss(model, conf=None, fairness_regularization=False, quantization_error_minimization=False):
+    """
+    OPTIMIZED: Uses cached layer list to avoid module traversal overhead.
+    """
     QE_loss, distribution_loss = 0, 0
-    quantizer_idx = 0
+    
+    # Use cached layers instead of iterating model.named_modules()
+    layers = _get_quanconv_layers(model)
+    
+    for quantizer_idx, module in enumerate(layers):
+        if module.bits is None:
+            continue
+        
+        weights = module.weight
+        current_wbits = module.bits[0] if conf is None else conf[quantizer_idx]
+        w_quantizer = module.quan_w_fn
+        
+        step_size = w_quantizer.get_scale(current_wbits, detach=False)
+        
+        is_computed_clipped_weights = False
+        if fairness_regularization:
+            if current_wbits == 2:
+                lower_bound, upper_bound = w_quantizer.weight_bound(bits=current_wbits)
+                clipped_weights = torch.clamp(weights, min=lower_bound, max=upper_bound)
+                distribution_loss += 1/2 * clipped_weights.pow(2).sum()
+                is_computed_clipped_weights = True
 
-    for _, module in model.named_modules():
-        if isinstance(module, QuanConv2d):
-            w_quantizer = module.quan_w_fn
+        if quantization_error_minimization:
+            if not is_computed_clipped_weights:
+                lower_bound, upper_bound = w_quantizer.weight_bound(bits=current_wbits)
+                clipped_weights = torch.clamp(weights, min=lower_bound, max=upper_bound)
 
-            if isinstance(w_quantizer, LsqQuan):
-                if module.bits is None:
-                    continue
-                weights = module.weight
-                current_wbits = module.bits[0] if conf is None else conf[quantizer_idx]
+            q_weights = w_quantizer(weights, bits=current_wbits).detach()
+            bit_wise_distance = 2**(current_wbits - min(module.weight_bit_cands))
+
+            if bit_wise_distance != 1:
+                step_size = step_size.detach()
+                thd_neg_min, thd_pos_min = compute_thd(w_quantizer, min(module.weight_bit_cands))
+                bit_wise_distance_mapping = [ele*bit_wise_distance*step_size for ele in range(thd_neg_min, thd_pos_min+1)]
+
+                idx = q_weights == bit_wise_distance_mapping[0]
+                for cod in bit_wise_distance_mapping[1:]:
+                    idx |= (q_weights == cod)
                 
-                quantizer_idx += 1
-
-                step_size = w_quantizer.get_scale(current_wbits, detach=False)
+                latent_weights = clipped_weights.detach()
+                q_weights = torch.where(idx, q_weights, latent_weights)
+            
+            QE_loss += ((clipped_weights - q_weights) ** 2).sum(0).mean()
                 
-                is_computed_clipped_weights = False
-                if fairness_regularization: # here we only force the distribution within the highly decoupled subsets...
-                    if current_wbits == 2:
-                        lower_bound, upper_bound = w_quantizer.weight_bound(bits=current_wbits)
-                        clipped_weights = torch.clamp(weights, min=lower_bound, max=upper_bound)
-                        distribution_loss += 1/2 * clipped_weights.pow(2).sum() # must using SGD for weight quantization
-
-                        is_computed_clipped_weights = True
-
-                if quantization_error_minimization:
-                    if not is_computed_clipped_weights:
-                        lower_bound, upper_bound = w_quantizer.weight_bound(bits=current_wbits)
-                        clipped_weights = torch.clamp(weights, min=lower_bound, max=upper_bound)
-
-                    q_weights = w_quantizer(weights, bits=current_wbits).detach()
-                    bit_wise_distance = 2**(current_wbits - min(module.weight_bit_cands))
-
-                    if bit_wise_distance != 1:
-                        step_size = step_size.detach()
-                        thd_neg_min, thd_pos_min = compute_thd(w_quantizer, min(module.weight_bit_cands))
-                        bit_wise_distance_mapping = [ele*bit_wise_distance*step_size for ele in range(thd_neg_min, thd_pos_min+1)]
-
-                        idx = q_weights == bit_wise_distance_mapping[0]
-                        for cod in bit_wise_distance_mapping[1:]:
-                            idx |= (q_weights == cod)
-                        
-                        latent_weights = clipped_weights.detach()
-                        q_weights = torch.where(idx, q_weights, latent_weights)
-                    
-                    QE_loss += ((clipped_weights - q_weights) ** 2).sum(0).mean()
-                        
     if conf is not None:
-        assert quantizer_idx == len(conf)
+        assert quantizer_idx + 1 == len(conf)
     
     return QE_loss, distribution_loss

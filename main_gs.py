@@ -31,6 +31,7 @@ from quan import find_modules_to_quantize, replace_module_by_names
 from policy import BITS
 from process_gs import train, validate, PerformanceScoreboard  # Use gradient surgery process
 from evolution_search import EvolutionSearcher
+from util.fault_injector_v2 import FaultInjectorV2 as FaultInjector
 
 
 def init_logger_and_monitor(configs, script_dir):
@@ -91,6 +92,7 @@ def main():
     if configs.resume.path and os.path.exists(configs.resume.path):
         model, start_epoch, _ = load_checkpoint(
             model, configs.resume.path, 'cuda', 
+            strict=not configs.resume.lean,
             lean=configs.resume.lean, 
             optimizer=optimizer, 
             override_optim=configs.eval,
@@ -154,11 +156,11 @@ def main():
     perf_scoreboard = PerformanceScoreboard(configs.log.num_best_scores)
     print(model)
     
-    switch_bit_width(model, quan_scheduler=configs.quan, wbit=target_bit_width, abits=target_bit_width)
-    switch_bit_width(target_model.ema, quan_scheduler=configs.quan, wbit=target_bit_width, abits=target_bit_width)
+    switch_bit_width(model, quan_scheduler=configs.quan, wbit=max_bit_width_cand, abits=max_bit_width_cand)
+    switch_bit_width(target_model.ema, quan_scheduler=configs.quan, wbit=max_bit_width_cand, abits=max_bit_width_cand)
 
     annealing_schedule = CosineSched(
-        start_step=len(train_loader) * 40,
+        start_step=int(len(train_loader) * configs.epochs * 0.3),
         max_step=len(train_loader) * configs.epochs,
         eta_start=0,
         eta_end=0.1
@@ -166,24 +168,40 @@ def main():
 
     lr_scheduler.step(start_epoch)
 
+    # FaultInjector Setup for Sensitivity Analysis OR BFAT
+    fault_injector = None
+    bfat_cfg = getattr(configs, 'bfat', None)
+    use_bfat = bfat_cfg is not None and getattr(bfat_cfg, 'enabled', False)
+    
+    if getattr(configs, 'sensitivity_aware_sampling', False) or use_bfat:
+        # Default BER for sensitivity analysis is 4e-3 if not specified by BFAT
+        ber = 4e-3
+        all_bits = False
+        
+        if use_bfat:
+            ber = getattr(bfat_cfg, 'ber', 1e-2)
+            all_bits = getattr(bfat_cfg, 'all_bits', False)
+            
+        fault_injector = FaultInjector(
+            model=model,
+            mode="ber",
+            ber=ber,
+            enable_in_training=True,
+            enable_in_inference=True, # For sensitivity analysis validation if needed
+            seed=42, # Initial seed, will be rotated
+            all_bits=all_bits
+        )
+        logger_info(logger, f'🚀 FaultInjector initialized. BFAT: {use_bfat}, BER: {ber}, All-Bits: {all_bits}')
+
     freezing_annealing_schedule = None
     if configs.enable_dynamic_bit_training:
-        logger_info(logger, 'Start dynamic bit-width training with Gradient Surgery...')
+        logger_info(logger, 'Start dynamic bit-width training...')
         freezing_annealing_schedule = CosineSched(
             start_step=0,
             max_step=configs.epochs // 2,
             eta_start=0.5,
             eta_end=0.2
         )
-
-    # Log gradient surgery config
-    gs_config = getattr(configs, 'gradient_surgery', None)
-    if gs_config and getattr(gs_config, 'enabled', False):
-        logger_info(logger, '=' * 60)
-        logger_info(logger, '🔧 [GS-MPQ] Gradient Surgery for Mixed-Precision QAT')
-        logger_info(logger, f'   Projection Mode: {getattr(gs_config, "projection_mode", "direction")}')
-        logger_info(logger, f'   Limit Norm: {getattr(gs_config, "limit_norm", False)}')
-        logger_info(logger, '=' * 60)
 
     if configs.eval:
         bitwidth_policies = BITS[configs.arch]
@@ -249,6 +267,12 @@ def main():
                 train_sampler.set_epoch(epoch)
 
             logger_info(logger, '>>>>>>>> Epoch %3d' % epoch)
+            # FaultInjector Seed Rotation (Aligned with NUDE)
+            if fault_injector is not None:
+                initial_seed = getattr(configs, 'seed', 0)
+                fault_injector.seed = initial_seed + epoch
+                logger_info(logger, f'🎲 Epoch {epoch}: FaultInjector seed rotated to {fault_injector.seed}')
+
             t_top1, t_top5, t_loss = train(
                 train_loader, model, criterion, optimizer,
                 epoch, monitors, configs, 
@@ -258,8 +282,9 @@ def main():
                 teacher_model=teacher_model,
                 optimizer_q=optimizer_q, 
                 mode=mode, 
-                annealing_schedule=annealing_schedule,
-                freezing_annealing_schedule=freezing_annealing_schedule
+                annealing_schedule=annealing_schedule, 
+                freezing_annealing_schedule=freezing_annealing_schedule,
+                fault_injector=fault_injector
             )
             
             if lr_scheduler is not None:

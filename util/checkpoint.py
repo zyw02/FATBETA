@@ -300,6 +300,13 @@ def load_checkpoint(model:nn.Module, chkp_file, model_device=None, strict=True, 
                 new_key = f"{base_name}.bn.{param_name}"
                 expanded_checkpoint_state[new_key] = value
         
+        # FIX: Filter out _active_bn keys to prevent overwriting correct BN stats
+        # _active_bn is an alias to one of the BNs in bn_list, but in the checkpoint
+        # it might contain stale values (e.g. from a different bit-width) which would
+        # overwrite the correct values in bn_list (usually bn_list[0][0]).
+        if '_active_bn' in key:
+            continue
+            
         # Always keep the original key too
         expanded_checkpoint_state[key] = value
 
@@ -357,13 +364,14 @@ def load_checkpoint(model:nn.Module, chkp_file, model_device=None, strict=True, 
     if strict:
         if anomalous_keys:
             missing_keys, unexpected_keys = anomalous_keys
-            if unexpected_keys:
-                logger.warning("The loaded checkpoint (%s) contains %d unexpected state keys" %
-                            (chkp_file, len(unexpected_keys)))
-            if missing_keys:
-                print(missing_keys)
-                raise ValueError("The loaded checkpoint (%s) is missing %d state keys" %
-                                (chkp_file, len(missing_keys)))
+            if len(unexpected_keys) > 0:
+                print("Unexpected keys: ", unexpected_keys)
+                raise ValueError("The loaded checkpoint (%s) contains %d unexpected state keys" %
+                                 (chkp_file, len(unexpected_keys)))
+            if len(missing_keys) > 0:
+                print("Missing keys: ", missing_keys)
+                # raise ValueError("The loaded checkpoint (%s) is missing %d state keys" %
+                #                  (chkp_file, len(missing_keys)))
             
 
     model.cuda()
