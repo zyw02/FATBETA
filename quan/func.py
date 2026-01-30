@@ -75,8 +75,11 @@ class QuanConv2d(torch.nn.Conv2d):
     
     @property
     def is_sample_min(self):
+        if self.bits is None:
+            return False
         wbits = self.bits[0]
-        return min(self.weight_bit_cands) == wbits
+        # Use CPU-side comparison to avoid GPU sync
+        return wbits == min(self.bits_list)  # bits_list is Python tuple
     
     def sample_bit_conf(self, act_fp=False, weight_fp=False, full_mixed=True, max_sample_bits=None, sample_max=False, sample_min=False):
 
@@ -88,8 +91,8 @@ class QuanConv2d(torch.nn.Conv2d):
         
         if full_mixed:
 
-            return (self.quan_w_fn.sample(self.weight_bit_cands, max=sample_max, min=sample_min), \
-                     self.quan_a_fn.sample(self.act_bit_cands, max=sample_max, min=sample_min))
+            return (self.quan_w_fn.sample(self.weight_bit_cands, sample_max=sample_max, sample_min=sample_min), \
+                     self.quan_a_fn.sample(self.act_bit_cands, sample_max=sample_max, sample_min=sample_min))
         else:
             raise NotImplementedError
     
@@ -108,6 +111,13 @@ class QuanConv2d(torch.nn.Conv2d):
 
             # 量化权重
             quantized_weight = self.quan_w_fn(weight, wbits, is_activation=False)
+
+            # [GNO] Store quantization error for gradient orthogonality
+            # We want to make gradient orthogonal to (W - W_q)
+            if self.training:
+                self.q_error = (weight - quantized_weight).detach()
+            else:
+                self.q_error = None
             
             # ⭐ SAM支持：保存量化权重并添加扰动（仅在训练模式）
             if self.training:
@@ -261,6 +271,12 @@ class QuanLinear(torch.nn.Linear):
             
             # 量化权重
             quantized_weight = self.quan_w_fn(self.weight, wbits, is_activation=False)
+
+            # [GNO] Store quantization error for gradient orthogonality
+            if self.training:
+                self.q_error = (self.weight - quantized_weight).detach()
+            else:
+                self.q_error = None
             
             # ⭐ SAM支持：保存量化权重并添加扰动（仅在训练模式）
             if self.training:
@@ -305,10 +321,17 @@ class SwithableBatchNorm(torch.nn.Module):
             bn_list = [torch.nn.ModuleList([copy.deepcopy(m) for _ in range(len(bits_list))]) \
             for _ in range(len(bits_list))]
             self.bn_list = torch.nn.ModuleList(bn_list)
+            # Precompute bit-to-index mapping for O(1) lookup (no GPU sync)
+            self._bit_to_idx = {bit: idx for idx, bit in enumerate(bits_list)}
+            # OPTIMIZATION: Cache the active BN module directly
+            self._active_bn = self.bn_list[0][0]
         else:
             self.bn = copy.deepcopy(m)
-                
+            self._bit_to_idx = {}
+            self._active_bn = self.bn
         
+        # Cache current indices as tuple
+        self._current_idx = (0, 0)
         self.size = len(self.bn_list)*len(self.bn_list) if self.bits_list is not None else 1
     
     @property
@@ -319,22 +342,18 @@ class SwithableBatchNorm(torch.nn.Module):
         if self.bits_list is not None:
             self.bit_width = bit_width
             self._is_sample_min = is_sample_min
+            # Use precomputed dict for O(1) lookup - no list.index() call
+            if isinstance(bit_width, (list, tuple)):
+                w_bits, a_bits = bit_width
+                i = self._bit_to_idx[w_bits]
+                j = self._bit_to_idx[a_bits]
+                self._current_idx = (i, j)
+                # OPTIMIZATION: Cache the active BN module directly
+                self._active_bn = self.bn_list[i][j]
 
     def forward(self, x):
-        if self.bits_list is not None:
-            if not isinstance(self.bit_width, (list, tuple)):
-                i = j = 0
-            else:
-                w_bits, a_bits = self.bit_width
-
-                i = self.bits_list.index(w_bits)
-                j = self.bits_list.index(a_bits)
-            
-            x = self.bn_list[i][j](x)
-
-            return x
-        
-        return self.bn(x)
+        # OPTIMIZATION: Direct call to cached BN - no conditionals, no indexing
+        return self._active_bn(x)
 
     def __repr__(self):
         if self.bits_list is not None:

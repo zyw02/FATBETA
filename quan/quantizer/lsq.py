@@ -100,24 +100,30 @@ class LsqQuan(Quantizer):
                     self.init_state[i].fill_(1)
         else:
             self.s = torch.nn.Parameter(torch.ones(len(bit_list)))
+        
+        # CPU-side flag to avoid GPU synchronization in forward pass
+        self._initialized_list = [bool(val > 0) for val in self.init_state]
 
     def __repr__(self):
         return f'LSQ quantizer. Bit-width candidates: {self.bit_list}, all positive: {self.all_positive}, symmetric: {self.symmetric}, gradient scaling: {self.scale_gradient}'
 
     def _index_bits(self, bits):
+        """Index bits - expects Python int, no GPU sync needed"""
+        # bits should already be Python int from sample()
         if isinstance(bits, torch.Tensor):
-            bits = bits.cpu().item()
+            # Fallback for compatibility, but this path should be avoided
+            bits = int(bits.item()) if bits.numel() == 1 else int(bits[0].item())
         return self.bit_mapping[bits]
     
-    def sample(self, cands, max=False, min=False):
-        if max:
-            bit_width = cands.max()
-        elif min:
-            bit_width = cands.min()
+    def sample(self, cands, sample_max=False, sample_min=False):
+        """Sample bit-width WITHOUT CPU-GPU sync - returns Python int directly"""
+        # Use CPU-side bit_list instead of GPU tensor operations
+        if sample_max:
+            return max(self.bit_list)  # Python max on tuple, no GPU access
+        elif sample_min:
+            return min(self.bit_list)  # Python min on tuple, no GPU access
         else:
-            bit_width = random.choice(cands)
-
-        return bit_width.cpu().item()
+            return random.choice(self.bit_list)  # Random from CPU tuple
         
     def get_scale(self, bit_width, detach=True):
         s = self.s[self._index_bits(bit_width)]
@@ -140,17 +146,22 @@ class LsqQuan(Quantizer):
 
     def forward(self, x, bits, is_activation=False, skip_init=False, scale=None, **args):
         if bits is None or bits >= 32:
-            self.bit_mapping = {
-                32: 0
-            }
             return x
         
         idx = self._index_bits(bits=bits)
+        
+        # Ensure CPU list is synced with buffer (handles resume/loading)
+        if not hasattr(self, '_initialized_list') or self._initialized_list is None:
+            self._initialized_list = [bool(val > 0) for val in self.init_state]
+            
         thd_neg, thd_pos = compute_thd(self, bits)
         self.bits = bits
 
-        if self.init_state[idx] == 0 and not skip_init:
+        # Use CPU-side list to avoid GPU sink
+        if not self._initialized_list[idx] and not skip_init:
             self.init_state[idx].fill_(1)
+            self._initialized_list[idx] = True
+            
             s_init = x.detach().abs().mean() * 2 / (thd_pos ** 0.5)
 
             if dist.is_initialized() and dist.get_world_size() > 1:
@@ -158,6 +169,7 @@ class LsqQuan(Quantizer):
                 s_init /= dist.get_world_size()
             
             self.s[idx].data.copy_(s_init)
+        
         if scale is None:
             s = self.s[idx]
         else:
