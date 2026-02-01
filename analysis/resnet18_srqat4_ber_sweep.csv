@@ -1,5 +1,0 @@
-ckpt,baseline_acc,ber_1e-5,ber_1e-4,ber_1e-3,ber_1e-2,ber_2e-2,ber_5e-2,ber_1e-1
-training/resnet18_cifar10_nude_srqat_ls0/resnet18_cifar10_nude_srqat_ls0_checkpoint.pth.tar,94.04,94.10,94.07,93.82,88.61,80.29,19.19,12.04
-training/resnet18_cifar10_nude_srqat_ls1em05/resnet18_cifar10_nude_srqat_ls1em05_checkpoint.pth.tar,93.93,93.86,93.88,93.43,84.04,60.84,12.42,11.98
-training/resnet18_cifar10_nude_srqat_ls1em06/resnet18_cifar10_nude_srqat_ls1em06_checkpoint.pth.tar,93.95,94.06,93.99,93.47,85.01,65.99,16.40,11.99
-training/resnet18_cifar10_nude_srqat_ls1em07/resnet18_cifar10_nude_srqat_ls1em07_checkpoint.pth.tar,93.94,93.95,93.90,93.66,90.64,80.63,17.82,11.50
