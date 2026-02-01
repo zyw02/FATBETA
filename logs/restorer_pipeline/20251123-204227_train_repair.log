@@ -1,9 +1,0 @@
-Traceback (most recent call last):
-  File "/root/autodl-tmp/retraining-free-quantization/tools/train_sensitive_repair_head.py", line 266, in <module>
-    main()
-  File "/root/autodl-tmp/retraining-free-quantization/tools/train_sensitive_repair_head.py", line 244, in main
-    model = train_layer_model(
-            ^^^^^^^^^^^^^^^^^^
-  File "/root/autodl-tmp/retraining-free-quantization/tools/train_sensitive_repair_head.py", line 133, in train_layer_model
-    raise ValueError(f"Layer {layer} missing statistics in profile; cannot train repair head.")
-ValueError: Layer features.0 missing statistics in profile; cannot train repair head.
