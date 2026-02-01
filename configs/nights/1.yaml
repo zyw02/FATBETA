@@ -1,5 +1,5 @@
 # Experiment name - ResNet20 W8A8 quantization training on CIFAR10
-name: r20_c10_gs_bfat_direction
+name: r20_c10_gs_speed_test
 
 # Name of output directory. Checkpoints and logs will be saved at `pwd`/output_dir
 output_dir: training/gs
@@ -13,14 +13,14 @@ information_distortion_mitigation: false
 enable_dynamic_bit_training: false
 kd: false
 
-sensitivity_aware_sampling: false
+
 # Dataset loader
 dataloader:
   dataset: cifar10
   num_classes: 10
   path: ./data/cifar10
   batch_size: 128
-  workers: 16
+  workers: 4
   deterministic: true
 
 resume:

@@ -80,77 +80,7 @@ def update_monitors(monitors, meters, target_bits, epoch, batch_idx, steps_per_e
             continue
 
 
-def evaluate_layer_sensitivity(model, loader, criterion, fault_injector, configs, epoch):
-    """
-    Evaluate sensitivity of each quantized layer to bit-flips.
-    Returns: List of layer indices sorted by sensitivity (descending).
-    """
-    from util.mpq import get_cached_layers, sample_max_cands
-    
-    # 1. Setup diversity seed
-    eval_seed = (epoch * 1000 + 42) % (2**31)
-    fault_injector.seed = eval_seed
-    fault_injector.ber = 4e-3 # Targeted BER for evaluation
-    
-    # 2. Get a single batch of data
-    try:
-        # Use a fresh iterator to avoid disturbing main loader state too much, 
-        # though standard training resets loader every epoch anyway.
-        data_iter = iter(loader)
-        inputs, targets = next(data_iter)
-    except StopIteration:
-        return []
-        
-    inputs = inputs.cuda(non_blocking=True)
-    targets = targets.cuda(non_blocking=True)
-    
-    # Cache and set state
-    was_training = model.training
-    model.eval()
-    
-    # 3. Set bits to max for baseline
-    sample_max_cands(model, configs)
-    
-    with torch.no_grad():
-        # Baseline loss (no injection)
-        baseline_outputs = model(inputs)
-        baseline_loss = criterion(baseline_outputs, targets).item()
-        
-        cache = get_cached_layers(model, configs)
-        quan_layers = cache['quan_layers']
-        
-        sensitivities = []
-        
-        logger_info(logger, f"🔍 [Sensitivity Analysis] Epoch {epoch} | Seed: {eval_seed} | BER: {fault_injector.ber}")
-        
-        for i, (module, name, layer_type) in enumerate(quan_layers):
-            # Target ONLY this layer
-            fault_injector.whitelist_layer = name
-            fault_injector.enable()
-            
-            faulty_outputs = model(inputs)
-            faulty_loss = criterion(faulty_outputs, targets).item()
-            
-            # Sensitivity is the loss increase caused by faults
-            delta_loss = max(0.0, faulty_loss - baseline_loss)
-            sensitivities.append((i, delta_loss))
-            
-            fault_injector.disable()
-            fault_injector.whitelist_layer = None
-            
-    # Sort by sensitivity descending
-    sensitivities.sort(key=lambda x: x[1], reverse=True)
-    sorted_indices = [x[0] for x in sensitivities]
-    
-    # Log top sensitive layers
-    top_5_names = [quan_layers[idx][1] for idx in sorted_indices[:5]]
-    logger_info(logger, f"🏆 Top 5 Sensitive: {', '.join(top_5_names)}")
-    
-    # Restore state
-    if was_training:
-        model.train()
-        
-    return sorted_indices
+
 
 
 def loss_forward(outputs, teacher_outputs, targets, criterion):
@@ -274,26 +204,7 @@ def train(train_loader, model, criterion, optimizer, epoch, monitors, configs,
     warmup_epochs = getattr(configs, 'warmup_epochs', 5)
     sensitive_indices = None
     
-    if mode == 'training' and epoch >= warmup_epochs and fault_injector is not None:
-        # Perform Sensitivity Analysis at start of epoch
-        sensitive_indices = evaluate_layer_sensitivity(
-            model, train_loader, criterion, fault_injector, configs, epoch
-        )
-        
-        # Calculate sensitive ratio using Cosine Annealing
-        # Starts at 0.5 (conservative) and decays to 0.2 (robust)
-        r_start, r_end = 0.5, 0.2
-        total_epochs = configs.epochs
-        if total_epochs > warmup_epochs:
-            progress = (epoch - warmup_epochs) / (total_epochs - warmup_epochs)
-            ratio = r_end + 0.5 * (r_start - r_end) * (1 + math.cos(math.pi * progress))
-        else:
-            ratio = r_start
-            
-        unwrapped_layers_count = len(sensitive_indices) if sensitive_indices else 0
-        num_sensitive = max(1, int(unwrapped_layers_count * ratio))
-        sensitive_indices = sensitive_indices[:num_sensitive]
-        logger_info(logger, f"📊 Adaptive Policy [Epoch {epoch}]: ratio={ratio:.3f}, sensitive_layers={num_sensitive}/{unwrapped_layers_count}")
+
 
     target_bits = configs.target_bits
     target_bits.sort()
